@@ -242,7 +242,9 @@ def snippet(body: str, max_lines: int = 4, width: int = 100) -> list[str]:
     if not body:
         return []
     lines = [ln.rstrip() for ln in body.splitlines() if ln.strip()]
-    shown = [ln if len(ln) <= width else ln[: width - 1] + "…" for ln in lines[:max_lines]]
+    shown = [
+        ln if len(ln) <= width else ln[: width - 1] + "…" for ln in lines[:max_lines]
+    ]
     if len(lines) > max_lines:
         shown.append("…")
     return shown
@@ -457,9 +459,7 @@ def verdict(name: str, terminal: bool, nxt: str) -> str:
 def state_path(repo: str, pr: int, watcher: str, override: str | None) -> Path:
     if override:
         return Path(override)
-    base = (
-        os.environ.get("WATCH_STATE_DIR") or Path(tempfile.gettempdir()) / "watch"
-    )
+    base = os.environ.get("WATCH_STATE_DIR") or Path(tempfile.gettempdir()) / "watch"
     slug = repo.replace("/", "_")
     return Path(base) / f"{slug}-pr{pr}-{watcher}.json"
 
