@@ -48,7 +48,8 @@ metadata:
 ## Build order
 
 1. **Copy [`../assets/SKILL-skeleton.md`](../assets/SKILL-skeleton.md)** in as SKILL.md; fill the cross-cutting doctrine, then the router with planned entries.
-2. **Reference pages one at a time**, each starting from [`../assets/reference-skeleton.md`](../assets/reference-skeleton.md); keep each router entry's contents line current as its page lands, and link pages sideways as their rules touch.
+2. **Reference pages one at a time**, each starting from [`../assets/reference-skeleton.md`](../assets/reference-skeleton.md); keep each router entry's contents line current as its page lands, and
+   link pages sideways as their rules touch.
 3. **Voice strip pass** over everything (the Voice doctrine in SKILL.md).
 4. **Description last**, once the tasks are real. (why: written first, it bakes in branches the body ends up not having.)
 5. **Hand off as a draft.** Tell the user what you'd cut first; the distilling is theirs to do.
@@ -63,7 +64,8 @@ Start a page from [`../assets/reference-skeleton.md`](../assets/reference-skelet
   in `branches.md#restacking`, read that too"). A hub page (a `-fy`/audit flow) references every
   other doc; a topic page links down into its variant pages (`ci.md` -> `ci/github.md`). This web
   is what lets an agent land on one page and still find the rest of the skill.
-- **Fix discovery gaps in place.** When one route never finds a rule living on another page, add a small conditional cross-link at every entry point, anchored to the exact `#section` — not a restructure.
+- **Fix discovery gaps in place.** When one route never finds a rule living on another page, add a small conditional cross-link at every entry point, anchored to the exact `#section` — not a
+  restructure.
 - **Covers line.** Open with `Covers: ...` naming the page's sections; it doubles as the router's contents line.
 - **Safety first.** Rules that prevent damage lead the page, before workflow.
 - **Gotcha catalogs.** Symptom -> mechanism -> discriminator -> fix. The discriminator (how to tell this case from its lookalike) is the valuable part.

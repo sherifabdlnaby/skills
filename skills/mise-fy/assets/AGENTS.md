@@ -4,7 +4,8 @@
 
 ## Toolchain (mise)
 
-This project uses [**mise**](https://mise.jdx.dev) to pin tools, expose tasks, and wire git hooks. `mise.toml` is the source of truth. Don't install tools by hand or add ad-hoc scripts; add a mise tool or task instead.
+This project uses [**mise**](https://mise.jdx.dev) to pin tools, expose tasks, and wire git hooks. `mise.toml` is the source of truth. Don't install tools by hand or add ad-hoc scripts; add a mise
+tool or task instead.
 
 **Setup** (once, and per new worktree): `mise trust && mise run setup`.
 
@@ -21,7 +22,8 @@ Prefer `mise run <task>` over calling the tool directly, so local, hooks, and CI
 
 ## Git hooks (hk)
 
-Commits run [hk](https://hk.jdx.dev), the same `check` CI runs, to format and lint staged files. Fix failures with `mise run check --fix`. Don't disable steps to push a commit through; `git commit --no-verify` skips hooks for a WIP commit.
+Commits run [hk](https://hk.jdx.dev), the same `check` CI runs, to format and lint staged files. Fix failures with `mise run check --fix`. Don't disable steps to push a commit through;
+`git commit --no-verify` skips hooks for a WIP commit.
 
 ## Extending the setup
 
