@@ -1,3 +1,3 @@
 # probe
 
-This line has teh typo and trailing space.   
+This line has the typo and trailing space.
