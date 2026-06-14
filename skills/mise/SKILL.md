@@ -10,31 +10,28 @@ description: >
 
 # mise
 
-Conventions and best-practices guide for [mise](https://mise.jdx.dev).
+Conventions and best-practices guide for [mise](https://mise.jdx.dev) alongside opinionated best practices.
+The skill implements progressive disclosure;  Each area routes to a `references/` file holding the actual rules and best practices.
+Read the matching one **before** planning or acting, not after. SKILL.md alone is not enough. Doing several things? Open several references.
 
-Each area routes to a `references/` file holding the actual rules and best practices. Read the matching one **before** planning or acting, not after.
-SKILL.md alone is not enough. Doing several things? Open several references.
+The skill encodes best practices. You can use this skill when adding a Mise tool/task/env, or when user ask you audit the whole project and "mise-fy" it.
+Since the skill encode opinionated best practices, pushing for all of them **when only asked to add a simple task/tool** would be too much.
+Try to apply best-practices that applies **just to your goal**, and suggest/surface tangential improvements to user sparingly.
+When `mise-fy`-ing and improving codebase then you can suggest all improvements and recommendation. 
 
-Shortcuts:
-- **You know what you need** -> jump straight to the matching router entry.
-- **Exploring / Looking for best practices** -> read [`references/mise-fy.md`](references/mise-fy.md) for the full audit + rewrite checklist, which pulls in every other reference.
+## When to read references.
 
-## Rules and Best Practices:
-
-These apply across everything mise.
-
-- **Prefer `mise use` over hand-editing** `[tools]`. (why: keeps `mise.toml` and the lockfile in sync and auto-trusts the file.)
-- **Trust is a security boundary.** mise refuses to load `[env]`, tasks, and scripts from untrusted config until `mise trust`. Don't blanket-trust `/`. (why: config files can run arbitrary code on `cd`.)
-- **Commit the lockfile, pin in config.** Use fuzzy versions (`node = "24"`) in `mise.toml` and commit `mise.lock` for reproducible exact versions. Lockfile is **opt-in** but push for it. (`[settings] lockfile = true`).
-- **`activate` for humans, shims for machines.** Interactive shells use `mise activate`; CI/IDEs/scripts use shims. (why: shims work without a shell hook but don't support every feature.)
-
-> TODO(you): encode your house rules here. e.g. canonical config filename (`mise.toml` vs `.mise.toml`), whether lockfile is mandatory, default backends (aqua/ubi preference), redaction policy. Keep additions terse with a `why:`.
-
-Hit something surprising? Cross-cutting traps live in [`references/gotchas.md`](references/gotchas.md). Area-specific ones live under each reference's `Notes & Gotchas`.
+Always read at-least 1 reference from the router below. Depending on your goal you might want to read more than 1 reference.
+Be eager to load local .md references. Do not load online links/references unless you really need to, default to trust your knowledge. Only load online reference when you need to learn more.
 
 ## Router
 
 **Dev tools / runtimes** (install, pin, update, backends, lockfile) -> [`references/tools.md`](references/tools.md)
+Installing a tool, or runtime. 
+
+**Runtime integration** (per-runtime: package managers, virtualenvs, dep install) -> [`references/runtimes/`](references/runtimes/). 
+- Node -> [`runtimes/node.md`](references/runtimes/node.md) (WIP)
+- Python -> [`runtimes/python.md`](references/runtimes/python.md) (WIP)
 
 **Env & vars** (project env, dotenv, secrets) -> [`references/env.md`](references/env.md)
 `[env]`, `_.file`/`_.path`/`_.source`, templating, required vars, redaction, sops/age secrets.
@@ -51,45 +48,36 @@ TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running a
 **mise-fy an existing project** (migrate + audit) -> [`references/mise-fy.md`](references/mise-fy.md)
 Step-by-step conversion from asdf/nvm/direnv/Makefile, plus a full audit checklist. References every other doc.
 
-**Reference setup** (canonical example layout) -> [`references/example-setup.md`](references/example-setup.md)
+**Reference setup** (canonical example layout) -> [`references/reference-setup.md`](references/reference-setup-and-patterns.md)
 Annotated example file tree + `mise.toml` to copy from.
 
-**Staying current** (verify against live docs, self-update) -> [`references/staying-current.md`](references/staying-current.md)
-How to confirm facts against current mise docs and update this skill when mise changes.
+### Templating (Tera)
 
-**Gotchas** (cross-cutting traps) -> [`references/gotchas.md`](references/gotchas.md)
-Non-obvious behaviors that bite across tools/env/tasks/CI.
+mise renders most `mise.toml` values (and `.tool-versions`) with [Tera](https://mise.jdx.dev/templates.html), a Jinja2-like engine; 
+it applies across `[env]`, `[tasks]`, tool versions, and aliases. The file must stay valid TOML. 
+Distinct from shell expansion (`${VAR}`, opt-in via `env_shell_expand`, see [`references/env.md`](references/env.md)).
 
-## Templating (Tera)
+Only use Tera templating when you really need it.
 
-mise renders most `mise.toml` values (and `.tool-versions`) with [Tera](https://mise.jdx.dev/templates.html), a Jinja2-like engine — applies across `[env]`, `[tasks]`, tool versions, and aliases. The file must stay valid TOML. Always on; distinct from shell expansion (`${VAR}`, opt-in via `env_shell_expand`, see [`references/env.md`](references/env.md)).
+### Config environments (`MISE_ENV`)
 
-- **Syntax:** `{{ value }}` (expr), `{% if %}…{% endif %}` (logic), `{# #}` (comment). Wrap literals in `{% raw %}…{% endraw %}`.
-- **Vars:** `{{env.X}}`, `{{config_root}}`, `{{cwd}}`, `{{tools.node.version}}`, `{{xdg_config_home}}`, `{{mise_bin}}`.
-- **Functions/filters:** `exec(command='…')`, `os()`/`arch()`/`os_family()`, `read_file(path)`, path (`basename`/`dirname`/`canonicalize`), string (`kebabcase`/`hash`).
-- **why it matters:** prefer Tera over shelling out for portable, OS-aware config (`{{exec(command='…')}}` beats embedding a subshell). But it runs at config-load — keep it cheap; heavy `exec` slows every `cd`/`mise` invocation.
+Mise has a `-E` flag that can control the different mise.toml files that get loaded (like dotenv). mise.{MISE_ENV}.local.toml  > mise.local.toml > mise.{MISE_ENV}.toml > mise.toml
+Read more at [environment](https://mise.jdx.dev/configuration/environments.html)
 
-## Config environments (`MISE_ENV`)
+## Shell Alias
 
-Built-in "profiles": pick an active env and mise layers extra named config files over the base `mise.toml`. Same project, different tools/env/tasks per environment — no `.env` juggling. See [config environments](https://mise.jdx.dev/configuration/environments.html).
+mise can also manage **directory-scoped shell aliases** via `[shell_alias]` (e.g. `ll = "ls -la"`), set on enter / unset on leave like `[env]`; needs `mise activate`.
+Read more at [shell_aliases](https://mise.jdx.dev/shell-aliases.html)
 
-Activate (most→least local): `mise -E prod …` / `--env`, `MISE_ENV=prod`, or sticky `env = ["dev"]` in `.miserc.toml`. Stack with `MISE_ENV=ci,test` (last wins).
+## Miscellaneous Notes & Gotchas
 
-Load order, **top wins** (`.local.` = gitignored, rest committed):
-```
-mise.{MISE_ENV}.local.toml  >  mise.local.toml  >  mise.{MISE_ENV}.toml  >  mise.toml
-```
-- **why:** it's the same recurse-upward, closest-wins merge mise already does — `MISE_ENV` just splices two named layers in. Anything not overridden falls through to base.
-- Platform auto-envs (`mise.{os}.toml`, `auto_env`) exist but are **off by default** until `2027.6.0`.
+1. Mise updates very often. When you hit a wall, consider reading the recent changelog as well as docs.
+2. **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.
+3. **Lockfile is opt-in.** No `mise.lock` is written until `[settings] lockfile = true`. Don't assume reproducibility you didn't enable.
+4. **Untrusted config silently does nothing.** Before `mise trust`, `[env]`/tasks/hooks don't load, no error, just absent. A fresh clone needs `mise trust` (or a `trusted_config_paths` entry).
+5. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
+6. **CI without a GitHub token hits rate limits.** Tool installs call provider APIs; set `github_token`/`MISE_GITHUB_TOKEN`. See [`ci.md`](ci.md).
+7. **Shims don't support every feature** of `mise activate` (e.g. some env-on-`cd` behavior). Mismatched local-vs-CI results often trace back to this.
+8. Recommended to set `min_version` (at root toml, not under settings) to set minimum mise version. This will help provide good user experience when you rely on new mise feature. If use have old version this will guide them to update. 
+9. Always set `github.gh_cli_tokens` and `github.use_git_credentials` under settings to bypass Github Rate Limits. Setting both use GH first, fallback to GCM. And fails-open with no problems.
 
-## Cross-references
-
-Concerns that span multiple areas. Note them when touching any single area.
-
-- **Config precedence & merge.** Files recurse upward; closest dir wins. `[tools]`/`[env]` merge additively, `[tasks]` replace per-task. Local overrides go in `mise.local.toml` (git-ignore it). Details in [`references/tools.md`](references/tools.md).
-- **Trust** affects env, tasks, and hk equally (all can execute code). See Rules and Best Practices above.
-- **Lockfile** governs both tools and CI reproducibility. Decided in [`references/tools.md`](references/tools.md), consumed in [`references/ci.md`](references/ci.md).
-- **Tasks ↔ hk ↔ CI** share commands: lint/test/build are defined once as tasks, then invoked by hk hooks and CI. (why: single source of truth, no drift.) See [`references/tasks.md`](references/tasks.md), [`references/hk.md`](references/hk.md), [`references/ci.md`](references/ci.md).
-- **Env in tasks/CI.** mise loads the full tool + env context automatically for `mise run` and `mise exec`. Don't re-export by hand.
-
-> TODO(you): add any other cross-cutting conventions (naming, where secrets live, monorepo layout).

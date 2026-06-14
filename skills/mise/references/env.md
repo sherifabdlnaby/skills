@@ -8,6 +8,7 @@ Guidance on managing project environment and variables via Mise `[env]`.
 2. Load dotenv with `_.file`, prepend PATH with `_.path`, source scripts with `_.source`. Use the table form (`{ path = ..., redact/tools = ... }`) only when you need an option.
 3. Scope env to one task with `[tasks.x] env.FOO = "..."` instead of global `[env]` when only that task needs it. (why: smaller blast radius; note these are **not** passed to `depends` tasks.)
 4. Share values between tasks with `[vars]` + `{{vars.x}}`, not `[env]`, when the value is only for task config and shouldn't leak into the process environment. (why: vars DRY task config without polluting env.)
+   - **Naming convention:** Prefer `[env]` keys to be `UPPER_SNAKE_CASE` and `[vars]` keys are `lower_snake_case`.
 5. Keep real secrets in sops/age-encrypted `_.file`, never plaintext-committed. Mark sensitive values `redact = true` (or top-level `redactions = ["*_TOKEN"]`).
 6. Mark must-be-set vars with `{ required = true }` so a missing value fails loud, not silent.
 7. Multiple directives of the same kind: use array-of-tables `[[env]]` to avoid duplicate keys.
