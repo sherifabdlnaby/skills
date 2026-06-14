@@ -52,8 +52,8 @@ Safety rules before any history rewrite: backup-branch convention, force-with-le
 **Reviewing someone else's PR** -> `references/reviewing.md`
 Review procedure. The AI posts footer applies (template in `references/pull-requests.md`).
 
-**Polling (Babysit) a PR's CI and Automated Reviews** -> `references/babysit.md`
-When you open a PR and user ask you to babysit a PR CI.
+**Babysit a PR's CI and Automated Reviews** -> `references/babysit.md`
+When you open a PR and the user asks you to babysit it: watch CI checks/failures, CodeQL, Copilot reviews, and new comments, and surface events ASAP. Automated code reviews (`BOTREVIEW`) are addressed automatically per `references/pull-requests.md` unless the user said not to; human chatter is only surfaced. Uses `scripts/babysit.py` run from a background sub-agent or background task; never a sleep loop. Don't read the script, the docs are the contract.
 
 
 ## AI Disclosure
