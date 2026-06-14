@@ -19,7 +19,7 @@ Shortcuts:
 - **You know what you need** -> jump straight to the matching router entry.
 - **Exploring / Looking for best practices** -> read [`references/mise-fy.md`](references/mise-fy.md) for the full audit + rewrite checklist, which pulls in every other reference.
 
-## Must-know rules
+## Rules and Best Practices:
 
 These apply across everything mise.
 
@@ -60,12 +60,34 @@ How to confirm facts against current mise docs and update this skill when mise c
 **Gotchas** (cross-cutting traps) -> [`references/gotchas.md`](references/gotchas.md)
 Non-obvious behaviors that bite across tools/env/tasks/CI.
 
+## Templating (Tera)
+
+mise renders most `mise.toml` values (and `.tool-versions`) with [Tera](https://mise.jdx.dev/templates.html), a Jinja2-like engine — applies across `[env]`, `[tasks]`, tool versions, and aliases. The file must stay valid TOML. Always on; distinct from shell expansion (`${VAR}`, opt-in via `env_shell_expand`, see [`references/env.md`](references/env.md)).
+
+- **Syntax:** `{{ value }}` (expr), `{% if %}…{% endif %}` (logic), `{# #}` (comment). Wrap literals in `{% raw %}…{% endraw %}`.
+- **Vars:** `{{env.X}}`, `{{config_root}}`, `{{cwd}}`, `{{tools.node.version}}`, `{{xdg_config_home}}`, `{{mise_bin}}`.
+- **Functions/filters:** `exec(command='…')`, `os()`/`arch()`/`os_family()`, `read_file(path)`, path (`basename`/`dirname`/`canonicalize`), string (`kebabcase`/`hash`).
+- **why it matters:** prefer Tera over shelling out for portable, OS-aware config (`{{exec(command='…')}}` beats embedding a subshell). But it runs at config-load — keep it cheap; heavy `exec` slows every `cd`/`mise` invocation.
+
+## Config environments (`MISE_ENV`)
+
+Built-in "profiles": pick an active env and mise layers extra named config files over the base `mise.toml`. Same project, different tools/env/tasks per environment — no `.env` juggling. See [config environments](https://mise.jdx.dev/configuration/environments.html).
+
+Activate (most→least local): `mise -E prod …` / `--env`, `MISE_ENV=prod`, or sticky `env = ["dev"]` in `.miserc.toml`. Stack with `MISE_ENV=ci,test` (last wins).
+
+Load order, **top wins** (`.local.` = gitignored, rest committed):
+```
+mise.{MISE_ENV}.local.toml  >  mise.local.toml  >  mise.{MISE_ENV}.toml  >  mise.toml
+```
+- **why:** it's the same recurse-upward, closest-wins merge mise already does — `MISE_ENV` just splices two named layers in. Anything not overridden falls through to base.
+- Platform auto-envs (`mise.{os}.toml`, `auto_env`) exist but are **off by default** until `2027.6.0`.
+
 ## Cross-references
 
 Concerns that span multiple areas. Note them when touching any single area.
 
 - **Config precedence & merge.** Files recurse upward; closest dir wins. `[tools]`/`[env]` merge additively, `[tasks]` replace per-task. Local overrides go in `mise.local.toml` (git-ignore it). Details in [`references/tools.md`](references/tools.md).
-- **Trust** affects env, tasks, and hk equally (all can execute code). See Must-know rules above.
+- **Trust** affects env, tasks, and hk equally (all can execute code). See Rules and Best Practices above.
 - **Lockfile** governs both tools and CI reproducibility. Decided in [`references/tools.md`](references/tools.md), consumed in [`references/ci.md`](references/ci.md).
 - **Tasks ↔ hk ↔ CI** share commands: lint/test/build are defined once as tasks, then invoked by hk hooks and CI. (why: single source of truth, no drift.) See [`references/tasks.md`](references/tasks.md), [`references/hk.md`](references/hk.md), [`references/ci.md`](references/ci.md).
 - **Env in tasks/CI.** mise loads the full tool + env context automatically for `mise run` and `mise exec`. Don't re-export by hand.
