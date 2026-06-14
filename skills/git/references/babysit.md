@@ -1,7 +1,7 @@
 # Babysitting a PR
 
 Watch a PR's CI, reviews, and comments and react the moment something happens, without sitting
-in a sleep loop. Use `scripts/babysit.py` (run with `uv run`).
+in a sleep loop. Use [`scripts/babysit.py`](../scripts/babysit.py) (run with `uv run`).
 
     > **Don't read `babysit.py`.** Its output is self-documenting (the `>>` line below). If confused user --help, then use [details](./babysit-details.md), reading source code is last resort.
 
@@ -23,7 +23,7 @@ Protocol: **`ongoing`** -> act on any event, then run `watch` again. **`done`** 
 
 **Automated reviews (`BOTREVIEW` lines): address them by default.** A `BOTREVIEW` tag means an
 automated code review (Copilot, CodeQL, Sonar, a review bot). Unless the user said not to, react
-to it automatically with the `references/pull-requests.md` "Responding to review comments" flow
+to it automatically with the [`references/pull-requests.md`](./pull-requests.md) "Responding to review comments" flow
 (fix what's right, push back on what's wrong, reply to each, AI footer). Plain `COMMENT` lines
 (human chatter, bot greetings/labels) are surfaced only, never auto-actioned.
 

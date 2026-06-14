@@ -52,9 +52,9 @@ Where the ticket comes from, in order:
 - In a stack, each branch is created from the previous one, not from `main`.
 - The bottom PR targets `main`; every PR above sets `--base` to the branch directly below.
 - Infer the stack from branch names when they match the convention; otherwise trace by parent.
-- Title marker `[n/N]` and the stack-link footer: see `references/pull-requests.md`.
+- Title marker `[n/N]` and the stack-link footer: see [`references/pull-requests.md`](./pull-requests.md).
 
-Restacking is rebasing, so the backup-branch rule in `references/rebase.md` applies. Three cases:
+Restacking is rebasing, so the backup-branch rule in [`references/rebase.md`](./rebase.md) applies. Three cases:
 
 **Bottom PR merged:** rebase PR-2 onto `main` with `--onto` to drop PR-1's commits, retarget its base to `main` (`gh pr edit`), force-push (`--force-with-lease`).
 

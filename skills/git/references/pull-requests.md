@@ -3,7 +3,7 @@
 Operational mechanics for opening and updating PRs.
 Covers: pre-flight, title format (including stacked PRs), description style, Human Note, footers, post-create flow, responding to review, destructive edits, Jira.
 
-Use `gh` first, GitHub MCP only as a fallback. Apply SKILL.md voice rules to every title, body, and comment.
+Use `gh` first, GitHub MCP only as a fallback. Apply [SKILL.md](../SKILL.md) voice rules to every title, body, and comment.
 
 ## Opening a PR: pre-flight
 
@@ -120,7 +120,7 @@ Output the PR link first, then:
 
 ## Updating an open PR
 
-**New commits during review:** address feedback with new commits, not amends or history-rewriting force-pushes; reviewers read incremental changes more easily. The scoping rule from `references/commits.md` still applies.
+**New commits during review:** address feedback with new commits, not amends or history-rewriting force-pushes; reviewers read incremental changes more easily. The scoping rule from [`references/commits.md`](./commits.md) still applies.
 
 **`gh pr edit --body` is destructive:** the flag replaces the whole body, so anything missing from your payload (Human Note, AI footer, links, collapsibles) is erased. Always:
 

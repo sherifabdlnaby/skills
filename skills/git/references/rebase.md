@@ -1,6 +1,6 @@
 # Rebase, Squash, Conflicts
 
-Covers the safety rules that apply before any history rewrite: rebasing, squashing, resolving conflicts during a rebase. Stacked-PR restack procedures (bottom merged, chain of 3+, mid-stack push) and `--onto` usage live in `references/branches.md`; this file holds the rules those rely on.
+Covers the safety rules that apply before any history rewrite: rebasing, squashing, resolving conflicts during a rebase. Stacked-PR restack procedures (bottom merged, chain of 3+, mid-stack push) and `--onto` usage live in [`references/branches.md`](./branches.md); this file holds the rules those rely on.
 
 ## Rules
 
