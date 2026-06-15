@@ -1,0 +1,51 @@
+// hk.pkl — git hooks for hk. Copy and adapt. See references/hk.md.
+// Pin <VER> to your installed hk (`hk version`); both URLs must match. `hk init` regenerates.
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+// Repo-wide ignores — committed paths only (.gitignore is already honored). Per-step `exclude` stacks on top.
+local commonIgnores =
+  List(
+    "**/vendor/**",
+    "**/generated/**",
+    "**/__snapshots__/**",
+    "**/testdata/**",
+    "**/*.min.*",
+  )
+
+// Linters defined once, shared by the hooks below.
+local linters: Mapping<String, Step> = new Mapping<String, Step> {
+  ["prettier"] = Builtins.prettier
+  ["shfmt"] = Builtins.shfmt
+  ["actionlint"] = Builtins.actionlint
+}
+
+exclude = commonIgnores
+
+hooks {
+  // `hk check` / `mise run check` — CI + manual lint (read-only; `--fix` applies).
+  ["check"] {
+    steps = linters
+  }
+
+  // `git commit` (staged) — fix inline; stash guards unstaged hunks.
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps = linters
+  }
+
+  // `git push` — no-op; add slower gates here.
+  ["pre-push"] {
+    steps {
+    // ["test"] { check = "mise run test" }
+    }
+  }
+
+  // Commit message ({{commit_msg_file}}) — no-op.
+  ["commit-msg"] {
+    steps {
+    // ["conventional-commit"] = Builtins.check_conventional_commit
+    }
+  }
+}

@@ -58,7 +58,7 @@ Ask on the first PR of the conversation, when user ask you, and when you think i
 ## Body and Description:
 
 - **One-line summary of the change**: ALWAYS include.
-- **User-facing Changelog style bullet points**: Include when we change more than one possibly unrelated things. 
+- **User-facing Changelog style bullet points**: Include when we change more than one possibly unrelated things.
 - **Why / big picture**: ONLY if User gave you a reason. NEVER invent a WHY.
 - **Per-change narration**: NEVER. Let the code diff speak for itself.
 - **Test plan**: ONLY if User explicitly asked. NEVER invent. NEVER assume how to test.
@@ -138,5 +138,4 @@ Output the PR link first, then:
 3. Don't blindly agree; evaluate correctness and proportionality.
 4. Batch fixes addressing the same review round into one commit.
 5. Reply to every comment, including ones you disagree with, briefly and directly.
-6. Append the AI posts footer to replies made on the user's behalf. 
-
+6. Append the AI posts footer to replies made on the user's behalf.

@@ -13,7 +13,7 @@ Guidance on managing project environment and variables via Mise `[env]`.
 6. Mark must-be-set vars with `{ required = true }` so a missing value fails loud, not silent.
 7. Multiple directives of the same kind: use array-of-tables `[[env]]` to avoid duplicate keys.
 8. Always inspect with `mise env --redacted` (never bare `mise env`) to confirm what loads and that secrets stay hidden.
-9. If a value depends on an installed tool, defer it with `tools = true` (lazy eval). (why: `[env]` resolves *before* tools by default, so `{{tools.node.version}}` is empty otherwise.)
+9. If a value depends on an installed tool, defer it with `tools = true` (lazy eval). (why: `[env]` resolves _before_ tools by default, so `{{tools.node.version}}` is empty otherwise.)
 10. Mise support shell expansion in env (e.g "something/${VAR:-default}/something and support $VAR format too )
 
 ## Notes & Gotchas:
@@ -54,6 +54,7 @@ run = "./scripts/test-e2e.sh {{vars.e2e_args}}"
 WIP
 
 ## Docs:
+
 - [environments](https://mise.jdx.dev/environments/)
 - [task vars](https://mise.jdx.dev/tasks/task-configuration.html#vars)
 - [settings](https://mise.jdx.dev/configuration/settings.html)

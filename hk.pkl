@@ -1,0 +1,73 @@
+// hk.pkl — git hooks for hk. See skills/mise/references/hk.md.
+// Pin matches `hk` in mise.toml; both URLs must match. `hk init` regenerates.
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+// Repo-wide ignores — committed paths only (.gitignore is already honored). Per-step `exclude` stacks on top.
+local commonIgnores =
+  List(
+    "**/vendor/**",
+    "**/generated/**",
+    "**/*.min.*",
+  )
+
+// Linters defined once, shared by the hooks below.
+local linters: Mapping<String, Step> = new Mapping<String, Step> {
+  // formatting
+  ["prettier"] = Builtins.prettier // markdown / yaml / json
+  ["ruff-format"] = Builtins.ruff_format // python (skills/git/scripts/*.py)
+  ["ruff"] = Builtins.ruff // python lint
+  ["pkl-format"] = Builtins.pkl_format // pkl formatter (hk.pkl)
+  ["pkl"] = Builtins.pkl // pkl validate (`pkl eval`)
+
+  // spelling — accepted words / excludes live in typos.toml
+  ["typos"] = Builtins.typos // source-code spell checker
+
+  // dead links — offline (local/relative links only); see lychee.toml
+  ["lychee"] = Builtins.lychee
+
+  // GitHub Actions
+  ["actionlint"] = Builtins.actionlint // workflow syntax
+  ["zizmor"] = Builtins.zizmor // workflow security
+  ["pinact"] = Builtins.pinact // actions pinned to SHAs
+
+  // safety / hygiene
+  ["betterleaks"] = Builtins.betterleaks // secret scanning — allowlist in .betterleaks.toml
+  ["newlines"] = Builtins.newlines // trailing newline
+  ["trailing-whitespace"] = Builtins.trailing_whitespace // strip trailing whitespace
+  ["check-added-large-files"] = Builtins.check_added_large_files // block large blobs (>500KB default)
+  ["check-merge-conflict"] = Builtins.check_merge_conflict
+  ["check-byte-order-marker"] = Builtins.byte_order_marker
+  ["check-case-conflict"] = Builtins.check_case_conflict
+  ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
+}
+
+exclude = commonIgnores
+
+hooks {
+  // `hk check` / `mise run check` — CI + manual lint (read-only; `--fix` applies).
+  ["check"] {
+    steps = linters
+  }
+
+  // `git commit` (staged) — fix inline; stash guards unstaged hunks.
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps = linters
+  }
+
+  // `git push` — no-op; add slower gates here.
+  ["pre-push"] {
+    steps {
+    // ["test"] { check = "mise run test" }
+    }
+  }
+
+  // Commit message ({{commit_msg_file}}) — no-op.
+  ["commit-msg"] {
+    steps {
+    // ["conventional-commit"] = Builtins.check_conventional_commit
+    }
+  }
+}

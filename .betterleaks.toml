@@ -1,0 +1,27 @@
+# betterleaks secret-scanner config (gitleaks-compatible). Auto-discovered from
+# the repo root. Scaffold: the allowlist below is commented — add entries only
+# for confirmed false positives (example keys, test fixtures), never real secrets.
+# Docs: https://github.com/betterleaks/betterleaks
+#       https://github.com/gitleaks/gitleaks#configuration
+
+# Keep the built-in rule set; your config extends it instead of replacing it.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Repo-wide allowlist for known-safe matches."
+
+# Files/paths to skip entirely (regex, matched against the file path).
+paths = [
+    # '''skills/.*/references/.*\.md''',
+]
+
+# Specific values or patterns that are not real secrets (regex).
+regexes = [
+    # '''AKIAEXAMPLE[0-9A-Z]+''',
+]
+
+# Literal tokens to ignore wherever they appear.
+stopwords = [
+    # "example",
+]

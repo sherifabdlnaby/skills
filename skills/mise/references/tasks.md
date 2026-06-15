@@ -21,16 +21,17 @@ How to build or improve Tasks.
 
 - **Tasks run from the config root, not your cwd.** Override per-task with `dir` (default `"{{config_root}}"`; set `dir = "{{cwd}}"` to follow the caller). Only reach for `{{config_root}}` when the task sets a non-default `dir`.
 - **`run` as an array = serial commands, each its own shell**; `cd` and unexported vars don't carry between entries. Use one multi-line `run` (or a file task) for stateful sequences. Stops on first failure (`set -e`); `mise run -c`/`--continue-on-error` keeps going.
-- **Skip-if-unchanged needs *both* `sources` and `outputs`**. `sources` alone only feeds `mise watch`. `--force` ignores the cache.
-- **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits *if* that task is already in the run. A task's `env` is **not** seen by its `depends`.
-- **No-spec args go to the *last* `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
+- **Skip-if-unchanged needs _both_ `sources` and `outputs`**. `sources` alone only feeds `mise watch`. `--force` ignores the cache.
+- **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits _if_ that task is already in the run. A task's `env` is **not** seen by its `depends`.
+- **No-spec args go to the _last_ `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
 - **Output is line-buffered + label-prefixed.** Change with `--output interleave|keep-order|quiet|silent` (or `MISE_TASK_OUTPUT`). `raw = true` / `--raw` reads-writes the terminal directly (forces `--jobs=1`) and **bypasses secret redaction**; never in env-bearing tasks (see [`env.md`](env.md)).
 
-Still stuck? Check [gotchas](gotchas.md) and the docs below.
+Still stuck? Check the docs below.
 
 ## Syntax Hints
 
 TOML task:
+
 ```toml
 [tasks.build]
 description = "Build the CLI"
@@ -41,9 +42,11 @@ env = { RUST_BACKTRACE = "1" }            # task-scoped env (NOT seen by depends
 tools = { rust = "1.82" }                 # task-scoped tool
 run = "cargo build"
 ```
+
 (Args/flags via `usage` are covered in Task Arguments below; gate destructive ones with `confirm = "…"`.)
 
 File task (`mise-tasks/build`, must be executable):
+
 ```bash
 #!/usr/bin/env bash
 #MISE description="Build the CLI"
@@ -101,7 +104,7 @@ echo "deploying $usage_env (tag=$usage_tag, profile=$usage_profile)"
 No `#USAGE` spec? Extra CLI args arrive as plain `$@`. Everything else (args, flags, choices, defaults, validation, `complete`, auto `--help`) works exactly like TOML. (verified on mise 2026.6.6.)
 
 | Need                      | Spec                                                                                                               | Consume                                     |
-|---------------------------|--------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
 | Required / optional arg   | `arg "<x>"` / `arg "[x]"`                                                                                          | `${usage_x?}` / `${usage_x:-}`              |
 | Variadic                  | `arg "<x>" var=#true` (1+), `[x]` (0+); `var_min`/`var_max`                                                        | `{{usage.x}}` (array)                       |
 | Flag with value           | `flag "-p --profile <p>"`                                                                                          | `$usage_profile`                            |
@@ -115,6 +118,7 @@ Gotchas: required `<arg>` is satisfied by its `env="VAR"` (no CLI value needed) 
 **`{{usage.X}}` works ONLY inside a TOML `run`.** mise Tera-renders `description`/`confirm`/etc. at config-load, where `{{usage.X}}` has no context: it throws `Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not just that one. Everywhere else, and in all file-task bodies, use plain `$usage_X`. (verified on mise 2026.6.6.)
 
 ## Docs:
+
 - [tasks](https://mise.jdx.dev/tasks/)
 - [toml-tasks](https://mise.jdx.dev/tasks/toml-tasks.html)
 - [file-tasks](https://mise.jdx.dev/tasks/file-tasks.html)

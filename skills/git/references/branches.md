@@ -6,7 +6,7 @@ Covers: Switching branches, naming and slugs, ticket inheritance, switching with
 
 These are hard; the failure modes are silent or unrecoverable.
 
-- **Never commit to `main`** unless the user told you to, and it makes sense to do so. 
+- **Never commit to `main`** unless the user told you to, and it makes sense to do so.
 - **Force-push only with `--force-with-lease`**, never plain `--force` without asking first. Lease aborts if upstream moved; plain `--force` silently overwrites other people's commits.
 - **Never auto-rebase a `main` that has diverged locally.** Stop and surface it. Divergence signals an unexpected upstream change, and auto-rebasing can silently drop or duplicate commits.
 - **Never discard uncommitted work** when switching branches. It's the user's only copy.
@@ -28,7 +28,7 @@ Ticket OR Issue Cases ( When user supply a ticket ):
 
 Slug rules:
 
-- Lowercase kebab-case. Allowed: ASCII letters, digits, hyphens; `/` only as the stack-index separator or namespace seperator.
+- Lowercase kebab-case. Allowed: ASCII letters, digits, hyphens; `/` only as the stack-index separator or namespace separator.
 - No uppercase, underscores, dots, or other punctuation. Max 4 words.
 - Derive from the work, not the file. Lead with the noun or action keyword; verbs are implied.
 

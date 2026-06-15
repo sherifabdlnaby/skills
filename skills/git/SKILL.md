@@ -25,6 +25,7 @@ These apply everytime
 **Parallelize read-only calls.** Batch independent read-only `git`/`gh` calls (`status`, `diff`, `log`, `gh pr view/diff/checks`) into a single tool call; each sequential read is a roundtrip for nothing. Mutating commands (`commit`, `push`, `rebase`, `gh pr create/edit/merge`) stay sequential.
 
 **Voice** for everything public (commit messages, PR titles and bodies, comments, issues):
+
 - Omit needless words. Concise sentences, no padding paragraphs. (why: padding is filler that wastes the reader's time.)
 - Emojis sparingly, only for catching user attention while glancing. (why: Too much emojis is childish, we are not children)
 - NO em dashes in any public-facing text. Use commas, parentheses, or periods. (why: em dashes are a classic AI tell and rebel users from reading.)
@@ -54,7 +55,6 @@ Review procedure. The AI posts footer applies (template in [`references/pull-req
 
 **Babysit a PR's CI and Automated Reviews** -> [`references/babysit.md`](references/babysit.md)
 When you open a PR and the user asks you to babysit it: watch CI checks/failures, CodeQL, Copilot reviews, and new comments, and surface events ASAP. Automated code reviews (`BOTREVIEW`) are addressed automatically per [`references/pull-requests.md`](references/pull-requests.md) unless the user said not to; human chatter is only surfaced. Uses [`scripts/babysit.py`](scripts/babysit.py) run from a background sub-agent or background task; never a sleep loop. Don't read the script, the docs are the contract.
-
 
 ## AI Disclosure
 

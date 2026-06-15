@@ -1,0 +1,27 @@
+# typos spell-checker config. Auto-discovered from the repo root by `typos`.
+# Scaffold: everything below is commented — uncomment/extend as real false
+# positives appear. Docs: https://github.com/crate-ci/typos
+#
+# Run `mise run check --step typos` (report) or `--fix` (auto-correct).
+
+[files]
+# Paths typos won't scan (globs). .gitignore is already honored, so this is
+# only for committed files you want skipped (fixtures, vendored prose, etc.).
+extend-exclude = [
+    # "CHANGELOG.md",
+    # "**/testdata/**",
+]
+
+[default]
+# Skip matches by regex — useful for hashes, base64 blobs, long IDs.
+extend-ignore-re = [
+    # "[0-9a-f]{32,}",
+]
+
+# Accept specific words verbatim (the value must equal the key — i.e. "not a typo").
+[default.extend-words]
+# crate = "crate"
+
+# Accept specific identifiers (variable / function names) verbatim.
+[default.extend-identifiers]
+# myFnNotATypo = "myFnNotATypo"

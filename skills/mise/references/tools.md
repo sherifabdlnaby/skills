@@ -12,7 +12,7 @@ Guidance on Installing Tools and Runtimes via Mise.
 6. Use mise's core backends. If you're choosing backends, pick the one with checksums + timestamp support as much as possible.
 7. Group relevant tools categories close to each other in the toml when you have >6 tools. Use a code comment as a title for group.
 8. If a tool existence in a list is not obvious, add a 3~4 words sentence to give a hint in a code comment on the same line.
-9. If the repo doesn't contain `minimum_release_age` always suggest to add it. 
+9. If the repo doesn't contain `minimum_release_age` always suggest to add it.
 10. If a tool/runtime needed **just for a single task** define it just for the task.
 11. Use and enable Lockfile whenever possible, unless the user told you not to.
 
@@ -22,7 +22,7 @@ Guidance on Installing Tools and Runtimes via Mise.
 - **`mise use` edits the closest config**. It may not be the one you expect in a nested/monorepo tree.
 - **`prefix:`/fuzzy/`latest` need version listing**. They work on backends that enumerate versions (core, aqua, github/gitlab, cargo, go, npm, pipx) but not on fixed-artifact specifiers (direct URLs, git `ref:`/`branch:`/`rev:`).
 - **Per-tool options exist** (`os`, `depends`, `install_env`, `postinstall` via the `name = { ... }` table form) reach for them only when you actually need them; plain `name = "version"` is the norm.
-- `~/.tool-versions` is not global** (unlike asdf). Global config is `~/.config/mise/config.toml`.
+- `~/.tool-versions` is not global\*\* (unlike asdf). Global config is `~/.config/mise/config.toml`.
 
 ## Backends
 
@@ -30,6 +30,7 @@ Backends differ in how much they verify a download. **Not all are safe**; prefer
 Verifications are: checksums, attestation, and release timestamp (to support min-release-age)
 
 Safety, high -> low:
+
 - **`core`**; runtimes built into mise (node/python/go/ruby/...). Use for these. `node = "22"`.
 - **`aqua`**; preferred for everything else: checksums + cosign + SLSA + attestations, no plugin code. `aqua:BurntSushi/ripgrep`.
 - **`github`/`gitlab`**; release binaries with provenance when not in aqua. (`ubi` is deprecated, use `github`.)
@@ -38,12 +39,12 @@ Safety, high -> low:
 
 ## Blocked Backends
 
-It's recommended Block unsafe/legacy backends globally with `disable_backends` so a tool is never *silently* installed through one.
+It's recommended Block unsafe/legacy backends globally with `disable_backends` so a tool is never _silently_ installed through one.
 A blocked backend errors instead of falling back, forcing an explicit, verified choice.
 
 ```toml
 [settings]
-disable_backends = ["asdf", "vfox"]   # arbitrary plugin code, no checksums 
+disable_backends = ["asdf", "vfox"]   # arbitrary plugin code, no checksums
 ```
 
 ## Runtime Integration
@@ -92,8 +93,8 @@ minimum_release_age = "7d"               # skip releases newer than 7 days (rule
 ```
 
 ## Docs:
+
 - [dev-tools](https://mise.jdx.dev/dev-tools/)
 - [lockfile](https://mise.jdx.dev/dev-tools/mise-lock.html)
 - [tool options](https://mise.jdx.dev/dev-tools/#tool-options)
 - [settings](https://mise.jdx.dev/configuration/settings.html)
-    
