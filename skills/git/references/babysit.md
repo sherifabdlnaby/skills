@@ -53,6 +53,7 @@ uv run scripts/babysit.py watch --pr <N> --repo <R> --watcher <id> --max-total <
 > ```
 >
 > The final `>>` line decides everything:
+>
 > - `>> ... done`: report what happened, then end.
 > - `>> EVENT: ongoing`: report the event lines, then run the exact same command again.
 > - `>> QUIET: ongoing`: run the exact same command again, silently (no report).
