@@ -10,6 +10,7 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
 2. Do not install `pkl`; hk bundles a Pkl evaluator (`pklr`), so no separate install is needed. Pin the hk version to your installed one via `hk init`; these conventions target hk >= 1.48.
 3. **For custom linters/tests, delegate to a mise task.** Avoid putting logic in `hk.pkl` where possible.
 4. Pin the `<VER>` in the `amends`/`import` URLs; regenerate with `hk init`, don't hardcode from memory.
+5. Always use a linter hk builtin settings.
 
 ## Notes & Gotchas:
 
@@ -23,8 +24,6 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
 - **`hk check --plan --json`** prints the resolved plan without running it; feed it to tooling (e.g. completions: `… --json --no-progress | jq -r '.steps[].name'`).
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
 - **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.48"` resolves to the git tag `v1.48`, which doesn't exist → `404 Not Found` on install. Use `1.48.0`.
-- **A builtin that wraps a CLI needs that CLI in `[tools]`.** Builtins for external tools (lychee, ruff, actionlint, zizmor, pinact, betterleaks, …) shell out, so a missing tool fails the run (mise prints a `mise use …` hint). Builtins bundled into hk (newlines, the `check_*` family, pkl/pkl_format on v1.48+) need nothing extra.
-- **Builtins get renamed/deprecated across hk releases** — e.g. `check_byte_order_marker` → `byte_order_marker`. Pkl prints a deprecation warning on `mise install`/`hk` runs; heed it (and re-run `hk init` against your pinned version rather than copying names from memory).
 
 ## Setup & Templates.
 
@@ -35,7 +34,8 @@ Check the hk.pkl to baseline scaffold.
 
 ### Defining Linters
 
-hk ships [builtins](https://hk.jdx.dev/builtins.html) — ready-made configs for popular linters. Always prefer a builtin over hand-rolled config (they're maintained and pre-tuned), so check the builtins list first.
+hk ships [builtins](https://hk.jdx.dev/builtins.html)  ready-made configs for popular linters. Always prefer a builtin over hand-rolled config (they're maintained and pre-tuned), so check the builtins list first.
+run `hk builtins` to list all linters builtins (or grep for the one you're looking for).
 
 ### Recommended Linters
 
@@ -55,6 +55,7 @@ Beyond Popular Runtime Linters (check that yourself, and take a look at builtins
 - betterleaks (see note below — confirm + scaffold an ignore file)
 - typos ( must confirm with user, can generate a ton of false positives, see note below — confirm + scaffold an ignore file)
 - lychee: Lint Broken Links
+- rumdl ( must confirm with user — full ruleset is noisy on prose/docs repos; ask whether they want table formatting, see note below — confirm + scaffold a config): Markdown lint + format (markdownlint-compatible, Rust).
 - pkl + pkl_format: when the repo has `.pkl` files (e.g. `hk.pkl`). These shell out to the `pkl` CLI, so add `pkl` to `[tools]`. hk's bundled pkl only parses its own config (`hk.pkl`); it does **not** back these linter builtins, so without the tool they fail with `No version is set for shim: pkl`.
 
 You can recommend to the user other linters based on the project. Use Builtins list of inspiration.
@@ -67,6 +68,14 @@ By default, make lychee check for local .md files, only check for online links a
 Configure this in a `lychee.toml` at the repo root (auto-loaded): `offline = true` resolves local/relative links and skips http(s), which then show as `👻 Excluded` rather than checked. See this repo's `lychee.toml`.
 
 - **`exclude_path` entries are regexes matched against the whole path**, not globs or literals. So `.mise` also matches `/mise`, and one bad entry can silently drop a whole subtree. When that happens lychee prints `No files found for this input source` and exits `0` with `✅ 0 OK` — a **green vacuous pass, not a real check**. Don't scope inputs with `exclude_path`; let hk pass the file list (it already honors `.gitignore` + `commonIgnores`). After wiring lychee up, confirm the run reports a non-zero `OK` count, otherwise it's checking nothing.
+
+##### rumdl (https://github.com/rvben/rumdl)
+
+Fast markdownlint-compatible Markdown linter **and formatter**. **Confirm with the user before enabling** — its default rule set turns on the whole markdownlint suite, which is noisy on prose/docs repos (`MD013` line-length alone flagged ~350 issues in this repo, pure noise). The builtin shells out to the `rumdl` CLI (add `rumdl` to `[tools]`) and auto-loads a `rumdl.toml` (or `.rumdl.toml`) at the repo root. `check` reports; the `pre-commit`/`--fix` path runs `rumdl check --fix` and rewrites files. When enabled, **scaffold a `rumdl.toml`** at the repo root so the user has an obvious place to tune rules. See this repo's `rumdl.toml`.
+
+- **Ask the user whether they want table formatting** (and cell padding) — it's a stylistic opt-in. That's `MD060` (`table-cell-alignment`, alias `table-format`), and it's **OFF by default**. Enabling it isn't enough; pick a style: `[MD060] style = "aligned"` pads every cell so columns line up visually (the cell-padding most people mean). Other values: `aligned-no-space` (no pad inside the delimiter row), `compact` (single-space, normalized), `tight` (no padding at all), `any` (don't enforce). The fixer respects `:--`/`--:` alignment markers.
+- **Scope it on prose-heavy/docs repos.** If the user only wants table formatting, set `[global] enable = ["MD055", "MD056", "MD058", "MD060"]` (this **replaces** the default set — only these run; use `extend-enable` to *add* to defaults instead).
+- **Drop a stray cache dir** with `[global] cache = false` — otherwise rumdl writes a `.rumdl_cache/` next to the files (hk only lints staged files, so the cache buys little).
 
 ##### typos (https://github.com/crate-ci/typos)
 

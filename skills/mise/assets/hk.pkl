@@ -17,6 +17,7 @@ local commonIgnores =
 local linters: Mapping<String, Step> = new Mapping<String, Step> {
   ["shfmt"] = Builtins.shfmt
   ["actionlint"] = Builtins.actionlint
+  // ["rumdl"] = Builtins.rumdl // markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Needs `rumdl` in [tools] + a rumdl.toml. See hk.md.
 }
 
 exclude = commonIgnores

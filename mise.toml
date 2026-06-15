@@ -15,6 +15,7 @@ ruff = "0.15"          # python lint + format (skills/git/scripts/babysit.py); n
 betterleaks = "1"      # secret scanning (allowlist in .betterleaks.toml)
 typos = "1"            # source-code spell checker (excludes/words in typos.toml)
 pkl = "0.31"           # pkl lint + format (hk.pkl) — 0.x, pin minor
+rumdl = "0.2"          # markdown lint + format; table cell-alignment (MD060) — config in rumdl.toml — 0.x, pin minor
 
 # pre-commit
 hk = "1.48.0"   # keep in sync with the pin in hk.pkl

@@ -18,6 +18,7 @@ local linters: Mapping<String, Step> = new Mapping<String, Step> {
   ["ruff"] = Builtins.ruff // python lint
   ["pkl-format"] = Builtins.pkl_format // pkl formatter (hk.pkl)
   ["pkl"] = Builtins.pkl // pkl validate (`pkl eval`)
+  ["rumdl"] = Builtins.rumdl // markdown lint + format; table cell-alignment — config in rumdl.toml
 
   // spelling — accepted words / excludes live in typos.toml
   ["typos"] = Builtins.typos // source-code spell checker

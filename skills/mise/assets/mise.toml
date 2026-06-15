@@ -14,6 +14,7 @@ node = "24"
 
 # linters & formatters
 actionlint = "1"
+# rumdl = "0.2"  # markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Config in rumdl.toml. See hk.md.
 
 # pre-commit
 hk = "1"

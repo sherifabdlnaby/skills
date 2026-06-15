@@ -248,6 +248,45 @@ checksum = "sha256:b6c843fa84afb37af9d665a418324782ae18ea3dd1de775abfd7cf17f9431
 url = "https://github.com/astral-sh/ruff/releases/download/0.15.16/ruff-x86_64-pc-windows-msvc.zip"
 provenance = "github-attestations"
 
+[[tools.rumdl]]
+version = "0.2.9"
+backend = "aqua:rvben/rumdl"
+
+[tools.rumdl."platforms.linux-arm64"]
+checksum = "sha256:a319a4934c43f0269e8805e773e8ea3be020f147a61c15e16d068b975fb5c280"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.9/rumdl-v0.2.9-aarch64-unknown-linux-musl.tar.gz"
+provenance = "github-attestations"
+
+[tools.rumdl."platforms.linux-arm64-musl"]
+checksum = "sha256:a319a4934c43f0269e8805e773e8ea3be020f147a61c15e16d068b975fb5c280"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.9/rumdl-v0.2.9-aarch64-unknown-linux-musl.tar.gz"
+provenance = "github-attestations"
+
+[tools.rumdl."platforms.linux-x64"]
+checksum = "sha256:dee92319de062a2d97fa72769eb15f0744241741d0b439fd69e0d58d0a03e505"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.9/rumdl-v0.2.9-x86_64-unknown-linux-musl.tar.gz"
+provenance = "github-attestations"
+
+[tools.rumdl."platforms.linux-x64-musl"]
+checksum = "sha256:dee92319de062a2d97fa72769eb15f0744241741d0b439fd69e0d58d0a03e505"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.9/rumdl-v0.2.9-x86_64-unknown-linux-musl.tar.gz"
+provenance = "github-attestations"
+
+[tools.rumdl."platforms.macos-arm64"]
+checksum = "sha256:772ccabd903bf9fc9844b706c14d433c4233202eef19e5c34561f516ae3b8f99"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.9/rumdl-v0.2.9-aarch64-apple-darwin.tar.gz"
+provenance = "github-attestations"
+
+[tools.rumdl."platforms.macos-x64"]
+checksum = "sha256:3939cc5606315a99f0878452c02eab1b8f1a844eed2452c36f838c37ce46b653"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.9/rumdl-v0.2.9-x86_64-apple-darwin.tar.gz"
+provenance = "github-attestations"
+
+[tools.rumdl."platforms.windows-x64"]
+checksum = "sha256:cd4c42c26aa31ff62add313bb8ff6b0d1cbe2e043e8b42895736fa1d20a1755c"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.9/rumdl-v0.2.9-x86_64-pc-windows-msvc.zip"
+provenance = "github-attestations"
+
 [[tools.typos]]
 version = "1.47.2"
 backend = "aqua:crate-ci/typos"
