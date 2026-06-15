@@ -14,13 +14,13 @@ Guidance on managing project environment and variables via Mise `[env]`.
 7. Multiple directives of the same kind: use array-of-tables `[[env]]` to avoid duplicate keys.
 8. Always inspect with `mise env --redacted` (never bare `mise env`) to confirm what loads and that secrets stay hidden.
 9. If a value depends on an installed tool, defer it with `tools = true` (lazy eval). (why: `[env]` resolves _before_ tools by default, so `{{tools.node.version}}` is empty otherwise.)
-10. Mise support shell expansion in env (e.g "something/${VAR:-default}/something and support $VAR format too )
+10. mise supports shell expansion in env values (e.g. "prefix/${VAR:-default}/suffix"); the bare `$VAR` form works too.
 
 ## Notes & Gotchas:
 
 - **Env resolves before tools.** To use a tool's output in a value, switch to the map form with `tools = true`: `MY = { value = "{{tools.node.version}}", tools = true }`. Same flag works on `_.path`/`_.file`/`_.source`.
 - **Tera templating is always on:** `{{env.X}}`, `{{config_root}}`, `{{cwd}}`, `{{tools.<t>.version}}`.
-- **`_.path` relatives resolve against `config_root`**, not cwd. .
+- **`_.path` relatives resolve against `config_root`**, not cwd.
 - **Redaction is line-based.** `redact`/`redactions` scrub task output line-by-line; tasks with `raw = true` bypass it entirely and will leak secrets.
 - **`_.file` vs the `env_file` setting.** `_.file` paths resolve against the config that declares them; the global `[settings] env_file = ".env"` (or `MISE_ENV_FILE`) auto-loads dotenv from the current + parent dirs regardless of config. Prefer `_.file` for project-committed config.
 - **Vars are not env.** `[vars]`/`{{vars.x}}` are shared across tasks but never exported to the process; use them for task config, `[env]` for the actual environment.

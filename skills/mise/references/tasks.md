@@ -11,7 +11,7 @@ How to build or improve Tasks.
 5. **File tasks must be executable** in a discovered dir. Prefer to use `.mise/tasks`. Subdirs become `colon:names` ( .mise/tasks/test/one `test:one` ).
 6. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
 7. **Invoke `mise run <task>` (alias `mise r`)**, never bare `mise <task>` (avoids command/tool conflicts).
-8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (removed in 2026.11.0). Built-in; don't add `usage` to `[tools]`. `help=` + `choices` make `--help` and completion free. See Task Arguments below.
+8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2026.11.0). Built-in; don't add `usage` to `[tools]`. `help=` + `choices` make `--help` and completion free. See Task Arguments below.
 9. **Give every task a `description`**; add `choices`/simple `complete` when cheap. Hand-written completion scripts only on request; keep them under **`.mise/completion/`** and reference by path from `complete … run="./.mise/completion/x.sh"`. (Convention only; mise does **not** auto-load that dir; it's just where we standardize these scripts.)
 10. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal helpers. In CI pass `-y`/`--yes` or `confirm` hangs forever.
 11. **Prefer config over runtime flags**. Put reused settings in `mise.toml` (or `MISE_*`), not ad-hoc `--flags`.

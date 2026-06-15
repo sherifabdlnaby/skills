@@ -14,7 +14,6 @@ local commonIgnores =
 // Linters defined once, shared by the hooks below.
 local linters: Mapping<String, Step> = new Mapping<String, Step> {
   // formatting
-  ["prettier"] = Builtins.prettier // markdown / yaml / json
   ["ruff-format"] = Builtins.ruff_format // python (skills/git/scripts/*.py)
   ["ruff"] = Builtins.ruff // python lint
   ["pkl-format"] = Builtins.pkl_format // pkl formatter (hk.pkl)

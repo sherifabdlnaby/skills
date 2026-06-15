@@ -4,7 +4,7 @@ Guidance on converting an existing project to be Mise-managed, or auditing one t
 
 ## Rules and Best Practices:
 
-0. **Know the target.** The end-state layout (file tree + every supporting file) is [`reference-setup.md`](reference-setup-and-patterns.md); the canonical config is [`assets/example.mise.toml`](../assets/mise.toml). Convert _toward_ that picture.
+0. **Know the target.** The end-state layout (file tree + every supporting file) is [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md); the canonical config is [`assets/mise.toml`](../assets/mise.toml). Convert _toward_ that picture.
 1. **Inventory before editing.** Discover what already manages tools/env/tasks/hooks/CI, don't assume (list below).
 2. **Plan, then convert.** Map each piece to its mise equivalent and note conflicts before touching files.
 
@@ -27,8 +27,8 @@ Guidance on converting an existing project to be Mise-managed, or auditing one t
 **2. Plan**. Map each to its mise target:
 
 For each, we need to identify the path to convert to mise (+hk). You need to ask the user how open are we to big-bang changes, vs seamless iterative changes.
-Iterative changes mean we can have interim phase where mise live side by side by other system (e.g asdf, .tool-versions, .ruby-version, whatever).
-You need to converse with the user, and grill him until you reach common understanding of the pros, cons, and what and how you're going to convert each area.
+Iterative changes mean we can have interim phase where mise live side by side with other system (e.g asdf, .tool-versions, .ruby-version, whatever).
+You need to converse with the user, and grill them until you reach common understanding of the pros, cons, and what and how you're going to convert each area.
 
 **3. Convert**. Per area, follow the matching reference.
 

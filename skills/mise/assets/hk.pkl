@@ -15,7 +15,6 @@ local commonIgnores =
 
 // Linters defined once, shared by the hooks below.
 local linters: Mapping<String, Step> = new Mapping<String, Step> {
-  ["prettier"] = Builtins.prettier
   ["shfmt"] = Builtins.shfmt
   ["actionlint"] = Builtins.actionlint
 }

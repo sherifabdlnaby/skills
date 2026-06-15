@@ -5,19 +5,16 @@ min_version = "2026.6.6"
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
 
-# runtime (only here to back `npm:prettier`)
-node = "24"
-
+# All tools are native binaries — no node/python/ruby runtime dependency.
 # linters & formatters
-"npm:prettier" = "3"   # markdown / yaml / json formatter
 actionlint = "1"       # GitHub Actions linter
 zizmor = "1"           # GitHub Actions security
 pinact = "3"           # pin GitHub Actions to SHAs
-lychee = "latest"      # dead-link checker (offline; see lychee.toml)
-ruff = "latest"        # python lint + format (skills/git/scripts/babysit.py)
+lychee = "0.24"        # dead-link checker (offline; see lychee.toml) — 0.x, pin minor
+ruff = "0.15"          # python lint + format (skills/git/scripts/babysit.py); native binary, no python — 0.x, pin minor
 betterleaks = "1"      # secret scanning (allowlist in .betterleaks.toml)
 typos = "1"            # source-code spell checker (excludes/words in typos.toml)
-pkl = "latest"         # pkl lint + format (hk.pkl). hk bundles pkl only to parse its own config, not to lint .pkl files
+pkl = "0.31"           # pkl lint + format (hk.pkl) — 0.x, pin minor
 
 # pre-commit
 hk = "1.48.0"   # keep in sync with the pin in hk.pkl

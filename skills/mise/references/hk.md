@@ -2,15 +2,14 @@
 
 Guidance on managing git hooks with hk, the mise-native pre-commit tool.
 
-Read [mise.toml][../assets/mise.toml] and [mise.toml][../assets/hk.pkl]
+Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pkl)
 
 ## Rules and Best Practices:
 
 1. All linters should be managed by mise.
-2. Do not install `pkl`, and use hk version > v1.48 that include built in pkl support.
-3. **Make `--mise` the default** with `HK_MISE=1` in `mise.toml`'s `[env]`, so every hk invocation (hooks and manual) runs in mise's environment without passing `--mise`.
-4. \*\*For custom linters/tests delegate to a mise task. Do not add logic in hk.pkl as much as possible.
-5. Pin the `<VER>` in the `amends`/`import` URLs; regenerate with `hk init`, don't hardcode from memory.
+2. Do not install `pkl`; hk bundles a Pkl evaluator (`pklr`), so no separate install is needed. Pin the hk version to your installed one via `hk init`; these conventions target hk >= 1.48.
+3. **For custom linters/tests, delegate to a mise task.** Avoid putting logic in `hk.pkl` where possible.
+4. Pin the `<VER>` in the `amends`/`import` URLs; regenerate with `hk init`, don't hardcode from memory.
 
 ## Notes & Gotchas:
 
@@ -36,7 +35,7 @@ Check the hk.pkl to baseline scaffold.
 
 ### Defining Linters
 
-hk comes with [builtins](https://hk.jdx.dev/builtins.html) Configurations for popular Linters. ALWAYS CHECK AND USE BUILTIN before trying to set you custom logic.
+hk ships [builtins](https://hk.jdx.dev/builtins.html) — ready-made configs for popular linters. Always prefer a builtin over hand-rolled config (they're maintained and pre-tuned), so check the builtins list first.
 
 ### Recommended Linters
 
@@ -46,9 +45,9 @@ Beyond Popular Runtime Linters (check that yourself, and take a look at builtins
 - newlines
 - trailing_whitespace
 - check_added_large_files (block large blobs; default >500KB)
-- zizmor (Github Actions Security)
-- pinact (Github Actions pin SHAs)
-- actionlint (Github Action Linter)
+- zizmor (GitHub Actions Security)
+- pinact (GitHub Actions pin SHAs)
+- actionlint (GitHub Actions Linter)
 - check_executables_have_shebangs
 - check_case_conflict
 - check_merge_conflict

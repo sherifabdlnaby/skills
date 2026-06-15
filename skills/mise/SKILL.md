@@ -3,7 +3,7 @@ name: mise-fy
 description: >
   Use when asked to update mise's settings, tasks, variables, tools, or add a new tool/runtime in a project managed by mise.
   Do not load just because you are using mise (e.g mise x, run, install, trust).
-  Include mise conventions, guidance, and updated docs to make you make the best of the tool.
+  Includes mise conventions, guidance, and current docs so you can get the best out of the tool.
   Use to transform (mise-fy) an existing project to use mise.
   Also applies to `hk` (pre-commit) tool.
 ---
@@ -14,7 +14,7 @@ Conventions and best-practices guide for [mise](https://mise.jdx.dev) alongside 
 The skill implements progressive disclosure; Each area routes to a `references/` file holding the actual rules and best practices.
 Read the matching one **before** planning or acting, not after. SKILL.md alone is not enough. Doing several things? Open several references.
 
-The skill encodes best practices. You can use this skill when adding a Mise tool/task/env, or when user ask you audit the whole project and "mise-fy" it.
+The skill encodes best practices. You can use this skill when adding a Mise tool/task/env, or when the user asks you to audit the whole project and "mise-fy" it.
 Since the skill encode opinionated best practices, pushing for all of them **when only asked to add a simple task/tool** would be too much.
 Try to apply best-practices that applies **just to your goal**, and suggest/surface tangential improvements to user sparingly.
 When `mise-fy`-ing and improving codebase then you can suggest all improvements and recommendation.
@@ -49,7 +49,7 @@ TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running a
 **mise-fy an existing project** (migrate + audit) -> [`references/mise-fy.md`](references/mise-fy.md)
 Step-by-step conversion from asdf/nvm/direnv/Makefile, plus a full audit checklist. References every other doc.
 
-**Reference setup** (canonical example layout) -> [`references/reference-setup.md`](references/reference-setup-and-patterns.md)
+**Reference setup** (canonical example layout) -> [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md)
 Annotated example file tree + `mise.toml` to copy from.
 
 ### Templating (Tera)
@@ -75,9 +75,9 @@ Read more at [shell_aliases](https://mise.jdx.dev/shell-aliases.html)
 1. Mise updates very often. When you hit a wall, consider reading the recent changelog as well as docs.
 2. **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.
 3. **Lockfile is opt-in.** No `mise.lock` is written until `[settings] lockfile = true`. Don't assume reproducibility you didn't enable.
-4. **Untrusted config silently does nothing.** Before `mise trust`, `[env]`/tasks/hooks don't load, no error, just absent. A fresh clone needs `mise trust` (or a `trusted_config_paths` entry).
+4. **Untrusted config doesn't load.** Before `mise trust`, `[env]`/tasks/hooks are skipped; an interactive shell prompts you to trust, while non-interactive contexts error or skip rather than run it. A fresh clone needs `mise trust` (or a `trusted_config_paths` entry).
 5. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
 6. **CI without a GitHub token hits rate limits.** Tool installs call provider APIs; set `github_token`/`MISE_GITHUB_TOKEN`. See [`ci.md`](references/ci.md).
 7. **Shims don't support every feature** of `mise activate` (e.g. some env-on-`cd` behavior). Mismatched local-vs-CI results often trace back to this.
-8. Recommended to set `min_version` (at root toml, not under settings) to set minimum mise version. This will help provide good user experience when you rely on new mise feature. If use have old version this will guide them to update.
-9. Always set `github.gh_cli_tokens` and `github.use_git_credentials` under settings to bypass Github Rate Limits. Setting both use GH first, fallback to GCM. And fails-open with no problems.
+8. Recommended to set `min_version` (at root toml, not under settings) to set the minimum mise version. This gives a good user experience when you rely on a new mise feature: if the user has an old version, this guides them to update. It also moves users past known-vulnerable releases — e.g. require `>=2026.6.4` to ensure the fix for the CVE-2026-35533 config-trust bypass (GHSA-436v-8fw5-4mj8).
+9. Always set `github.gh_cli_tokens` and `github.use_git_credentials` under settings to bypass GitHub rate limits. With both set, mise tries the GitHub CLI token first and falls back to git credentials, failing open with no problems.

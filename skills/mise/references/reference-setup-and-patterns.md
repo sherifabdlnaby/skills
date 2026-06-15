@@ -1,11 +1,11 @@
 # Reference Setup — Canonical Layout
 
-Refer to [mise.toml][../assets/mise.toml]
+Refer to [mise.toml](../assets/mise.toml)
 
 # Bare Root mise.toml
 
-Include all the [mise.toml][../assets/mise.toml] main top-level fields, alongside comment decorators.
-To not blindly copy the content under each top-level field, for that apply what is relevant. Respect Sorting.
+Include all the [mise.toml](../assets/mise.toml) main top-level fields, alongside comment decorators.
+Don't blindly copy the content under each top-level field — apply only what's relevant, and respect the sorting.
 
 ## Configuration Sorting
 
@@ -51,17 +51,17 @@ It's okay for setup to consist of other mise tasks (rely on depends and depends_
 Setup should include a `setup:check` and `setup:stamp` internal hidden commands that we use to check if the user ran the latest version of a setup or not. It's expected to run as a mise enter hook.
 This allows us to version the setup, so we can notify users to re-run `mise run setup` again if expected version IS not equal to saved version.
 
-The stamp is written to `.mise/setup`. Add a committed `.mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see [.mise/.gitignore][../assets/.mise/.gitignore]) that ignores just the generated `setup` file.
+The stamp is written to `.mise/setup`. Add a committed `.mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see [.mise/.gitignore](../assets/.mise/.gitignore)) that ignores just the generated `setup` file.
 
-Check the reference [mise.toml][../assets/mise.toml]
+Check the reference [mise.toml](../assets/mise.toml)
 
 ## Check (Lint)
 
 A command that runs all Linters, Formatters, and Static Validators. This is every check we expect to run pre-commit and in CI — NOT unit/integration tests.
 It must be the **same command CI runs** and that the pre-commit hook runs, so behaviour can't drift between local, hook, and CI. Alias it `lint`.
-The canonical CI wiring for this task lives at [.github/workflows/check.yml][../assets/.github/workflows/check.yml] (see [`ci.md`](ci.md)).
+The canonical CI wiring for this task lives at [.github/workflows/check.yml](../assets/.github/workflows/check.yml) (see [`ci.md`](ci.md)).
 
-If using hk for pre-commit linters then delegate the actual steps to **hk** (one source of truth; see [`hk.md`](hk.md)) and have the task just forward flags. See the `check` task in the reference [mise.toml][../assets/mise.toml]. Key points:
+If using hk for pre-commit linters then delegate the actual steps to **hk** (one source of truth; see [`hk.md`](hk.md)) and have the task just forward flags. See the `check` task in the reference [mise.toml](../assets/mise.toml). Key points:
 
 - **`hk check` and `hk fix` are the same command**; the subcommand only sets the default mode, and `--fix`/`--check` override it. So a single `hk check` + an opt-in `--fix` flag covers both reporting and fixing — no need to branch on the subcommand.
 - **Default scope is staged files**; expose `--all` (everything) and `--pr` (only files changed vs the default branch — what CI uses). hk makes `--all`/`--pr` mutually exclusive.

@@ -56,7 +56,7 @@ From the repo root:
 
 ```sh
 mise trust      # allow this repo's mise config to load
-mise run setup  # install the pinned tools and register git hooks
+mise run setup  # install the pinned tools (git hooks self-install via mise)
 ```
 
 That's everything — you're ready to work.
@@ -73,6 +73,6 @@ Run `mise run <task> --help` to see a task's options.
 
 ## Git hooks
 
-`mise run setup` installs git hooks (via [hk](https://hk.jdx.dev)). On **commit**, your staged files are formatted and linted automatically — the same `check` that runs in CI, so problems surface before you push.
+`mise run setup` runs `mise install`, which self-installs git hooks (via [hk](https://hk.jdx.dev)) through a postinstall step. On **commit**, your staged files are formatted and linted automatically — the same `check` that runs in CI, so problems surface before you push.
 
 Need to skip them for a work-in-progress commit? `git commit --no-verify`.

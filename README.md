@@ -16,7 +16,7 @@ This repo is managed by [mise](https://mise.jdx.dev). One-time setup:
 mise run setup   # installs tools (mise install) and self-installs the pre-commit hook
 ```
 
-Linters, formatters, and validators (prettier, ruff, actionlint, zizmor, pinact, betterleaks, and **lychee** for dead links) run via [hk](https://hk.jdx.dev):
+Linters, formatters, and validators (ruff, actionlint, zizmor, pinact, betterleaks, typos, and **lychee** for dead links) run via [hk](https://hk.jdx.dev):
 
 ```bash
 mise run check          # report on staged files (alias: mise run lint)

@@ -21,8 +21,7 @@ hk = "1"
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
 ENV_VAR_EXAMPLE = "123"
-HK_MISE = "1"        # default every hk run to mise's env (`--mise`); hooks resolve tools via `mise x`
-_.path = [".bin"]
+_.path = ["dist"]
 
 # ── 📏 vars ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 [vars]
@@ -55,8 +54,9 @@ depends = ["lint"]                                    # ordering only; depends r
 run = "node --test {{vars.test_args}}"
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
+description = "One-time, idempotent project bootstrap: install tools (+ deps/hooks per your use-case)"
 depends_post = ["setup:stamp"]                       # stamp the version only after a successful setup
-run = "mise install"                                 # installs tools; (and anything per ur use-case)
+run = "mise install"                                 # installs tools; (and anything per your use-case)
 
 [tasks."setup:stamp"] # write the version of the last run setup to .mise/setup
 hide = true
@@ -75,10 +75,9 @@ postinstall = "hk install --mise"     # canonical hook install: runs after every
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]
-experimental = true                  # to support hooks
 lockfile = true                      # write/commit mise.lock — REQUIRED before any pin resolves reproducibly
 minimum_release_age = "7d"           # ignore releases <7d old (supply-chain cooldown); always suggest adding
-disable_backends = ["asdf", "vfox"]  # legacy plugins run arbitrary code, no checksums — fail loud, never silently use
+disable_backends = ["asdf", "vfox"]  # resolve only via verified backends; drop "vfox" if you need a vfox-only tool
 
 # Use `gh` token to overcome github limits, fallback to gcm if gh is not working.
 github.gh_cli_tokens = true
