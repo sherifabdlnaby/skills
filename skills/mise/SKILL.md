@@ -47,30 +47,24 @@ TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running a
 `jdx/mise-action`, caching, running tasks in CI, shims, pinning, rate-limit tokens.
 
 **mise-fy an existing project** (migrate + audit) -> [`references/mise-fy.md`](references/mise-fy.md)
-Step-by-step conversion from asdf/nvm/direnv/Makefile, plus a full audit checklist. References every other doc.
+Step-by-step conversion from custom/asdf/Makefile, plus a full audit checklist. References every other doc.
 
 **Reference setup** (canonical example layout) -> [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md)
 Annotated example file tree + `mise.toml` to copy from.
 
-### Templating (Tera)
-
-mise renders most `mise.toml` values (and `.tool-versions`) with [Tera](https://mise.jdx.dev/templates.html), a Jinja2-like engine;
-it applies across `[env]`, `[tasks]`, tool versions, and aliases. The file must stay valid TOML.
-Distinct from shell expansion (`${VAR}`, opt-in via `env_shell_expand`, see [`references/env.md`](references/env.md)).
-
-Only use Tera templating when you really need it.
+## Notes
 
 ### Config environments (`MISE_ENV`)
 
 Mise has a `-E` flag that can control the different mise.toml files that get loaded (like dotenv). mise.{MISE_ENV}.local.toml > mise.local.toml > mise.{MISE_ENV}.toml > mise.toml
 Read more at [environment](https://mise.jdx.dev/configuration/environments.html)
 
-## Shell Alias
+### Shell Alias
 
 mise can also manage **directory-scoped shell aliases** via `[shell_alias]` (e.g. `ll = "ls -la"`), set on enter / unset on leave like `[env]`; needs `mise activate`.
 Read more at [shell_aliases](https://mise.jdx.dev/shell-aliases.html)
 
-## Miscellaneous Notes & Gotchas
+### Miscellaneous Notes & Gotchas
 
 1. Mise updates very often. When you hit a wall, consider reading the recent changelog as well as docs.
 2. **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.

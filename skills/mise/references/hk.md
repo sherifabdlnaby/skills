@@ -39,7 +39,7 @@ run `hk builtins` to list all linters builtins (or grep for the one you're looki
 
 ### Recommended Linters
 
-Beyond Popular Runtime Linters (check that yourself, and take a look at builtins). The following Linters are recommended:
+Beyond Popular Runtime Linters (check that yourself, and take a look at builtins). The following Linters are highly recommended:
 
 - mise: Lint mise file itself.
 - newlines

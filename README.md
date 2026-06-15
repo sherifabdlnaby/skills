@@ -8,6 +8,10 @@ I iterate over these skills to suit my needs. Skills aren't designed to have ful
 
 The repo will contain forked skills (e.g grill-me) that I sometimes have to tweak a little bit. Forked skill will include UPSTREAM.md file with the upstream's metadata.
 
+## Models
+
+These skills are optimized for the current models. Not guaranteed to work well with others. I use `opus-4.8` and `gpt 5.5` most of the time.
+
 ## Development
 
 This repo is managed by [mise](https://mise.jdx.dev). One-time setup:
