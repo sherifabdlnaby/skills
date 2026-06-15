@@ -217,6 +217,14 @@ provenance = "github-attestations"
 version = "0.31.1"
 backend = "aqua:apple/pkl"
 
+[tools.pkl."platforms.linux-x64"]
+checksum = "sha256:618f13955d755cafbfe8c9cba1d27635848cd49dbc6abffd398d2751db1231bf"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-linux-amd64"
+
+[tools.pkl."platforms.macos-arm64"]
+checksum = "sha256:1b6a5438d9624cd2798a7530721bbbfa27ef72efe5c878a1b6c546c6e7ca0e8f"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-macos-aarch64"
+
 [[tools.ruff]]
 version = "0.15.16"
 backend = "aqua:astral-sh/ruff"
