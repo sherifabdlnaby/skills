@@ -25,6 +25,8 @@ Guidance on Installing Tools and Runtimes via Mise.
 - **`prefix:`/fuzzy/`latest` need version listing**. They work on backends that enumerate versions (core, aqua, github/gitlab, cargo, go, npm, pipx) but not on fixed-artifact specifiers (direct URLs, git `ref:`).
 - **Per-tool options exist** (`os`, `depends`, `install_env`, `postinstall` via the `name = { ... }` table form) reach for them only when you actually need them; plain `name = "version"` is the norm.
 - **`~/.tool-versions` is not global** (unlike asdf): global config is `~/.config/mise/config.toml`.
+- **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.
+- **Lockfile is opt-in.** No `mise.lock` is written until `[settings] lockfile = true`. Don't assume reproducibility you didn't enable.
 
 ## Backends
 
