@@ -39,7 +39,7 @@ run `hk builtins` to list all linters builtins (or grep for the one you're looki
 
 ### Recommended Linters
 
-Beyond Popular Runtime Linters (check that yourself, and take a look at builtins). The following Linters are highly recommended:
+Beyond Popular Runtime Linters (check that yourself, and take a look at builtins). The following Linters are highly recommended and you should always suggest to the user:
 
 - mise: Lint mise file itself.
 - newlines
@@ -52,11 +52,16 @@ Beyond Popular Runtime Linters (check that yourself, and take a look at builtins
 - check_case_conflict
 - check_merge_conflict
 - check_byte_order_marker
+- mixed_line_ending (normalize CRLF/LF)
+- check_symlinks (catch broken symlinks)
+- detect_private_key (block committed private keys; cheap, complements betterleaks)
+- yamllint (validate YAML structure syntax, duplicate keys, nesting; see note below)
+- taplo (TOML lint + format; alt impl: `tombi`/`tombi_format`)
 - betterleaks (see note below — confirm + scaffold an ignore file)
 - typos ( must confirm with user, can generate a ton of false positives, see note below — confirm + scaffold an ignore file)
-- lychee: Lint Broken Links
+- lychee: Lint Broken Links. (Important for Agents.md files and to ensure progressive disclsure doesn't break)
 - rumdl ( must confirm with user — full ruleset is noisy on prose/docs repos; ask whether they want table formatting, see note below — confirm + scaffold a config): Markdown lint + format (markdownlint-compatible, Rust).
-- pkl + pkl_format: when the repo has `.pkl` files (e.g. `hk.pkl`). These shell out to the `pkl` CLI, so add `pkl` to `[tools]`. hk's bundled pkl only parses its own config (`hk.pkl`); it does **not** back these linter builtins, so without the tool they fail with `No version is set for shim: pkl`.
+- yamlfmt ( must confirm with user since it usually generate a lot of noise).
 
 You can recommend to the user other linters based on the project. Use Builtins list of inspiration.
 
@@ -81,9 +86,54 @@ Fast markdownlint-compatible Markdown linter **and formatter**. **Confirm with t
 
 Spell-checks source. It produces project-specific false positives (jargon, identifiers, example tokens), so **confirm with the user before enabling**. When enabled, **scaffold a `typos.toml`** at the repo root with commented `extend-exclude` / `extend-words` / `extend-identifiers` / `extend-ignore-re` examples so the user has an obvious place to silence false positives. See this repo's `typos.toml`.
 
+##### yamllint (https://github.com/adrienverge/yamllint)
+
+Runs `yamllint --strict`. Its **error-level** rules are the structural ones you want — syntax errors, **duplicate keys**, bad indentation/nesting. Its **warning-level** defaults are cosmetic and noisy (`line-length`, `truthy`, `comments`, `document-start`). If the user only wants structure/spec validation (not style), scaffold a `.yamllint` that disables the cosmetic rules:
+
+```yaml
+extends: default
+rules:
+  line-length: disable
+  truthy: disable
+  comments: disable
+  comments-indentation: disable
+  document-start: disable
+  # keep structural: key-duplicates, indentation, syntax, anchors
+```
+
+Note: none of the generic YAML builtins do **JSON-Schema** validation.
+
 ##### betterleaks (https://github.com/betterleaks/betterleaks)
 
 Secret scanner (gitleaks-compatible). Real codebases hit false positives (example keys, test fixtures), so **confirm with the user before enabling**. When enabled, **scaffold a `.betterleaks.toml`** at the repo root with `[extend] useDefault = true` (keep the built-in rules) plus a commented `[allowlist]` (`paths` / `regexes` / `stopwords`). See this repo's `.betterleaks.toml`.
+
+### Keeping config out of the repo root (optional)
+
+Most builtins need **no config file** (all `check_*`, `newlines`, `trailing_whitespace`, `mixed_line_ending`, `detect_private_key`, `yamlfmt`, `actionlint`, `zizmor`, `pinact`, `mise`). Root dotfiles only appear for the tunable opt-ins (`rumdl`, `typos`, `lychee`, `betterleaks`, `yamllint`, `taplo`).
+
+**Gate: only suggest this when the project will have 3+ linters that carry a config file.** Below that, default to the per-tool root scaffolds in the notes above — a `.config/` dir for one or two files is overkill, and don't mention it. At 3+, offer to consolidate them under a single `.config/` directory.
+
+When adopted, wire each tool to read from `.config/` — **prefer the env-var route (leaves the builtin command untouched); use `--config` override only where no env var exists** (it forces you to reproduce the builtin's other flags, which can drift across hk versions):
+
+| Tool            | Route to `.config/`                                                                                                                               |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rumdl`         | **native** — auto-discovers `.config/rumdl.toml`, no wiring                                                                                       |
+| `yamllint`      | step `env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" }` (ignored if a root `.yamllint` exists)                                           |
+| `betterleaks`   | step `env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }`                                                                                |
+| `taplo`         | step `env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" }` (re-add `RUST_LOG` — re-declaring `env` replaces the whole mapping) |
+| `typos`         | override `fix`/`check_diff` cmd with `--config .config/typos.toml` (no env var)                                                                   |
+| `lychee`        | override `check` cmd with `--config .config/lychee.toml` (no env var)                                                                             |
+| `markdown_lint` | override `check`/`fix` cmd with `--config .config/markdownlint.yaml` (no env var)                                                                 |
+
+```pkl
+local linters = new Mapping<String, Step> {
+  ["yamllint"]    = (Builtins.yamllint)    { env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" } }
+  ["betterleaks"] = (Builtins.betterleaks) { env { ["BETTERLEAKS_CONFIG"]   = ".config/betterleaks.toml" } }
+  ["taplo"]       = (Builtins.taplo)       { env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" } }
+  ["lychee"]      = (Builtins.lychee)      { check = "lychee --no-progress --config .config/lychee.toml {{ files }}" }
+  // rumdl: nothing — just place the file at .config/rumdl.toml
+}
+```
 
 ## Docs:
 

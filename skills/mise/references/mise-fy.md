@@ -35,9 +35,11 @@ Explore the CI, and Local Validations / Tests / Setup / Linters.
 
 ### 2. Plan**. Map each to its mise target:
 
-For each, we need to identify the path to convert to mise (+hk). You need to ask the user how open are we to big-bang changes, vs seamless iterative changes.
+For each, we need to identify the path to convert to mise. You need to ask the user how open are we to big-bang changes, vs seamless iterative changes.
 Iterative changes mean we can have interim phase where mise live side by side with other system (e.g asdf, .tool-versions, .ruby-version, whatever) with a plan to migrate.
 You need to converse with the user, and grill them until you reach common understanding of the pros, cons, and what and how you're going to convert each area.
+
+Depending on user request, you might suggest new additions (like introduction of hk for pre-commit, as well as other linters)
 
 **3. Convert**. Per area, follow the matching reference, converse with user when required.
 
