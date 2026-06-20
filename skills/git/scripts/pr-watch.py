@@ -3,20 +3,21 @@
 # requires-python = ">=3.10"
 # dependencies = []
 # ///
-"""Babysit a GitHub PR: poll CI, reviews, and comments, return only what changed.
+"""Watch a GitHub PR: poll CI, reviews, and comments, return only what changed.
 
 Built for an agent to run (directly, or from a cheap background sub-agent). It does
 the predictable, token-heavy part: poll, diff against a saved snapshot, and report
 only the delta. The agent does the thinking.
 
 Subcommands
-  arm     Resolve the PR, snapshot the current state as a baseline, print a summary.
   poll    One-shot: fetch, diff vs the saved snapshot, update it, print the delta.
   watch   Loop with adaptive backoff; block until a high-signal event (or deadline),
           then print the delta and exit. This is the one a background agent runs.
+Both self-baseline: the first run on a fresh --watcher records the current state
+and reports nothing as new, so no separate "arm" step is needed.
 
 Why a snapshot file: diffing needs a "last seen". Each watcher keeps its OWN snapshot
-(via --watcher), so several agents can babysit the same PR without clobbering cursors.
+(via --watcher), so several agents can watch the same PR without clobbering cursors.
 
 High-signal events (what wakes the agent in `watch`):
   FAIL      a check went red (CI, CodeQL, anything)
@@ -27,7 +28,7 @@ High-signal events (what wakes the agent in `watch`):
 Plain churn (queued -> running, a job starting) updates the snapshot silently and does
 NOT wake the agent. That is the point: the noisy opening burst stays quiet.
 
-Everything is stdlib; `gh` does auth and API. Run with plain `python3` (or `./babysit.py`):
+Everything is stdlib; `gh` does auth and API. Run with plain `python3` (or `./pr-watch.py`):
 no venv or dependency install, so it works in a read-only sandbox where `uv run` can't
 write its cache.
 """
@@ -141,9 +142,21 @@ def resolve(pr: str | None, repo: str | None) -> tuple[int, str, str]:
 # -------------------------------------------------------------------- snapshot
 
 
+def rest(repo: str, path: str) -> list[dict]:
+    """Best-effort paginated GET of a REST list endpoint -> list of dicts (empty on
+    any failure). `--paginate` merges every page into one JSON array; reshaping is
+    done in Python (a `--jq` stream would emit JSON Lines that won't parse)."""
+    out = gh_json(["api", f"repos/{repo}/{path}", "--paginate"], check=False)
+    return [c for c in out if isinstance(c, dict)] if isinstance(out, list) else []
+
+
 def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
-    """One normalized picture of the PR: checks, reviews, comments, state."""
-    fields = "number,url,state,mergedAt,isDraft,reviewDecision,statusCheckRollup,reviews,comments,title"
+    """One normalized picture of the PR: checks, reviews, comments, state.
+
+    PR state + checks come from `gh pr view`. Reviews and comments come from REST,
+    which (unlike `gh pr view`) carries `user.type` (the authoritative bot flag) and
+    `html_url` per item, so each line the agent sees is self-contained."""
+    fields = "number,url,state,mergedAt,isDraft,reviewDecision,statusCheckRollup,title"
     data = gh_json(["pr", "view", str(pr), "--repo", repo, "--json", fields]) or {}
 
     checks: dict[str, dict] = {}
@@ -161,52 +174,40 @@ def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
             link = c.get("detailsUrl") or ""
         checks[name] = {"status": status, "conclusion": concl, "url": link}
 
+    def author(c: dict) -> dict:
+        u = c.get("user") or {}
+        return {"author": u.get("login") or "?", "is_bot": u.get("type") == "Bot"}
+
     reviews: dict[str, dict] = {}
-    for r in data.get("reviews") or []:
-        rid = str(
-            r.get("id")
-            or f"{r.get('submittedAt')}:{(r.get('author') or {}).get('login')}"
-        )
-        reviews[rid] = {
-            "author": (r.get("author") or {}).get("login") or "?",
+    for r in rest(repo, f"pulls/{pr}/reviews"):
+        if r.get("id") is None:
+            continue
+        reviews[str(r["id"])] = {
+            **author(r),
             "state": r.get("state") or "",
-            "at": r.get("submittedAt") or "",
-            "excerpt": excerpt(r.get("body")),
+            "at": r.get("submitted_at") or "",
+            "body": trim_body(r.get("body")),
+            "url": r.get("html_url") or "",
         }
 
     comments: dict[str, dict] = {}
-    for c in data.get("comments") or []:
+    for c in rest(repo, f"issues/{pr}/comments"):
         comments[str(c.get("id"))] = {
-            "author": (c.get("author") or {}).get("login") or "?",
-            "at": c.get("createdAt") or "",
-            "excerpt": excerpt(c.get("body")),
-            "url": c.get("url") or "",
+            **author(c),
+            "at": c.get("created_at") or "",
+            "body": trim_body(c.get("body")),
+            "url": c.get("html_url") or "",
         }
 
-    # Inline review comments live on a separate endpoint; best-effort.
     review_comments: dict[str, dict] = {}
-    api = gh_json(
-        [
-            "api",
-            f"repos/{repo}/pulls/{pr}/comments",
-            "--paginate",
-            "--jq",
-            ".[] | {id,login:.user.login,at:.created_at,path,body,url:.html_url}",
-        ],
-        check=False,
-    )
-    if api is not None:
-        rows = api if isinstance(api, list) else [api]
-        for c in rows:
-            if not isinstance(c, dict):
-                continue
-            review_comments[str(c.get("id"))] = {
-                "author": c.get("login") or "?",
-                "at": c.get("at") or "",
-                "path": c.get("path") or "",
-                "excerpt": excerpt(c.get("body")),
-                "url": c.get("url") or "",
-            }
+    for c in rest(repo, f"pulls/{pr}/comments"):
+        review_comments[str(c.get("id"))] = {
+            **author(c),
+            "path": c.get("path") or "",
+            "at": c.get("created_at") or "",
+            "body": trim_body(c.get("body")),
+            "url": c.get("html_url") or "",
+        }
 
     settled = bool(checks) and all(is_terminal(ck) for ck in checks.values())
 
@@ -229,11 +230,22 @@ def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
     }
 
 
-def excerpt(body: str | None, n: int = 140) -> str:
+def trim_body(body: str | None, n: int = 600) -> str:
+    """Stored body, capped but newline-preserving so `snippet` can show a few lines."""
     if not body:
         return ""
-    s = " ".join(body.split())
-    return s if len(s) <= n else s[: n - 1] + "…"
+    return body if len(body) <= n else body[: n - 1] + "…"
+
+
+def snippet(body: str, max_lines: int = 4, width: int = 100) -> list[str]:
+    """A few non-blank lines of a body for display; trailing `…` if more was cut."""
+    if not body:
+        return []
+    lines = [ln.rstrip() for ln in body.splitlines() if ln.strip()]
+    shown = [ln if len(ln) <= width else ln[: width - 1] + "…" for ln in lines[:max_lines]]
+    if len(lines) > max_lines:
+        shown.append("…")
+    return shown
 
 
 def is_fail(check: dict) -> bool:
@@ -269,24 +281,30 @@ def is_review_tool(login: str) -> bool:
     return bool(REVIEW_TOOL_RE.search(login or ""))
 
 
-def classify(author: str, kind: str) -> str:
+def item_is_bot(item: dict) -> bool:
+    """Authoritative when the API gave us `is_bot` (user.type == Bot); login regex as
+    a fallback for items that predate the flag or lost it to a stale snapshot."""
+    return bool(item.get("is_bot")) or is_bot(item.get("author", ""))
+
+
+def classify(item: dict, kind: str) -> str:
     """Line tag for a review/comment. kind: 'review' (submitted), 'inline' (on the diff),
-    'issue' (PR conversation). BOTREVIEW = an automated code review to address automatically."""
+    'issue' (PR conversation). BOTREVIEW = an automated code review to address automatically.
+    Any bot review/inline comment is a BOTREVIEW; for a plain issue comment only a review
+    TOOL counts (generic bots like github-actions post labels/CI chatter, not review)."""
+    if kind == "issue":
+        return "BOTREVIEW" if is_review_tool(item.get("author", "")) else "COMMENT"
+    bot = item_is_bot(item)
     if kind == "review":
-        return "BOTREVIEW" if is_bot(author) else "REVIEW"
-    if kind == "inline":
-        return "BOTREVIEW" if is_bot(author) else "COMMENT"
-    return "BOTREVIEW" if is_review_tool(author) else "COMMENT"  # issue comment
+        return "BOTREVIEW" if bot else "REVIEW"
+    return "BOTREVIEW" if bot else "COMMENT"  # inline
 
 
 def has_botreview(d: dict) -> bool:
     return (
-        any(classify(r["author"], "review") == "BOTREVIEW" for r in d["new_reviews"])
-        or any(
-            classify(c["author"], "inline") == "BOTREVIEW"
-            for c in d["new_review_comments"]
-        )
-        or any(classify(c["author"], "issue") == "BOTREVIEW" for c in d["new_comments"])
+        any(classify(r, "review") == "BOTREVIEW" for r in d["new_reviews"])
+        or any(classify(c, "inline") == "BOTREVIEW" for c in d["new_review_comments"])
+        or any(classify(c, "issue") == "BOTREVIEW" for c in d["new_comments"])
     )
 
 
@@ -340,7 +358,10 @@ def diff(old: dict | None, new: dict) -> dict:
 
 
 def has_signal(d: dict, on: set[str]) -> bool:
-    """Did anything the agent asked to be woken for happen?"""
+    """Did anything the agent asked to be woken for happen? Any check finishing or
+    recovering counts, not just the full settle: the watcher should see every state
+    change so it stays current and can answer when the parent asks. Whether a single
+    success is worth forwarding to the parent is the watcher's call, not the script's."""
     if "fail" in on and d["new_fails"]:
         return True
     if "done" in on and (d["ci_just_settled"] or d["newly_done"] or d["recovered"]):
@@ -365,13 +386,38 @@ def pending_checks(snap: dict) -> list[str]:
     ]
 
 
+INDENT = " " * 12  # continuation lines align under the tag column
+
+
+def who(item: dict) -> str:
+    """`@login (bot)` / `Copilot (bot)` / `@login (human)`: author plus a bot flag."""
+    name = "Copilot" if is_copilot(item["author"]) else f"@{item['author']}"
+    return f"{name} ({'bot' if item_is_bot(item) else 'human'})"
+
+
+def render_item(tag: str, head_extra: str, item: dict) -> list[str]:
+    """A multi-line block: tag/author/id header, the URL, then a body snippet.
+    Self-contained enough for the agent to act without a follow-up fetch."""
+    head = f"  {tag:9} {who(item)}"
+    if head_extra:
+        head += f" {head_extra}"
+    head += f" · #{item['id']}"
+    out = [head]
+    if item.get("url"):
+        out.append(f"{INDENT}{item['url']}")
+    out += [f"{INDENT}{ln}" for ln in snippet(item.get("body", ""))]
+    return out
+
+
 def render(snap: dict, d: dict, note: str = "") -> str:
     head = f"PR #{snap['pr']} {snap['repo']} {snap['pr_state']}"
     if snap["merged"] and snap["pr_state"] != "MERGED":
         head += " MERGED"
     lines = [head + (f"  {note}" if note else "")]
     for f in d["new_fails"]:
-        lines.append(f"  FAIL    {f['name']} [{f['conclusion']}] {f['url']}")
+        lines.append(f"  FAIL    {f['name']} [{f['conclusion']}]")
+        if f.get("url"):
+            lines.append(f"{INDENT}{f['url']}")
     for n in d["recovered"]:
         lines.append(f"  FIXED   {n} now green")
     if d["ci_just_settled"]:
@@ -380,21 +426,11 @@ def render(snap: dict, d: dict, note: str = "") -> str:
     elif d["newly_done"]:
         lines.append(f"  DONE    {', '.join(d['newly_done'])}")
     for r in d["new_reviews"]:
-        who = "Copilot" if is_copilot(r["author"]) else r["author"]
-        line = f"  {classify(r['author'], 'review'):9} {who}: {r['state']}"
-        if r.get("excerpt"):
-            line += f" — {r['excerpt']}"
-        lines.append(line)
+        lines += render_item(classify(r, "review"), r.get("state", ""), r)
     for c in d["new_comments"]:
-        who = "Copilot" if is_copilot(c["author"]) else f"@{c['author']}"
-        lines.append(
-            f"  {classify(c['author'], 'issue'):9} {who}: {c.get('excerpt', '')}"
-        )
+        lines += render_item(classify(c, "issue"), "", c)
     for c in d["new_review_comments"]:
-        who = "Copilot" if is_copilot(c["author"]) else f"@{c['author']}"
-        lines.append(
-            f"  {classify(c['author'], 'inline'):9} {who} {c.get('path', '')}: {c.get('excerpt', '')}"
-        )
+        lines += render_item(classify(c, "inline"), c.get("path", ""), c)
     if d["state_changed"]:
         lines.append(
             f"  STATE   -> {snap['pr_state']}{' (merged)' if snap['merged'] else ''}"
@@ -422,7 +458,7 @@ def state_path(repo: str, pr: int, watcher: str, override: str | None) -> Path:
     if override:
         return Path(override)
     base = (
-        os.environ.get("BABYSIT_STATE_DIR") or Path(tempfile.gettempdir()) / "babysit"
+        os.environ.get("WATCH_STATE_DIR") or Path(tempfile.gettempdir()) / "watch"
     )
     slug = repo.replace("/", "_")
     return Path(base) / f"{slug}-pr{pr}-{watcher}.json"
@@ -438,9 +474,9 @@ def load_state(p: Path) -> dict | None:
 def resolve_deadline(
     old: dict | None, max_total: float | None, reset: bool
 ) -> float | None:
-    """Absolute wall-clock deadline, persisted so it spans every re-arm / re-watch.
+    """Absolute wall-clock deadline, persisted so it spans every re-watch.
 
-    Set once (at arm, or first watch) from --max-total and preserved across episodes
+    Set once (on the first poll/watch) from --max-total and preserved across episodes
     using the SAME --watcher. --reset-budget restarts it.
     """
     if old and old.get("deadline_ts") and not reset:
@@ -460,7 +496,7 @@ def save_state(p: Path, snap: dict) -> None:
 
 
 def die(msg: str) -> None:
-    print(f"babysit: {msg}", file=sys.stderr)
+    print(f"pr-watch: {msg}", file=sys.stderr)
     sys.exit(2)
 
 
@@ -472,47 +508,6 @@ def prepare(a) -> tuple[int, str, str, Path, dict | None]:
     pr, repo, url = resolve(a.pr, a.repo)
     sp = state_path(repo, pr, a.watcher, a.state)
     return pr, repo, url, sp, load_state(sp)
-
-
-def cmd_arm(a) -> int:
-    pr, repo, url, sp, old = prepare(a)
-    snap = fetch_snapshot(pr, repo, url)
-    snap["deadline_ts"] = resolve_deadline(old, a.max_total, a.reset_budget)
-    save_state(sp, snap)
-    nxt = "baseline saved; run `watch` to begin reacting to events."
-    if a.json:
-        print(
-            json.dumps(
-                {
-                    "pr": pr,
-                    "repo": repo,
-                    "url": url,
-                    "state": str(sp),
-                    "checks": len(snap["checks"]),
-                    "ci_settled": snap["ci_settled"],
-                    "outcome": "ARMED",
-                    "terminal": False,
-                    "next": nxt,
-                }
-            )
-        )
-        return 0
-    ok, bad = count_checks(snap)
-    pend = pending_checks(snap)
-    print(f"armed PR #{pr} {repo} {snap['pr_state']}: {snap['title']}")
-    print(f"  {url}")
-    print(
-        f"  checks: {len(snap['checks'])} ({ok} ok, {bad} red, {len(pend)} pending)"
-        + (f" — pending: {', '.join(sorted(pend))}" if pend else "")
-    )
-    left = budget_left(snap["deadline_ts"])
-    if left is not None:
-        print(
-            f"  budget: {int(left)}s total remaining (spans every re-watch on watcher '{a.watcher}')"
-        )
-    print(f"  watcher snapshot: {sp}")
-    print(verdict("ARMED", False, nxt))
-    return 0
 
 
 def cmd_poll(a) -> int:
@@ -577,6 +572,9 @@ def cmd_poll(a) -> int:
 def cmd_watch(a) -> int:
     pr, repo, url, sp, old = prepare(a)
     on = parse_on(a.on)
+    # Per-episode cap. Unset defaults to the whole budget (so a detached background
+    # task only exits on a real event or terminal stop), else to 900s.
+    max_wait = a.max_wait if a.max_wait is not None else (a.max_total or 900.0)
     start = time.time()
     interval = a.min_interval
     deadline = resolve_deadline(old, a.max_total, a.reset_budget)
@@ -598,11 +596,11 @@ def cmd_watch(a) -> int:
             print(verdict("BUDGET SPENT", True, "time budget used up. stop."))
             return 0
         # Per-episode cap: not terminal, the caller is expected to re-run watch.
-        if waited >= a.max_wait:
+        if waited >= max_wait:
             print(
                 render(
                     snap,
-                    diff(None, snap) if a.show_state else empty_delta(),
+                    empty_delta(),
                     note=f"(no event in {int(waited)}s, polls={polls})",
                 )
             )
@@ -625,7 +623,7 @@ def cmd_watch(a) -> int:
             print(verdict("SETTLED", True, "checks finished, no new activity. stop."))
             return 0
 
-        nap = min(interval, a.max_wait - waited + 0.1)
+        nap = min(interval, max_wait - waited + 0.1)
         if deadline is not None:
             nap = min(nap, max(0.0, deadline - time.time()) + 0.1)
         time.sleep(nap)
@@ -708,7 +706,7 @@ def parse_on(on: str) -> set[str]:
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="babysit",
+        prog="pr-watch",
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -736,11 +734,6 @@ def build_parser() -> argparse.ArgumentParser:
             help="restart the --max-total budget instead of preserving it",
         )
 
-    a = sub.add_parser("arm", help="snapshot a baseline")
-    common(a)
-    a.add_argument("--json", action="store_true", help="machine-readable output")
-    a.set_defaults(func=cmd_arm)
-
     po = sub.add_parser("poll", help="one-shot delta vs saved snapshot")
     common(po)
     po.add_argument(
@@ -763,7 +756,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-interval", type=float, default=60.0, help="slowest poll gap, seconds"
     )
     w.add_argument(
-        "--max-wait", type=float, default=900.0, help="hard cap per episode, seconds"
+        "--max-wait",
+        type=float,
+        default=None,
+        help="hard cap per episode, seconds (default: --max-total if set, else 900)",
     )
     w.add_argument(
         "--comment-grace",
@@ -771,11 +767,6 @@ def build_parser() -> argparse.ArgumentParser:
         default=0.0,
         help="after all checks finish, seconds to keep waiting for late comments "
         "(default 0: settle now; a still-running check already keeps watch alive)",
-    )
-    w.add_argument(
-        "--show-state",
-        action="store_true",
-        help="on timeout, print full state instead of just a one-liner",
     )
     w.set_defaults(func=cmd_watch)
     return p

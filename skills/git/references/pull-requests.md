@@ -15,8 +15,8 @@ Use `gh` first, GitHub MCP only as a fallback. Apply [SKILL.md](../SKILL.md) voi
 
 ## Title
 
-- **With ticket:** `<TICKET>: <Title>` — `XYZ-1234: Add autoscale zone 1`
-- **Without ticket:** `<Title>` — `Add autoscale zone 1`
+- **With ticket:** `<TICKET>: <Title>`, e.g. `XYZ-1234: Add autoscale zone 1`
+- **Without ticket:** `<Title>`, e.g. `Add autoscale zone 1`
 
 One line, first letter capitalized, no trailing period.
 Join multiple changes with `+`: `XYZ-1234: Add autoscale + clean up dead config`.

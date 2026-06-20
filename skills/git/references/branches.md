@@ -22,9 +22,9 @@ These are hard; the failure modes are silent or unrecoverable.
 
 Ticket OR Issue Cases ( When user supply a ticket ):
 
-- **Single PR, ticket:** `<TICKET>-<slug>` — `CPR-1234-autoscale-zone-1`
-- **Stack, ticket:** `<TICKET>/<n>-<slug>`, `<n>` from 1 — `CPR-1234/1-autoscale-zone-x`, `CPR-1234/2-autoscale-zone-y`
-- **No ticket:** `<slug>` (or `<n>-<slug>` in a stack) — `autoscale-zone-x`
+- **Single PR, ticket:** `<TICKET>-<slug>`, e.g. `CPR-1234-autoscale-zone-1`
+- **Stack, ticket:** `<TICKET>/<n>-<slug>`, `<n>` from 1, e.g. `CPR-1234/1-autoscale-zone-x`, `CPR-1234/2-autoscale-zone-y`
+- **No ticket:** `<slug>`, or `<n>-<slug>` in a stack, e.g. `autoscale-zone-x`
 
 Slug rules:
 

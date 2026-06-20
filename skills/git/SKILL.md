@@ -1,8 +1,8 @@
 ---
 name: git
 description: >
-  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open or stack a Pull Request (PR / stacked diff), review a PR, poll a PR CI (babysitting).
-  Carries user's git for commits, branches, PRs, rebasing, and reviews. Load skill if you'll deal with Git at any point in the conversation future (as early as possible).
+  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open or stack a Pull Request (PR / stacked diff), review a PR, watch a PR CI (babysitting).
+  Carries user's git convention for commits, branches, PRs, rebasing, and reviews. Load skill if you'll deal with Git at any point in the conversation future (as early as possible).
 ---
 
 # Git
@@ -15,6 +15,12 @@ rules like commit grouping, branch naming, so reading them late means redoing it
 SKILL.md alone is not enough!!
 
 If doing or planning several actions? Open several references.
+
+## Contents
+
+- [Always](#always): rules for every git action (AI disclosure, parallel reads, voice, commit scoping).
+- [Router](#router): which `references/` file to open for your action.
+- [AI Disclosure](#ai-disclosure): the verbatim footer for anything posted on GitHub.
 
 ## Always
 
@@ -53,8 +59,8 @@ Safety rules before any history rewrite: backup-branch convention, force-with-le
 **Reviewing someone else's PR** -> [`references/reviewing.md`](references/reviewing.md)
 Review procedure. The AI posts footer applies (template in [`references/pull-requests.md`](references/pull-requests.md)).
 
-**Babysit a PR's CI and Automated Reviews** -> [`references/babysit.md`](references/babysit.md)
-When you open a PR and the user asks you to babysit it: watch CI checks/failures, CodeQL, Copilot reviews, and new comments, and surface events ASAP. Automated code reviews (`BOTREVIEW`) are addressed automatically per [`references/pull-requests.md`](references/pull-requests.md) unless the user said not to; human chatter is only surfaced. Uses [`scripts/babysit.py`](scripts/babysit.py) run from a background sub-agent or background task; never a sleep loop. Don't read the script, the docs are the contract.
+**Watch a PR's CI and Automated Reviews** -> [`references/watch.md`](references/watch.md)
+When you open a PR and the user asks you to watch it: spawn a cheap background sub-agent (an `Explore` agent or a sub-agent on a cheap model) to run the watch loop and ping you only on things needing early action (a failed check, a review/comment); fall back to a background task if you can't spawn one. Pass it any context-specific ignore rules. Automated code reviews (`BOTREVIEW`) are addressed automatically per [`references/pull-requests.md`](references/pull-requests.md) unless the user said not to; human chatter is judged and surfaced or held, never lost (a final digest reconciles it). Uses [`scripts/pr-watch.py`](scripts/pr-watch.py); never a sleep loop. Don't read the script, the docs are the contract.
 
 ## AI Disclosure
 
