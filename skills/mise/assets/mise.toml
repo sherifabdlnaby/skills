@@ -55,13 +55,20 @@ depends = ["lint"]                                    # ordering only; depends r
 run = "node --test {{vars.test_args}}"
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
-description = "One-time, idempotent project bootstrap: install tools (+ deps/hooks per your use-case)"
-depends_post = ["setup:stamp"]                       # stamp the version only after a successful setup
-run = "mise install"                                 # installs tools; (and anything per your use-case)
+description = "One-time, idempotent project bootstrap: install tools, then runtime deps"
+depends_post = ["deps", "setup:stamp"]               # deps after `mise install`; stamp last (see setup:stamp wait_for)
+run = "mise install"                                 # installs tools; runtime deps live in the deps task
+
+[tasks.deps] # install runtime/project dependencies; runnable on its own after a lockfile change
+description = "Install runtime dependencies (cached; skipped when the lockfile is unchanged)"
+sources = ["package.json", "package-lock.json"]      # manifest + lockfile(s) (e.g. pnpm-lock.yaml, uv.lock, go.sum)
+outputs = ["node_modules"]                           # install dir (e.g. .venv, vendor); both source+output needed to skip
+run = "npm ci"                                        # per runtime: pnpm install --frozen-lockfile, uv sync, go mod download, …
 
 [tasks."setup:stamp"] # write the version of the last run setup to .mise/setup
 hide = true
 quiet = true
+wait_for = ["deps"]                                  # only stamp success once deps finished (waits iff deps is in the run)
 run = 'printf %s "{{vars.setup_version}}" > .mise/setup && echo "✅ Setup v{{vars.setup_version}} stamped"'
 
 [tasks."setup:check"] # fast probe (runs on `enter`); warns if setup is stale, never fails
