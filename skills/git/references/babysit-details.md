@@ -3,7 +3,7 @@
 Deep reference for [`scripts/babysit.py`](../scripts/babysit.py). Read [`references/babysit.md`](./babysit.md) first for the operational
 flow; come here when you need a flag's exact behavior, the output schema, or how a decision is
 made. **This file exists so you never have to read the source.** If something isn't here, run
-`uv run scripts/babysit.py <subcommand> --help`.
+`python3 scripts/babysit.py <subcommand> --help`.
 
 ## Subcommands
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --quiet --script
+#!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.10"
 # dependencies = []
@@ -27,7 +27,9 @@ High-signal events (what wakes the agent in `watch`):
 Plain churn (queued -> running, a job starting) updates the snapshot silently and does
 NOT wake the agent. That is the point: the noisy opening burst stays quiet.
 
-Everything is stdlib; `gh` does auth and API. Run via `uv run` (shebang handles it).
+Everything is stdlib; `gh` does auth and API. Run with plain `python3` (or `./babysit.py`):
+no venv or dependency install, so it works in a read-only sandbox where `uv run` can't
+write its cache.
 """
 
 from __future__ import annotations

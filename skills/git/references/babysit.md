@@ -1,7 +1,9 @@
 # Babysitting a PR
 
 Watch a PR's CI, reviews, and comments and react the moment something happens, without sitting
-in a sleep loop. Use [`scripts/babysit.py`](../scripts/babysit.py) (run with `uv run`).
+in a sleep loop. Use [`scripts/babysit.py`](../scripts/babysit.py) (run with plain `python3`; it
+is pure stdlib, so no venv or install, and it works in a read-only sandbox where `uv run` can't
+write its cache).
 
     > **Don't read `babysit.py`.** Its output is self-documenting (the `>>` line below). If confused user --help, then use [details](./babysit-details.md), reading source code is last resort.
 
@@ -39,7 +41,7 @@ command (Bash background mode). It exits on an event and the harness re-invokes 
 `--max-wait` equal to `--max-total` so it only exits on a real event or a terminal stop:
 
 ```
-uv run scripts/babysit.py watch --pr <N> --repo <R> --watcher <id> --max-total <T> --max-wait <T>
+python3 scripts/babysit.py watch --pr <N> --repo <R> --watcher <id> --max-total <T> --max-wait <T>
 ```
 
 `poll` is a one-shot "status right now". `arm` (optional) snapshots a baseline early.
@@ -49,7 +51,7 @@ uv run scripts/babysit.py watch --pr <N> --repo <R> --watcher <id> --max-total <
 > You babysit GitHub PR **#<NUM>** in **<OWNER/REPO>**. Run from `<git-skill-dir>`:
 >
 > ```
-> uv run scripts/babysit.py watch --pr <NUM> --repo <OWNER/REPO> --watcher <UNIQUE_ID> --on all --max-total <SECONDS>
+> python3 scripts/babysit.py watch --pr <NUM> --repo <OWNER/REPO> --watcher <UNIQUE_ID> --on all --max-total <SECONDS>
 > ```
 >
 > The final `>>` line decides everything:
