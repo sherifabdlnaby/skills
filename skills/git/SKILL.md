@@ -26,7 +26,7 @@ If doing or planning several actions? Open several references.
 
 These apply everytime
 
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**. The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md); the posts templates, chosen by provenance (autonomous vs user-directed), live below. Use them as verbatim as possible, do not write from memory.
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**. The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md); the posts templates, chosen by provenance (autonomous vs user-directed), live below. Use them as verbatim as possible, do not write from memory. A pre-shell hook backstops this: a `gh` post whose body lacks the footer is blocked, so add it before posting.
 
 **Parallelize read-only calls.** Batch independent read-only `git`/`gh` calls (`status`, `diff`, `log`, `gh pr view/diff/checks`) into a single tool call; each sequential read is a roundtrip for nothing. Mutating commands (`commit`, `push`, `rebase`, `gh pr create/edit/merge`) stay sequential.
 
@@ -74,7 +74,6 @@ the variant by **provenance**, so the reader knows whether a human stands behind
 
 ```markdown
 ---
-
 _<sub>🤖 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, autonomous and not yet reviewed by them.</sub>_
 ```
 
@@ -82,8 +81,7 @@ _<sub>🤖 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, a
 
 ```markdown
 ---
-
-_<sub>Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, with their input.</sub>_
+_<sub>🤖 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, with their input.</sub>_
 ```
 
 When unsure, use the autonomous form; it claims less human oversight, the safer default.

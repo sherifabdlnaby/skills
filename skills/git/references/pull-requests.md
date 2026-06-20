@@ -1,7 +1,7 @@
 # Pull Requests
 
 Operational mechanics for opening and updating PRs.
-Covers: pre-flight, title format (including stacked PRs), description style, Human Note, footers, post-create flow, responding to review, destructive edits, Jira.
+Covers: pre-flight, tickets, title format (including stacked PRs), description style, Human Note, footers, post-create flow, responding to review, destructive edits.
 
 Use `gh` first, GitHub MCP only as a fallback. Apply [SKILL.md](../SKILL.md) voice rules to every title, body, and comment.
 
@@ -49,13 +49,14 @@ Ask on the first PR of the conversation, when user ask you, and when you think i
 > [!NOTE]
 >
 > ### 🧍🏻Human Note
->
 > <User's text, verbatim>
 
 <rest of the body…>
 ```
 
 ## Body and Description:
+
+PR Body anatomy.
 
 - **One-line summary of the change**: ALWAYS include.
 - **User-facing Changelog style bullet points**: Include when we change more than one possibly unrelated things.
@@ -68,12 +69,54 @@ Ask on the first PR of the conversation, when user ask you, and when you think i
 - **Collapsible: validation done**: ALWAYS when meaningful manual or automated validation actually happened.
 - **Collapsible: examples**: when examples genuinely clarify the diff.
 
-PR Body and Description needs to be concise, but not miss a spot. Focus on what behavior changed, what breaking changes introduced but do not narrate the diff yourself.
+### Notes:
+- PR Body and Description needs to be concise, but not miss a spot. Focus on what behavior changed, what breaking changes introduced but do not narrate the diff yourself.
+- Use Emojis to help scanning/glancing, but not as decorations.
+- Use GitHub alerts/callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) to surface information the reviewer must not miss.
+
+Skeleton (drop any block that doesn't apply):
+
+```markdown
+> [!NOTE]
+> ### 🧍🏻 Human Note
+> xxxx yyy zz                          <!-- verbatim, only if user gave one -->
+
+### Summary
+[TICKET-123](link) | xxxx yyy zz.      <!-- short summary, always -->
+
+**Changes**
+- **Breaking**: xxxx yyy
+- **New Functionality*: xxxx yyy
+- **Backward Compatible: xxxx yyy
+- **Fixed: xxxx yyy
+- ... and so on.
+
+> [!WARNING]
+> **Breaking:** xxxx yyy.              <!-- important to know, understand, validate, test -->
+
+**Review guide**
+start in `xxxx`; then read `yyy`, then the rest is mechanical fallout.
+
+
+<!-- The rest is what you believe should include in the PR Description  -->
+
+---
+
+<details><summary>Things that didn't work</summary> tried xxxx, didn't work because yyy. </details>
+
+<details><summary>Tests & Validation</summary>  <!-- things you validated & tested.  -->  </details>
+
+### Relevant Links
+
+< relevant links (epic, issues, docs, sources, other stacked PRs)
+
+---
+_<sub>🤖 Created with <Tool> (<Model>) on behalf of @<user></sub>_
+```
 
 ## Body: linking
 
-- Jira ticket: clickable Markdown link only if you know the full URL. Never guess the Jira instance URL.
-- Parent ticket (epic or umbrella): same format, labeled "Parent" or "Epic".
+- Tickets and parent/epic: see [`## Tickets`](#tickets).
 - Related PR, same repo: `#<num>` (GitHub auto-links). Another repo: `org/repo#<num>`.
 - Docs (Notion, Confluence, RFC, README): clickable Markdown links, avoid raw URLs.
 - Stacked PRs: link the previous and next PRs in the body footer; return to edit once the next PR's URL exists.
@@ -88,14 +131,16 @@ Resolve the GitHub username once per session and cache it as `<GITHUB_USERNAME>`
 gh api user --jq '.login'
 ```
 
-Substitute the tool you're running as: `Claude`, `Cursor`, or `OpenCode`.
+Substitute two values:
+
+- `<Claude|Cursor|OpenCode>`: the tool you're running as.
+- `<MODEL>`: the friendly name of the model you're running `Opus 4.8`, `Sonnet 4.6`.
 
 Append AI Disclosure footer at the very end, after a `---` separator:
 
 ```markdown
 ---
-
-_<sub>This PR Code was created with assistance from <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME></sub>_
+_<sub>🤖 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME></sub>_
 ```
 
 For a back-and-forth with the user on how to comment, offer a verbatim Human Note (Ask User tool).

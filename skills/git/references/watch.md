@@ -71,6 +71,12 @@ pattern as a fallback). Unless the user said not to. Refer to [review-responses.
 
 On `FAIL` the script can't fix it: stop, fix and push, then re-run `watch` on the same `--watcher`.
 
+**When you push a fix** (after a `FAIL` or a review): re-run on the **same** `--watcher`, never a fresh
+one and never clearing state, the snapshot diff is what tells new from old. The push self-heals the
+cadence (new CI surfaces as `DONE`/`FAIL`/`FIXED`, which resets to hot). Two caveats: on a budgeted
+watch add `--reset-budget` so the new CI gets a full window; and hold your own pushed commits/replies
+as noise so the watcher doesn't ping you about your own actions.
+
 ## How to run it
 
 Keep polling off your own turn: never `sleep`+re-run, never hold a blocking `watch` call in your turn.
@@ -91,14 +97,31 @@ you apply the same notify / hold / digest judgment on each wake-up:
 python3 scripts/pr-watch.py watch --pr <N> --repo <R> --watcher <id> --max-total <T>
 ```
 
+### Polling schedule (hot -> cold)
+
+Two regimes, with each episode's `--max-wait` doubling as the phase timer:
+
+- **Hot** (first episode, and after any event): `--min-interval 10 --max-interval 30 --max-wait 300`.
+  Ramps 10s -> 30s, snaps back to 10s on any change. The 300s wait is the ~5-min timer.
+- **Cold** (after a hot episode returns `QUIET`, i.e. ~5 min idle): `--min-interval 30 --max-interval 120 --max-wait 900`.
+  Flat 60s, 15-min episodes.
+
+Any `>> EVENT` verdict resets to Hot next relaunch (a push counts: it surfaces as the checks it
+re-triggers). `--max-total` budget, if set, stacks on top unchanged.
+
 ### Sub-agent prompt example
 
 > You watch GitHub PR **#<NUM>** in **<OWNER/REPO>** from `<git-skill-dir>`. Run `watch` as a
 > **background task** (never blocking) so you can answer me mid-run; on each `>>` line, judge it and
 > relaunch in the background.
 >
+> Follow the hot/cold polling schedule above. Start hot; after a hot episode returns `QUIET` switch
+> to cold; any event relaunches hot:
+>
 > ```
-> python3 scripts/pr-watch.py watch --pr <NUM> --repo <OWNER/REPO> --watcher <UNIQUE_ID> --on all --max-total <SECONDS>
+> # hot:  --min-interval 10 --max-interval 30 --max-wait 300
+> # cold: --min-interval 60 --max-interval 60 --max-wait 900
+> python3 scripts/pr-watch.py watch --pr <NUM> --repo <OWNER/REPO> --watcher <UNIQUE_ID> --on all <hot|cold flags>
 > ```
 >
 > Track every event so you can answer if I ask, but **ping me only for**: a red check, a `BOTREVIEW`,

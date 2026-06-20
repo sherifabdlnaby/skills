@@ -21,6 +21,7 @@ extend-ignore-re = [
 # Accept specific words verbatim (the value must equal the key — i.e. "not a typo").
 [default.extend-words]
 # crate = "crate"
+Sherif = "Sherif" # the maintainer's name, not a misspelling of "Sheriff"
 
 # Accept specific identifiers (variable / function names) verbatim.
 [default.extend-identifiers]

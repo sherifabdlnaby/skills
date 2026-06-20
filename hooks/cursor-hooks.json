@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "type": "command",
+        "command": "./hooks/scripts/run.sh gh_disclosure.py"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "type": "command",
+        "command": "./hooks/scripts/run.sh post_edit.py"
+      }
+    ]
+  }
+}
