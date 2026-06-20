@@ -1,10 +1,10 @@
 # Tasks
 
-How to build or improve Tasks.
+How to build or improve mise Tasks.
 
 ## Rules and Best Practices:
 
-1. **Tasks are the single source of truth** for lint/test/build. The same names drive local dev, hk pre-commit, and CI. Expose a consistent contract every repo shares (`lint`, `test`, `build`, `ci`).
+1. **Tasks are the single source of truth** for lint/test/build. The same names drive local dev, hk pre-commit, and CI. Expose the consistent contract every repo shares: `setup`, `check` (alias `lint`), `test`, `build`, `dev`.
 2. **Namespace with colons** (`test:unit`, `gen:docs`). The bare group name runs the common case (`test` = fast tests); a **quoted** glob runs the group (`mise run 'test:*'`; quote it or the shell expands it).
 3. **`depends` for ordering; `sources` + `outputs` for caching**. Both are needed to skip-if-unchanged; `--force` bypasses for a clean run.
 4. **TOML for <= 5-line tasks; longer logic use an executable file task** with a shebang + `set -euo pipefail` (unless the repo already has a scripts dir).
@@ -16,6 +16,8 @@ How to build or improve Tasks.
 10. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal helpers. In CI pass `-y`/`--yes` or `confirm` hangs forever.
 11. **Prefer config over runtime flags**. Put reused settings in `mise.toml` (or `MISE_*`), not ad-hoc `--flags`.
 12. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
+13. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks).
+    If user ask for a `check`/`lint`, check if **hk** is set up and use it (refer to -> [`hk.md`](hk.md)).
 
 ## Notes & Gotchas:
 
@@ -45,7 +47,7 @@ run = "cargo build"
 
 (Args/flags via `usage` are covered in Task Arguments below; gate destructive ones with `confirm = "…"`.)
 
-File task (`mise-tasks/build`, must be executable):
+File task (`.mise/tasks/build`, must be executable):
 
 ```bash
 #!/usr/bin/env bash
@@ -79,7 +81,7 @@ complete "env" run="ls deploy/envs" descriptions=#true                          
 run = './deploy.sh "$usage_env" --tag "$usage_tag" ${usage_force:+--force} ${usage_verbose:+-v}'
 ```
 
-Same spec as a **file task** (`mise-tasks/deploy`, executable). Spec lives in `#USAGE`/`#MISE` comments; the body is a plain script, so read **only `$usage_X` env vars**. The body isn't Tera-rendered, so `{{usage.X}}` prints literally. Every line of a multi-line `{ choices … }` block needs its own `#USAGE`.
+Same spec as a **file task** (`.mise/tasks/deploy`, executable). Spec lives in `#USAGE`/`#MISE` comments; the body is a plain script, so read **only `$usage_X` env vars**. The body isn't Tera-rendered, so `{{usage.X}}` prints literally. Every line of a multi-line `{ choices … }` block needs its own `#USAGE`.
 
 ```bash
 #!/usr/bin/env bash
