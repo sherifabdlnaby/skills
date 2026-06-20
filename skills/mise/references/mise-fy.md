@@ -7,6 +7,7 @@ Guidance on converting an existing project to be Mise-managed, or auditing one t
 1. **Know the target.** The ideal end-state layout (file tree + every supporting file) is [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md); the canonical config is [`assets/mise.toml`](../assets/mise.toml). Convert _toward_ that picture.
 2. **Inventory before editing.** Discover what already manages tools/env/tasks/hooks/CI, don't assume (list below).
 3. **Plan, then convert.** Map each piece to its mise equivalent and note conflicts before touching files.
+4. **Lay down the structure**: Some project might have no need for specific sections but we include them so the path of least resistance is extending the patterns we embedded.
 
 ## Notes & Gotchas:
 
