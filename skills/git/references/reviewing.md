@@ -2,7 +2,7 @@
 
 Covers the procedure for reviewing a PR the user points you at ("Review `<PR name or link>`").
 
-Use `gh` first, GitHub MCP only as a fallback. Apply [SKILL.md](../SKILL.md) voice rules to the summary and any comment you draft, and append the AI posts footer (template in [`references/pull-requests.md`](./pull-requests.md)) to anything posted on the user's behalf, for transparency.
+The other direction, responding to review comments on your *own* PR, is [`review-responses.md`](./review-responses.md).
 
 ## Procedure
 

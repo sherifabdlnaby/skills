@@ -80,6 +80,8 @@ PR Body and Description needs to be concise, but not miss a spot. Focus on what 
 
 ## AI footers
 
+This is the PR-**body** footer. Comment and reply footers, chosen by provenance (autonomous vs user-directed), live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
+
 Resolve the GitHub username once per session and cache it as `<GITHUB_USERNAME>`:
 
 ```bash
@@ -128,14 +130,10 @@ Output the PR link first, then:
 2. Apply your edit locally.
 3. Pass the full updated body via `gh pr edit --body` (HEREDOC).
 
-## Responding to review comments:
+## Responding to review comments
 
-1. Read all comments first; assess each independently before acting.
-2. For each, decide fix / push back / escalate:
-   - **Fix** when clearly correct (typos, missing error handling on a critical path, wrong API usage).
-   - **Push back**, specific and concise, when the suggestion adds complexity for a near-impossible edge case, solves a problem that doesn't exist in this context, or is factually wrong.
-   - **Escalate** when the tradeoff is genuinely ambiguous, or it's a design decision you lack context for.
-3. Don't blindly agree; evaluate correctness and proportionality.
-4. Batch fixes addressing the same review round into one commit.
-5. Reply to every comment, including ones you disagree with, briefly and directly.
-6. Append the AI posts footer to replies made on the user's behalf.
+Full flow lives in [`review-responses.md`](./review-responses.md): classify the reviewer (automated
+bot/AI tool, an AI-disclosed agent behind a human account, or a human), then fix / push back /
+escalate. Quick version: read all first, fix what's right, push back concretely on what's wrong or is over-engineered,
+or is trying to handle an insignificant/rare case for the project, but also escalate genuine tradeoffs to the user, reply to every comment, batch a round's fixes into one
+commit, and append the AI footer to replies posted on the user's behalf.

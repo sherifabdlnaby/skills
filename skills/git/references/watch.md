@@ -66,10 +66,8 @@ COMMENT   @octocat (human) path/to/file.go · #1583153997
 
 **Automated reviews (`BOTREVIEW`): address them by default.** A `BOTREVIEW` is an automated code
 review (Copilot, CodeQL, Sonar, a review bot). Bot-ness comes from GitHub's `user.type` (login
-pattern as a fallback), never the comment body. Unless the user said not to, react with the
-[`pull-requests.md`](./pull-requests.md) "Responding to review comments" flow (fix what's right,
-push back on what's wrong, reply to each, AI footer). Plain `COMMENT` lines (human chatter, bot
-greetings/labels) are surfaced only, never auto-actioned, though a bot author is still flagged.
+pattern as a fallback). Unless the user said not to. Refer to [review-responses.md](review-responses.md) for how to reply to review comments.
+
 
 On `FAIL` the script can't fix it: stop, fix and push, then re-run `watch` on the same `--watcher`.
 
