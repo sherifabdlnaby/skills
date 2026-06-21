@@ -31,7 +31,7 @@ The skill encodes what needs for dev setup to just work, stay discoverable, and 
 
 ## Shout out!
 
-Shout out to @jdx for building such tasteful tools such as `mise` and `hk` !
+Shout out to [@jdx](https://github.com/jdx) for building such tasteful tools such as `mise` and `hk` !
 
 ## Reference index
 
