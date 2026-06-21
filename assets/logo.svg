@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Hand-rolled sushi cones on a lettuce garnish on an off-white dish">
+  <title>skills — hand-rolled sushi cones</title>
+
+  <defs>
+    <g id="star">
+      <path d="M0,-11 C0,-3.3 3.3,0 11,0 C3.3,0 0,3.3 0,11 C0,3.3 -3.3,0 -11,0 C-3.3,0 0,-3.3 0,-11 Z" fill="#FFD45E"/>
+    </g>
+    <!-- temaki filling bundle, drawn at the cone opening (origin = opening center) -->
+    <g id="fill">
+      <rect x="-7" y="-44" width="14" height="34" rx="7" fill="#9CCC65" transform="rotate(-3)"/>
+      <rect x="-9" y="-52" width="18" height="42" rx="9" fill="#FF8B5E" transform="rotate(-17)"/>
+      <rect x="-5" y="-50" width="10" height="40" rx="5" fill="#8BC34A" transform="rotate(16)"/>
+      <g fill="#FF7043">
+        <circle cx="-6" cy="-8" r="3"/>
+        <circle cx="0" cy="-11" r="3"/>
+        <circle cx="6" cy="-8" r="3"/>
+        <circle cx="-3" cy="-4" r="3"/>
+        <circle cx="3" cy="-4" r="3"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- off-white oval dish (darker lower crescent = the dish's base/edge) -->
+  <ellipse cx="256" cy="412" rx="206" ry="58" fill="#E4DBC6"/>
+  <ellipse cx="256" cy="398" rx="206" ry="58" fill="#F6F1E3"/>
+  <ellipse cx="256" cy="390" rx="180" ry="42" fill="#FCFAF1" opacity="0.6"/>
+
+  <!-- green lettuce / seaweed garnish bed with ruffled edges -->
+  <g>
+    <path d="M112,366 Q118,338 142,344 Q152,326 178,338 Q194,320 216,334 Q238,316 260,332 Q282,318 302,334 Q324,322 344,338 Q366,330 382,346 Q402,352 400,368 Q398,400 256,406 Q118,400 112,366 Z" fill="#5E9233"/>
+    <path d="M112,360 Q118,332 142,338 Q152,314 178,328 Q194,310 216,324 Q238,306 260,322 Q282,308 302,324 Q324,312 344,328 Q366,320 382,336 Q402,342 400,358 Q398,392 256,398 Q118,392 112,360 Z" fill="#84C24A"/>
+    <g fill="none" stroke="#5E9233" stroke-width="2.5" stroke-linecap="round" opacity="0.5">
+      <path d="M256,388 Q230,352 202,332"/>
+      <path d="M256,388 Q256,346 256,324"/>
+      <path d="M256,388 Q284,352 312,330"/>
+    </g>
+  </g>
+
+  <!-- back cone (center) -->
+  <g>
+    <path d="M218,270 Q236,322 258,372 Q280,322 298,270 Z" fill="#2F3A2E"/>
+    <ellipse cx="258" cy="270" rx="40" ry="12" fill="#28332A"/>
+    <ellipse cx="258" cy="268" rx="34" ry="9" fill="#FFFBF4"/>
+    <ellipse cx="246" cy="268" rx="2.5" ry="1.8" fill="#EFE4D2"/>
+    <ellipse cx="268" cy="269" rx="2.5" ry="1.8" fill="#EFE4D2"/>
+    <use href="#fill" transform="translate(258,269) scale(0.82)"/>
+  </g>
+
+  <!-- front-left cone -->
+  <g>
+    <path d="M152,300 Q166,350 182,392 Q224,348 240,300 Z" fill="#2F3A2E"/>
+    <path d="M160,304 Q172,348 182,388 L191,383 Q181,346 172,304 Z" fill="#46553F" opacity="0.55"/>
+    <ellipse cx="196" cy="300" rx="44" ry="13" fill="#28332A"/>
+    <ellipse cx="196" cy="298" rx="38" ry="10" fill="#FFFBF4"/>
+    <ellipse cx="182" cy="298" rx="3" ry="2" fill="#EFE4D2"/>
+    <ellipse cx="208" cy="299" rx="3" ry="2" fill="#EFE4D2"/>
+    <use href="#fill" transform="translate(196,299)"/>
+  </g>
+
+  <!-- front-right cone -->
+  <g>
+    <path d="M274,292 Q286,346 340,390 Q358,348 366,292 Z" fill="#2F3A2E"/>
+    <ellipse cx="320" cy="292" rx="46" ry="13" fill="#28332A"/>
+    <ellipse cx="320" cy="290" rx="40" ry="10" fill="#FFFBF4"/>
+    <ellipse cx="306" cy="290" rx="3" ry="2" fill="#EFE4D2"/>
+    <ellipse cx="332" cy="291" rx="3" ry="2" fill="#EFE4D2"/>
+    <use href="#fill" transform="translate(320,291)"/>
+  </g>
+
+  <!-- sparkles -->
+  <use href="#star" transform="translate(118 162) scale(1.1)"/>
+  <use href="#star" transform="translate(398 150) scale(0.95)"/>
+  <use href="#star" transform="translate(432 300) scale(0.8)"/>
+  <use href="#star" transform="translate(92 322) scale(0.75)"/>
+</svg>
