@@ -83,13 +83,14 @@ Keep polling off your own turn: never `sleep`+re-run, never hold a blocking `wat
 
 **Preferred, background sub-agent.** Spawn a *cheap* background watcher: an `Explore` agent or a
 sub-agent on a cheap model (Haiku, Composer, nano, ...). It only reads, judges, and relays, so a
-cheap model suffices. It pings you only when something needs early action.
+cheap model suffices. It pings you only when something needs action.
 
-**Tell it what to ignore.** Paste this conversation's context into the prompt's Hold list: known-flaky
+**Tell it what to ignore.** Paste this conversation's relevant context into the prompt's Hold list: known-flaky
 checks, expected bot noise (dependabot, changelog), a reviewer you'll handle yourself. It can only
-skip what you mark safe; given nothing, it falls back to the generic noise rules.
+skip what you mark safe; given nothing, it falls back to the generic noise rules. Ask it to not take any actions, it's readonly.
+Instruct it to prefer relaying when it's not sure.
 
-**Fallback, background task.** If you can't spawn a sub-agent, launch `watch` yourself as a
+**Fallback, background task.** If you can't spawn a sub-agent, AND ONLY if you can't spawn a subagent (don't prefer this method urself), launch `watch` yourself as a
 background command (Bash background mode). It exits on an event and the harness re-invokes *you*, so
 you apply the same notify / hold / digest judgment on each wake-up:
 
