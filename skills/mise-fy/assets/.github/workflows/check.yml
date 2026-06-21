@@ -66,9 +66,9 @@ jobs:
         run: |
           # PRs check changed files (--pr); schedule/dispatch default to --all (dispatch can pick --pr).
           [ "$EVENT" = pull_request ] && scope=pr || scope="${SCOPE_INPUT:-all}"
-          # --pr diffs against the default branch; a CI checkout only has it as origin/<base>, so make
-          # a local ref (|| true: on the default branch it's already checked out → harmless no-op).
-          [ "$scope" = pr ] && git branch --force "$BASE_REF" "origin/$BASE_REF" 2>/dev/null || true
+          # hk's --pr resolves the base via origin/HEAD, which the Actions checkout never sets; point it
+          # at the PR base so hk diffs origin/<base>...HEAD (else it finds 0 files and passes green).
+          [ "$scope" = pr ] && git remote set-head origin "$BASE_REF" >/dev/null 2>&1 || true
           mise run check "--$scope" || {
             echo "::error::Lint & format failed on $REF_NAME — fix locally with 'mise run check --fix --$scope', then push. ('mise run setup' installs the pre-commit hook so this happens on every commit.)"
             exit 1

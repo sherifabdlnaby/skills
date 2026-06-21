@@ -71,8 +71,9 @@ jobs:
         run: |
           [ "$EVENT" = pull_request ] && scope="pr" || scope="${SCOPE_INPUT:-all}"
           echo "scope=$scope" >> "$GITHUB_OUTPUT"
-          # --pr diffs against the default branch; make it a local ref (CI has only origin/<default>).
-          [ "$scope" = pr ] && git branch --force "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH" 2>/dev/null || true
+          # hk's --pr resolves the base via origin/HEAD, which the Actions checkout never sets; point it
+          # at the default branch so hk diffs origin/<default>...HEAD (else it finds 0 files and passes).
+          [ "$scope" = pr ] && git remote set-head origin "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
           # Apply fixes across every step (no --fail-fast); keep the exit code, don't abort.
           rc=0; mise run check --fix "--$scope" || rc=$?
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
