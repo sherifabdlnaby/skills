@@ -121,6 +121,32 @@ No `#USAGE` spec? Extra CLI args arrive as plain `$@`. Everything else (args, fl
 Gotchas: required `<arg>` is satisfied by its `env="VAR"` (no CLI value needed) · `hide=#true` drops an item from help/completions · `complete` Tera vars: `words`, `CURRENT`, `PREV`.
 **`{{usage.X}}` works ONLY inside a TOML `run`.** mise Tera-renders `description`/`confirm`/etc. at config-load, where `{{usage.X}}` has no context: it throws `Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not just that one. Everywhere else, and in all file-task bodies, use plain `$usage_X`. (verified on mise 2026.6.6.)
 
+## Watch
+
+`mise watch <task>` (alias `mise w`) re-runs a task when its **`sources`** change; `sources` alone (no `outputs`) is enough to feed watch, even when you don't want the skip-if-unchanged cache. It shells out to **watchexec**, so that binary must be present (add it to tools).
+
+```bash
+mise watch test                # run + re-run on source change
+mise watch -r serve            # -r/--restart: kill & restart the process (dev servers)
+```
+
+Most-used flags (passed through to watchexec): **`-r/--restart`** kill & restart a still-running process (dev servers); **`-o/--on-busy-update <queue|do-nothing|restart|signal>`** what to do if a change lands mid-run (`-r` = `restart`); **`-d/--debounce <time>`** coalesce event bursts (default 50ms); **`-p/--postpone`** don't run at startup, wait for the first change; **`--poll [interval]`** for network shares/containers where native FS events don't fire.
+
+Worth wiring watch for: tight edit -> rebuild/retest loops, dev servers, doc/asset rebuilds.
+
+**`mise watch` is a command you run, not a task**; it's a long-lived foreground process (Ctrl-C to stop) that takes a task as its argument; mise never starts it on its own. Wrap it in a task so it has a standard name and `mise run <task>` starts the watcher:
+
+```toml
+[tasks.dev]
+description = "Watch sources & re-run tests on change"
+run = "mise watch test"        # `mise run dev` starts the watcher; someone still has to invoke it
+```
+
+**Notes & Gotchas:**
+
+- **watchexec is a real dependency**, not bundled. pin it in `[tools]` if the team relies on `mise watch`.
+- **Need it truly unattended** (daemon, auto-restart, scheduled)? That's outside watch -> use a dedicated process manager or system service.
+
 ## Checklist
 
 Before considering a task done:
@@ -141,3 +167,4 @@ Before considering a task done:
 - [toml-tasks](https://mise.jdx.dev/tasks/toml-tasks.html)
 - [file-tasks](https://mise.jdx.dev/tasks/file-tasks.html)
 - [running-tasks](https://mise.jdx.dev/tasks/running-tasks.html)
+- [watch](https://mise.jdx.dev/cli/watch.html)

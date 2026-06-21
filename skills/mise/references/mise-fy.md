@@ -26,9 +26,14 @@ Explore Development and or Contribution section in README.md, AGENTS.md, or CLAU
 1. Explore how the repo local dependencies are installed. Read its README.md or AGENTS/CLAUDE.md look for installation instructions, and or (`.tool-versions` (asdf), `.nvmrc`/`.node-version`, `.python-version`, `.ruby-version`, `Brewfile`).
 2. Explore existing tools versions (node version, npm version, mise version)
 3. Explore if Repository relies on Docker (or Podman), check if it's installed.
+4. Flag lazy / uncommon tools. For each tool, ask "does *everyone* need this on `mise install`, or only some workflows?" Decision order:
+   1. single task needs it → **task-scoped tool** (`[tasks.x] tools.foo`).
+   2. several tasks/`./bin/` scripts need it but not everyone, or it's an off-registry binary → **tool stub**; shared toolchain → plain `[tools]`.
+   3. Ref:  Decision + lockfile gotchas: [`tools.md`](tools.md#lazy-install-for-uncommon-tools).
 
 #### Tasks
-Explore how the repo manage repetitive tasks. Look for Makefile, package.json (or similar) scripts. Check tasks run by the CI.
+Explore how the repo manage repetitive tasks. Look for Makefile, package.json (or similar) scripts. Check tasks run by the CI or references in README.md or AGENTS.md.
+**Flag watch candidates** while you're here: any existing watch/rerun loop (`nodemon`, `webpack --watch`, `cargo watch`, etc) maps to `mise watch <task>` + accurate `sources` drop the bespoke watcher and pin `watchexec` in `[tools]`. (See [`tasks.md`](tasks.md#watch).)
 
 #### CI & Hooks
 Explore the CI, and Local Validations / Tests / Setup / Linters.
@@ -60,10 +65,12 @@ Keep this off `pre-push`/CI gates until the tree is clean, otherwise the first C
 
 - [ ] Inventoried existing tool/env/task/hook/CI mechanisms
 - [ ] `mise.toml` `[tools]` covers all runtimes; old version files removed
+- [ ] Lazy/uncommon tools placed by the decision order (single-task → task-scoped; multi-task-but-not-everyone/off-registry → `./bin/` stub; shared → `[tools]`); lockfile implication noted (task-scoped tools aren't in `mise.lock`; stubs self-lock via `--lock`)
 - [ ] Lockfile decision made (`mise.lock` committed if enabled)
 - [ ] `[env]` replaces `.envrc`/manual exports; secrets policy applied; shell `${VAR:-default}` fallbacks converted to `{ default = ... }`.
 - [ ] Secret redaction applied
 - [ ] Tasks migrated; lint/test/build runnable via `mise run`
+- [ ] Bespoke file-watchers (nodemon/`--watch`/cargo-watch) replaced by `mise watch` + `sources`; `watchexec` pinned if used
 - [ ] Pre-commit hooks configured, and have a CI counterpart.
 - [ ] Retrospective lint run (`mise run check --all`) and existing debt triaged/cleared before gating CI
 - [ ] CI uses `jdx/mise-action` and runs the same tasks

@@ -27,6 +27,7 @@ Guidance on Installing Tools and Runtimes via Mise.
 - **`~/.tool-versions` is not global** (unlike asdf): global config is `~/.config/mise/config.toml`.
 - **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.
 - **Lockfile is opt-in.** No `mise.lock` is written until `[settings] lockfile = true`. Don't assume reproducibility you didn't enable. For *using* the lockfile in CI (`mise install --locked`) and the per-platform gotcha, see [`ci.md`](ci.md).
+- **Tools are lazy by default; `mise install` is the eager step.** To make a *specific* tool lazy and not in everyone's install, scope it to its task or use a tool stub see [Lazy-install for uncommon tools](#lazy-install-for-uncommon-tools).
 
 ## Backends
 
@@ -106,9 +107,38 @@ lockfile = true                          # write mise.lock (required for pinning
 minimum_release_age = "7d"               # skip releases newer than 7 days (rule 9)
 ```
 
+## Lazy-install for uncommon tools
+
+Not every tool belongs in the shared `[tools]` block that installs it for **everyone** on `mise install` (e.g devs with weak internet connection).
+A tool only _some_ workflows touch should be installed **lazily** (only when first used) and **not** for everyone. Two mechanisms; pick in this order:
+
+1. **Task-scoped tool: _prefer this_ when a single task needs the tool.** `[tasks.x] tools.foo = "…"` (rule 10). Installed only when that task runs, never on `mise install`, and not seen by `depends`. The tool stays declared in `mise.toml`, version-pinned like any other.
+   - **Don't use it when several tasks need the same tool** as you'd repeat the pin per task and they drift. That's the case for option 2.
+2. **Tool stub: use when (1) doesn't fit:** the tool is shared across multiple tasks/`./bin/` scripts or run by path (not from a task), but still shouldn't be in everyone's `mise install`; or it's an off-registry binary with no good `[tools]` home. A committed `./bin/x` that installs-and-runs **one** pinned tool on first run.
+   - Append ./bin/ to PATH using [env] _.path = ["./bin"] (ref: [env.md](env.md))
+
+(If the tool _is_ part of the shared toolchain everyone installs and is expected to use then it's neither of these it's a plain `[tools]` entry.
+
+**Stubs work with any backend, not just http.** The format takes a `tool` field — `tool = "github:cli/cli"`, `"aqua:…"`, `"cargo:…"`, or a core tool like `"python"`, same notation as `[tools]`.
+
+### Notes & Gotchas
+
+**Lockfile / reproducibility:**
+
+- **Task-scoped tools are NOT written to `mise.lock`** (as of v2026.6.11) even after the task runs. They're pinned by their `mise.toml` version string but get **no locked exact-version/checksum**. If a lazy tool must be lockfile-reproducible, that's a reason to lift it to top-level `[tools]` (and accept it's then in `mise install`) or make it a `--lock`'d stub instead.
+- **Tool stubs don't participate in `mise.lock` at all.** Each stub carries its **own** embedded lock via `mise generate tool-stub … --lock` (exact version + per-platform URLs/checksums baked into the file). So "the repo is locked" via `mise.lock` says nothing about stubs.
+
+**Stub mechanics:**
+
+- **Generate, don't hand-author http stubs.** Without `--skip-download` mise fetches once to record checksum/size/bin.
+- **A bare-`url` stub's only guarantee is the checksum it pins**.
+- **Re-running appends platforms**, never overwrites; an existing platform's URL is replaced only if you re-specify that platform.
+- **The stub is just a file you run by path** (`./bin/x`), `chmod +x` and committed. It is **not** added to `PATH` like `[tools]`. ~4ms overhead once cached (cache busts when the file changes).
+-
 ## Docs:
 
 - [dev-tools](https://mise.jdx.dev/dev-tools/)
+- [tool-stubs](https://mise.jdx.dev/dev-tools/tool-stubs.html)
 - [lockfile](https://mise.jdx.dev/dev-tools/mise-lock.html)
 - [tool options](https://mise.jdx.dev/dev-tools/#tool-options)
 - [settings](https://mise.jdx.dev/configuration/settings.html)
