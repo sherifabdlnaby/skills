@@ -24,6 +24,7 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
 - **`hk check --plan --json`** prints the resolved plan without running it; feed it to tooling (e.g. completions: `… --json --no-progress | jq -r '.steps[].name'`).
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
 - **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.48"` resolves to the git tag `v1.48`, which doesn't exist → `404 Not Found` on install. Use `1.48.0`.
+- **The `actionlint` builtin needs `shellcheck` pinned.** actionlint shells out to shellcheck to lint workflow `run:` blocks; in not defined, or unpinned, it fails. Add both to `[tools]`.
 
 ## Setup & Templates.
 
