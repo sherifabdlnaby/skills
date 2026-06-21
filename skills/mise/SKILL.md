@@ -13,17 +13,16 @@ An opinionated conventions and best-practices guide for [mise](https://mise.jdx.
 The skill uses progressive disclosure: each area routes to a `references/` file holding the actual rules and best practices.
 Read the matching one **before** planning or acting, not after. SKILL.md alone is not enough. Doing several things? Open several references.
 
-Use this skill when adding a mise tool/task/env, or when the user asks you to audit the whole project and "mise-fy" it.
-Since the skill encodes opinionated best practices, pushing all of them **when only asked to add a simple task/tool** would be too much.
-Apply the best practices that fit **just your goal**, and surface tangential improvements to the user sparingly.
-When `mise-fy`-ing and improving a codebase, you can suggest all the improvements and recommendations.
+Use this skill when adding a mise tool/task/env, or when the user asks you to audit the whole project and "mise-fy" it. Scope your effort to the request:
+
+- **Narrow change** (one tool/task/env): apply only the best practices that touch that change, plus the "Always applies" floor below. Surface at most one or two adjacent improvements as suggestions; don't refactor the rest.
+- **Explicit "mise-fy" / audit**: apply and recommend everything.
 
 ## Reference index
 
 - [`references/install.md`](references/install.md). Machine setup: install via package manager, shell activation, shims for non-interactive shells, completions.
 - [`references/tools.md`](references/tools.md). Dev tools / runtimes: installing, pinning, updating, backends, lockfile.
   - [`references/runtimes/node.md`](references/runtimes/node.md). Node runtime integration: package managers, dep install, idioms.
-  - [`references/runtimes/python.md`](references/runtimes/python.md). Python runtime integration: virtualenvs, dep install (WIP).
 - [`references/env.md`](references/env.md). Env & vars: `[env]`, dotenv, secrets, templating, required vars, defaults, redaction, PATH.
 - [`references/tasks.md`](references/tasks.md). Tasks: TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, parallelism.
 - [`references/hk.md`](references/hk.md). hk pre-commit / git hooks: `hk.pkl` (Pkl), `check` vs `fix`, builtins, mise integration, custom steps.
@@ -46,10 +45,9 @@ Install via package manager, activate the shell, shims for non-interactive shell
 **Dev tools / runtimes** (install, pin, update, backends, lockfile) -> [`references/tools.md`](references/tools.md)
 Installing a tool, or runtime.
 
-**Runtime integration** (per-runtime: package managers, virtualenvs, dep install) -> [`references/runtimes/`](references/runtimes/).
+**Runtime integration** (per-runtime: package managers, dep install) -> [`references/runtimes/`](references/runtimes/).
 
 - Node -> [`runtimes/node.md`](references/runtimes/node.md)
-- Python -> [`runtimes/python.md`](references/runtimes/python.md) (WIP)
 
 **Env & vars** (project env, dotenv, secrets) -> [`references/env.md`](references/env.md)
 `[env]`, `_.file`/`_.path`/`_.source`, templating, required vars, default fallbacks, redaction, updating PATH, loading .env files.
@@ -93,6 +91,6 @@ These hold no matter which reference you loaded; check them even when fixated on
 1. **Untrusted config doesn't load.** Before `mise trust`, `[env]`/tasks/hooks are silently skipped (interactive shells prompt; non-interactive ones error or skip). A fresh clone needs `mise trust` (or a `trusted_config_paths` entry) before *anything* in `mise.toml` takes effect.
 2. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
 3. **Set `min_version`** (root level, not under `[settings]`) when you rely on a newer feature, so old clients are guided to update. It also floors users past known-vulnerable releases, e.g. `>=2026.6.4` for the CVE-2026-35533 config-trust bypass fix (GHSA-436v-8fw5-4mj8).
-4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`. mise tries the gh CLI token first, falls back to git credentials, fails open.
+4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`. mise tries the gh CLI token first, falls back to git credentials, fails open. In CI a `GITHUB_TOKEN` env var works too (see [`ci.md`](references/ci.md)).
 5. **Mise moves fast.** When you hit a wall, check the recent changelog alongside the docs.
 6. **Shims don't expose every `mise activate` feature** (e.g. some env-on-`cd`); local-vs-CI mismatches often trace here. See [`install.md`](references/install.md) / [`ci.md`](references/ci.md).

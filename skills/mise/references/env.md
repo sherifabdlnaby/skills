@@ -54,10 +54,6 @@ vars = { e2e_args = "--headed" }         # override a var for this task
 run = "./scripts/test-e2e.sh {{vars.e2e_args}}"
 ```
 
-## Examples
-
-WIP
-
 ## Docs:
 
 - [environments](https://mise.jdx.dev/environments/)

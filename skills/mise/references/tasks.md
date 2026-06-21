@@ -12,11 +12,13 @@ How to build or improve mise Tasks.
 6. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
 7. **Invoke `mise run <task>` (alias `mise r`)**, never bare `mise <task>` (avoids command/tool conflicts).
 8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2026.11.0). Built-in; don't add `usage` to `[tools]`. `help=` + `choices` make `--help` and completion free. See Task Arguments below.
-9. **Give every task a `description`**; add `choices`/simple `complete` when cheap. Hand-written completion scripts only on request; keep them under **`.mise/completion/`** and reference by path from `complete … run="./.mise/completion/x.sh"`. (Convention only; mise does **not** auto-load that dir; it's just where we standardize these scripts.)
-10. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal helpers. In CI pass `-y`/`--yes` or `confirm` hangs forever.
-11. **Prefer config over runtime flags**. Put reused settings in `mise.toml` (or `MISE_*`), not ad-hoc `--flags`.
-12. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
-13. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks).
+9. **Give every task a `description`**;
+10. add `choices`/simple `complete` when useful and it's a short one-liner command.
+11. Handwritten completion scripts only on request; keep them under **`.mise/completion/`** and reference by path from `complete … run="./.mise/completion/x.sh"`. (Convention only; mise does **not** auto-load that dir; it's just where we standardize these scripts.)
+12. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal helpers. In CI pass `-y`/`--yes` or `confirm` hangs forever.
+13. **Prefer config to runtime flags**. Put reused settings in `mise.toml`, not ad-hoc `--flags`.
+14. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
+15. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks).
     If user ask for a `check`/`lint`, check if **hk** is set up and use it (refer to -> [`hk.md`](hk.md)).
 
 ## Notes & Gotchas:
@@ -118,6 +120,20 @@ No `#USAGE` spec? Extra CLI args arrive as plain `$@`. Everything else (args, fl
 
 Gotchas: required `<arg>` is satisfied by its `env="VAR"` (no CLI value needed) · `hide=#true` drops an item from help/completions · `complete` Tera vars: `words`, `CURRENT`, `PREV`.
 **`{{usage.X}}` works ONLY inside a TOML `run`.** mise Tera-renders `description`/`confirm`/etc. at config-load, where `{{usage.X}}` has no context: it throws `Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not just that one. Everywhere else, and in all file-task bodies, use plain `$usage_X`. (verified on mise 2026.6.6.)
+
+## Checklist
+
+Before considering a task done:
+
+- [ ] `description` set; standard names used where they fit (`setup`/`check`(=lint)/`test`/`build`/`dev`); colon-namespaced if part of a group.
+- [ ] Right form: TOML for <=5 lines, executable file task for longer logic; file task lives in a discovered dir (`.mise/tasks`).
+- [ ] Ordering via `depends`; skip-if-unchanged via **both** `sources` + `outputs`.
+- [ ] `env`/`tools` scoped to the task, not global, when only it needs them.
+- [ ] Args via `usage` spec (not deprecated `{{arg()}}` etc.); `{{usage.X}}` only inside a TOML `run`, `$usage_X` everywhere else.
+- [ ] Completion added where useful: `{ choices … }` for static sets, `complete "name" run="…"` for dynamic (if command is oneliner); handwritten scripts under `.mise/completion/` only on request.
+- [ ] Destructive tasks gated with `confirm`; internal helpers `hide = true`; CI passes `-y`.
+- [ ] Reused settings in config (`mise.toml`/`MISE_*`), static values in `[vars]` not `[env]`.
+- [ ] Runs green via `mise run <task>`; if it's `check`/`lint`, wired to hk when the repo uses it.
 
 ## Docs:
 

@@ -5,7 +5,7 @@ mise-fy-ing or auditing a project isn't finished until the docs teach a **human*
 - **README.md**: onboard a human. Refer to [assets/README.md](../assets/README.md) for inspiration.
 - **AGENTS.md / CLAUDE.md** -> onboard an agent. Refer to [assets/AGENTS.md](../assets/AGENTS.md) for inspiration.
 
-## Principles
+## Rules and Best Practices:
 
 - **Teach discovery, don't enumerate everything.** Show one or two examples (`mise run check`, `mise run test`) and point at the discovery path: `mise tasks` lists all, `mise run <task> --help` shows a task's flags.
 - **Point at the source of truth.** Tools/tasks/env live in `mise.toml`. Docs teach how to *read and run* it, they don't duplicate it.
@@ -13,7 +13,7 @@ mise-fy-ing or auditing a project isn't finished until the docs teach a **human*
 - **Examples should be the examples expected to be run the most**.
 - **Only mention hk if the repo uses it.**
 
-## Notes
+## Notes & Gotchas:
 
 1. If the Repo have a different structure to expose these information, and it's clean, then use it.
 

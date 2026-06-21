@@ -11,7 +11,7 @@ Platform-specific setup lives under [`ci/`](ci/):
 1. **Drive work through `mise run <task>` or `mise x` for consistent results**, even when the tools are already on `PATH` via shims. It guarantees the pinned versions and mise's `[env]`, which bare-command shims don't fully carry, and avoids the prompt-hook activation that's spotty in CI (see [Getting tools on PATH](#getting-tools-on-path)).
 2. **Run the same tasks as locally** (`mise run check`, `mise run test`), don't re-encode commands in YAML (see [`tasks.md`](tasks.md)). When local, the pre-commit hook, and CI all call one task, behavior can't drift.
 3. Pin tool versions and commit `mise.lock`; install with `--locked` so CI can't silently drift off the lockfile (see [`tools.md`](tools.md)).
-4. Set a CI token (e.g. `GITHUB_TOKEN`) so tool installs don't hit provider API rate limits (see SKILL.md "Always applies").
+4. Set a CI token (e.g. `GITHUB_TOKEN`) so tool installs don't hit provider API rate limits. Locally the same is achieved via `[settings] github.gh_cli_tokens`/`github.use_git_credentials` (see SKILL.md "Always applies").
 
 ## Notes & Gotchas:
 

@@ -8,7 +8,6 @@ Guidance on Installing Tools and Runtimes via Mise.
 2. **Pin by version policy**, never floating:
    - Tool is **`>=1.0`** → pin at **major** (e.g. `node = "24"`); tracks patches/minors within that major.
    - Tool is **`<1.0`** (0.x) → pin at **minor** (e.g. `ruff = "0.15"`); 0.x ships breaking changes on minor bumps, so a bare major (`"0"`) is meaningless.
-   - **Exception**: backends that resolve a version to a git tag (e.g. hk) need the full `MAJOR.MINOR.PATCH`; a partial like `"1.48"` looks for a `v1.48` tag that doesn't exist → 404. See [`hk.md`](hk.md) rule on pinning.
 3. **Never use `latest`** until the user explicitly asks for it (even with a lockfile present). The lockfile is a safety net, not a license to float.
 4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it look as expected, and re-order the added part by the command to match file structure (e.g group relevant tools on top of each other)
 5. To pin per rule 2: `mise use <tool>@$(mise latest <tool> | cut -d. -f1) --fuzzy` for a `>=1.0` tool (writes the bare major); for a `0.x` tool use `cut -d. -f1,2` to write `0.<minor>`.
@@ -58,7 +57,6 @@ disable_backends = ["asdf", "vfox"]   # resolve only via verified backends; drop
 Runtimes have extra integration features (package managers, virtualenvs, idiomatic files, dep install). When adding/configuring one of these, **read its file first**; the general rules above still apply:
 
 - **Node** (corepack vs pinned PM, `npm_shim`, deps task) -> [`runtimes/node.md`](runtimes/node.md)
-- **Python** (venv auto-create/activate, `uv`, deps task) -> [`runtimes/python.md`](runtimes/python.md)
 
 Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps** (`npm install`/`uv sync`). Use a `setup` task or a hook; see the runtime file.
 

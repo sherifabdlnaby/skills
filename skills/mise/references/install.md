@@ -37,3 +37,10 @@ Read [completion](https://mise.jdx.dev/cli/completion.html).
 ## 5. Confirm
 
 Run `mise doctor` in new subshell to ensure config got reloaded. Validate the two activation methods. Validate completions are loaded and working.
+
+## Docs:
+
+- [installing mise](https://mise.jdx.dev/installing-mise.html)
+- [activate](https://mise.jdx.dev/cli/activate.html)
+- [shims](https://mise.jdx.dev/dev-tools/shims.html)
+- [completions](https://mise.jdx.dev/cli/completion.html)

@@ -89,3 +89,8 @@ For applicable projects, build the projects. Should use `sources` and `outputs` 
 ### Dev
 
 Whatever runs the dev environment.
+
+## Docs:
+
+- [configuration](https://mise.jdx.dev/configuration.html)
+- [tasks](https://mise.jdx.dev/tasks/)
