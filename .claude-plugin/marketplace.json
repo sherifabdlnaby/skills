@@ -4,7 +4,7 @@
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"
   },
-  "description": "Personal, opinionated skills and AI tooling boilerplate.",
+  "description": "Sherif's Hand-rolled Skills",
   "plugins": [
     {
       "name": "skills",

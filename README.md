@@ -4,7 +4,7 @@
 
 <h1 align="center">Skills</h1>
 
-<p align="center"><em>My hand-rolled AI Skills I use everyday.</em></p>
+<p align="center"><em>My hand-rolled AI Skills I use every day.</em></p>
 
 <p align="center">
   <a href="https://skills.sh/sherifabdlnaby/skills"><img src="https://skills.sh/b/sherifabdlnaby/skills" alt="skills.sh" /></a>
@@ -37,7 +37,7 @@ npx skills add sherifabdlnaby/skills --skill git  # just one (git or mise)
 npx skills list sherifabdlnaby/skills             # see what's available
 ```
 
-### Claude Code (plugin)
+### Claude Code (plugin) (WIP)
 
 ```bash
 /plugin marketplace add sherifabdlnaby/skills
