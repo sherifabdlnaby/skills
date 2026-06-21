@@ -1,39 +1,37 @@
 ---
 name: mise
 description: >
-  Use whenever a task touches a project's mise setup — adding or pinning a tool/runtime, editing tasks/env/vars/settings in mise.toml, wiring `hk` (pre-commit) or CI, or transforming (mise-fy)/auditing a project to use mise (incl. that its README/AGENTS.md document the setup).
-  Trigger even when the user doesn't say "mise" — e.g. "pin the node version", "add a lint task", "set up pre-commit", "speed up CI tool installs".
+  Use whenever a task touches a project's mise setup: adding or pinning a tool/runtime, editing tasks/env/vars/settings in mise.toml, wiring `hk` (pre-commit) or CI, or transforming (mise-fy)/auditing a project to use mise (incl. that its README/AGENTS.md document the setup).
+  Trigger even when the user doesn't say "mise", e.g. "pin the node version", "add a lint task", "set up pre-commit", "speed up CI tool installs".
   Carries mise/hk conventions and current docs so you get the best out of the tool.
   Don't load for routine mise *use* (mise x/run/install/trust) that isn't changing config.
 ---
 
 # mise
 
-Conventions and best-practices guide for [mise](https://mise.jdx.dev) alongside opinionated best practices.
-The skill implements progressive disclosure; Each area routes to a `references/` file holding the actual rules and best practices.
+An opinionated conventions and best-practices guide for [mise](https://mise.jdx.dev).
+The skill uses progressive disclosure: each area routes to a `references/` file holding the actual rules and best practices.
 Read the matching one **before** planning or acting, not after. SKILL.md alone is not enough. Doing several things? Open several references.
 
-The skill encodes best practices. You can use this skill when adding a Mise tool/task/env, or when the user asks you to audit the whole project and "mise-fy" it.
-Since the skill encode opinionated best practices, pushing for all of them **when only asked to add a simple task/tool** would be too much.
-Try to apply best-practices that applies **just to your goal**, and suggest/surface tangential improvements to user sparingly.
-When `mise-fy`-ing and improving codebase then you can suggest all improvements and recommendation.
+Use this skill when adding a mise tool/task/env, or when the user asks you to audit the whole project and "mise-fy" it.
+Since the skill encodes opinionated best practices, pushing all of them **when only asked to add a simple task/tool** would be too much.
+Apply the best practices that fit **just your goal**, and surface tangential improvements to the user sparingly.
+When `mise-fy`-ing and improving a codebase, you can suggest all the improvements and recommendations.
 
 ## Reference index
 
-| Reference                                                                                  | What it covers                                                                                               |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| [`references/install.md`](references/install.md)                                           | Machine setup: install via package manager, shell activation, shims for non-interactive shells, completions. |
-| [`references/tools.md`](references/tools.md)                                               | Dev tools / runtimes: installing, pinning, updating, backends, lockfile.                                     |
-| [`references/runtimes/node.md`](references/runtimes/node.md)                               | Node runtime integration: package managers, dep install, idioms.                                             |
-| [`references/runtimes/python.md`](references/runtimes/python.md)                           | Python runtime integration: virtualenvs, dep install (WIP).                                                  |
-| [`references/env.md`](references/env.md)                                                   | Env & vars: `[env]`, dotenv, secrets, templating, required vars, defaults, redaction, PATH.                  |
-| [`references/tasks.md`](references/tasks.md)                                               | Tasks: TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, parallelism.                   |
-| [`references/hk.md`](references/hk.md)                                                     | hk pre-commit / git hooks: `hk.pkl` (Pkl), `check` vs `fix`, builtins, mise integration, custom steps.       |
-| [`references/ci.md`](references/ci.md)                                                     | CI: platform-agnostic rules for shims, caching, pinning, tokens.                                             |
-| [`references/ci/github.md`](references/ci/github.md)                                       | GitHub Actions specifics for running mise tasks/tools.                                                       |
-| [`references/mise-fy.md`](references/mise-fy.md)                                           | Migrate an existing project to mise + full audit checklist; references every other doc.                      |
-| [`references/docs.md`](references/docs.md)                                                 | README + AGENTS.md/CLAUDE.md onboarding so a human and an agent can set up and extend mise.                  |
-| [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | Canonical example file tree + `mise.toml` to copy from.                                                      |
+- [`references/install.md`](references/install.md). Machine setup: install via package manager, shell activation, shims for non-interactive shells, completions.
+- [`references/tools.md`](references/tools.md). Dev tools / runtimes: installing, pinning, updating, backends, lockfile.
+  - [`references/runtimes/node.md`](references/runtimes/node.md). Node runtime integration: package managers, dep install, idioms.
+  - [`references/runtimes/python.md`](references/runtimes/python.md). Python runtime integration: virtualenvs, dep install (WIP).
+- [`references/env.md`](references/env.md). Env & vars: `[env]`, dotenv, secrets, templating, required vars, defaults, redaction, PATH.
+- [`references/tasks.md`](references/tasks.md). Tasks: TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, parallelism.
+- [`references/hk.md`](references/hk.md). hk pre-commit / git hooks: `hk.pkl` (Pkl), `check` vs `fix`, builtins, mise integration, custom steps.
+- [`references/ci.md`](references/ci.md). CI: platform-agnostic rules for shims, caching, pinning, tokens.
+  - [`references/ci/github.md`](references/ci/github.md). GitHub Actions specifics for running mise tasks/tools.
+- [`references/mise-fy.md`](references/mise-fy.md). Migrate an existing project to mise + full audit checklist; references every other doc.
+- [`references/docs.md`](references/docs.md). README + AGENTS.md/CLAUDE.md onboarding so a human and an agent can set up and extend mise.
+- [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md). Canonical example file tree + `mise.toml` to copy from.
 
 ## When to read references.
 
@@ -90,11 +88,11 @@ Read more at [shell_aliases](https://mise.jdx.dev/shell-aliases.html)
 
 ### Always applies (regardless of task)
 
-These hold no matter which reference you loaded; check them even when fixated on one task. Unlike the opinionated best-practices (scope those to your goal — see top), these are the safety/correctness floor: apply them even on a one-tool change, not polish you'd defer.
+These hold no matter which reference you loaded; check them even when fixated on one task. Unlike the opinionated best practices (scope those to your goal; see top), these are the safety/correctness floor: apply them even on a one-tool change, not polish you'd defer.
 
 1. **Untrusted config doesn't load.** Before `mise trust`, `[env]`/tasks/hooks are silently skipped (interactive shells prompt; non-interactive ones error or skip). A fresh clone needs `mise trust` (or a `trusted_config_paths` entry) before *anything* in `mise.toml` takes effect.
 2. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
-3. **Set `min_version`** (root level, not under `[settings]`) when you rely on a newer feature, so old clients are guided to update. It also floors users past known-vulnerable releases — e.g. `>=2026.6.4` for the CVE-2026-35533 config-trust bypass fix (GHSA-436v-8fw5-4mj8).
+3. **Set `min_version`** (root level, not under `[settings]`) when you rely on a newer feature, so old clients are guided to update. It also floors users past known-vulnerable releases, e.g. `>=2026.6.4` for the CVE-2026-35533 config-trust bypass fix (GHSA-436v-8fw5-4mj8).
 4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`. mise tries the gh CLI token first, falls back to git credentials, fails open.
 5. **Mise moves fast.** When you hit a wall, check the recent changelog alongside the docs.
 6. **Shims don't expose every `mise activate` feature** (e.g. some env-on-`cd`); local-vs-CI mismatches often trace here. See [`install.md`](references/install.md) / [`ci.md`](references/ci.md).

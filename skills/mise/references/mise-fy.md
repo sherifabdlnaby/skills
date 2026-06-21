@@ -4,7 +4,7 @@ Guidance on converting an existing project to be Mise-managed, or auditing one t
 
 ## Rules and Best Practices:
 
-1. **Know the target.** The ideal end-state layout (file tree + every supporting file) is [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md); the canonical config is [`assets/mise.toml`](../assets/mise.toml). Convert _toward_ that picture.
+1. **Know the target.** The ideal end-state layout (file tree + every supporting file) is in [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md); the canonical config is [`assets/mise.toml`](../assets/mise.toml). Convert _toward_ that picture.
 2. **Inventory before editing.** Discover what already manages tools/env/tasks/hooks/CI, don't assume (list below).
 3. **Plan, then convert.** Map each piece to its mise equivalent and note conflicts before touching files.
 4. **Lay down the structure**: Some project might have no need for specific sections but we include them so the path of least resistance is extending the patterns we embedded.
@@ -35,7 +35,7 @@ Explore the CI, and Local Validations / Tests / Setup / Linters.
 
 ### 2. Plan**. Map each to its mise target:
 
-For each, we need to identify the path to convert to mise. You need to ask the user how open are we to big-bang changes, vs seamless iterative changes.
+For each, we need to identify the path to convert to mise. You need to ask the user how open are we to big-bang changes, vs gradual iterative changes.
 Iterative changes mean we can have interim phase where mise live side by side with other system (e.g asdf, .tool-versions, .ruby-version, whatever) with a plan to migrate.
 You need to converse with the user, and grill them until you reach common understanding of the pros, cons, and what and how you're going to convert each area.
 
@@ -45,9 +45,9 @@ Depending on user request, you might suggest new additions (like introduction of
 
 **4. Verify**. Run `mise install` then `mise doctor` (clean?); `mise run <task>` for each; fresh-clone smoke test.
 
-**5. Document it** (README + AGENTS.md). The migration isn't done until the docs onboard a **human** and an **agent**: how to install mise, set up, run tasks, and (for agents) extend the setup — including hk if added. Follow [`docs.md`](docs.md); copy from [assets/README.md](../assets/README.md) and [assets/AGENTS.md](../assets/AGENTS.md).
+**5. Document it** (README + AGENTS.md). The migration isn't done until the docs onboard a **human** and an **agent**: how to install mise, set up, run tasks, and (for agents) extend the setup, including hk if added. Follow [`docs.md`](docs.md); copy from [assets/README.md](../assets/README.md) and [assets/AGENTS.md](../assets/AGENTS.md).
 
-**6. Retrospective lint** (existing repos only). Hooks only gate _future_ commits — the existing tree was never linted, so the first contributor to touch an old file gets ambushed by unrelated failures. Do a one-time whole-tree pass now with `--all`. **This can be large and noisy** (especially `typos`/`betterleaks` false positives, and big auto-format diffs), so don't just run `--fix` blindly — surface it to the user and let them choose:
+**6. Retrospective lint** (existing repos only). Hooks only gate _future_ commits; the existing tree was never linted, so the first contributor to touch an old file gets ambushed by unrelated failures. Do a one-time whole-tree pass now with `--all`. **This can be large and noisy** (especially `typos`/`betterleaks` false positives, and big auto-format diffs), so don't just run `--fix` blindly. Surface it to the user and let them choose:
 
 - **Let the user know** the scope first: `mise run check --all` (report-only) shows how much is outstanding before anything changes.
 - **Offer a subagent** to do it properly: triage the report, apply safe auto-fixes (`mise run check --all --fix`) as a separate "retrospective lint" commit kept off the feature work, populate ignore scaffolds (`typos.toml`, `.betterleaks.toml`) for confirmed false positives, and flag anything needing a human call.

@@ -1,8 +1,8 @@
 # Project Docs (README & AGENTS.md)
 
-mise-fy-ing or auditing a project isn't finished until the docs teach a **human** and an **agent** how to install mise, set the project up, drive it, and — for agents — extend it. Two audiences, two files:
+mise-fy-ing or auditing a project isn't finished until the docs teach a **human** and an **agent** how to install mise, set the project up, drive it, and (for agents) extend it. Two audiences, two files:
 
-- **README.md** — onboard a human. Refer to [assets/README.md](../assets/README.md) for inspiration.
+- **README.md**: onboard a human. Refer to [assets/README.md](../assets/README.md) for inspiration.
 - **AGENTS.md / CLAUDE.md** -> onboard an agent. Refer to [assets/AGENTS.md](../assets/AGENTS.md) for inspiration.
 
 ## Principles
@@ -30,9 +30,9 @@ Cover, in order (mirror [assets/README.md](../assets/README.md)):
 
 Everything the README covers, plus how to *work in* and *extend* the setup. Keep it to one dense block (reference [assets/AGENTS.md](../assets/AGENTS.md)):
 
-- **Setup**: `mise trust && mise run setup`. Tools/tasks/env all come from `mise.toml`.  never install a tool by hand or add an ad-hoc script; add a mise tool/task instead.
+- **Setup**: `mise trust && mise run setup`. Tools/tasks/env all come from `mise.toml`. Never install a tool by hand or add an ad-hoc script; add a mise tool/task instead.
 - **Run via mise**: `mise run check` before declaring done, `mise run test`; discover with `mise tasks`, inspect flags with `mise run <task> --help`.
-- **Hooks** (hk only): commits run `hk` — the same `check` CI runs. Fix with `mise run check --fix`; don't disable steps to get a commit through.
+- **Hooks** (hk only): commits run `hk`, the same `check` CI runs. Fix with `mise run check --fix`; don't disable steps to get a commit through.
 - **Extending the setup**: Refer the agent where to find tasks, add them, and how to extend hooks.
 
 ## Audit checklist

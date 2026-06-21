@@ -5,9 +5,10 @@ Guidance on Installing Tools and Runtimes via Mise.
 ## Rules and Best Practices:
 
 1. **Default to pure mise**: add tools to `mise.toml` `[tools]` via `mise use` (core/aqua). Don't author `.tool-versions`, idiomatic files (`.nvmrc`/`.python-version`), or asdf/vfox plugins; those are last-resort and should only be used if pre-existing and you're not already moving away from them.
-2. **Pin by version policy** — never floating:
+2. **Pin by version policy**, never floating:
    - Tool is **`>=1.0`** → pin at **major** (e.g. `node = "24"`); tracks patches/minors within that major.
    - Tool is **`<1.0`** (0.x) → pin at **minor** (e.g. `ruff = "0.15"`); 0.x ships breaking changes on minor bumps, so a bare major (`"0"`) is meaningless.
+   - **Exception**: backends that resolve a version to a git tag (e.g. hk) need the full `MAJOR.MINOR.PATCH`; a partial like `"1.48"` looks for a `v1.48` tag that doesn't exist → 404. See [`hk.md`](hk.md) rule on pinning.
 3. **Never use `latest`** until the user explicitly asks for it (even with a lockfile present). The lockfile is a safety net, not a license to float.
 4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it look as expected, and re-order the added part by the command to match file structure (e.g group relevant tools on top of each other)
 5. To pin per rule 2: `mise use <tool>@$(mise latest <tool> | cut -d. -f1) --fuzzy` for a `>=1.0` tool (writes the bare major); for a `0.x` tool use `cut -d. -f1,2` to write `0.<minor>`.
@@ -26,7 +27,7 @@ Guidance on Installing Tools and Runtimes via Mise.
 - **Per-tool options exist** (`os`, `depends`, `install_env`, `postinstall` via the `name = { ... }` table form) reach for them only when you actually need them; plain `name = "version"` is the norm.
 - **`~/.tool-versions` is not global** (unlike asdf): global config is `~/.config/mise/config.toml`.
 - **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.
-- **Lockfile is opt-in.** No `mise.lock` is written until `[settings] lockfile = true`. Don't assume reproducibility you didn't enable.
+- **Lockfile is opt-in.** No `mise.lock` is written until `[settings] lockfile = true`. Don't assume reproducibility you didn't enable. For *using* the lockfile in CI (`mise install --locked`) and the per-platform gotcha, see [`ci.md`](ci.md).
 
 ## Backends
 
@@ -39,7 +40,7 @@ Safety, high -> low:
 - **`aqua`**; preferred for everything else: checksums + cosign + SLSA + attestations, no plugin code. `aqua:BurntSushi/ripgrep`.
 - **`github`/`gitlab`**; release binaries with provenance when not in aqua. (`ubi` is deprecated, use `github`.)
 - **`cargo`/`npm`/`pipx`/`go`/`gem`**; language ecosystems. ⚠️ **No checksums/provenance** and need the runtime installed. Use only when the tool ships nowhere else.
-- **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter). ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts in** (verified at install, recorded to the lockfile) — backend plugins get none. Above asdf (maintained, optional attestation), below aqua. Use when a tool ships only as a plugin.
+- **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter). ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts in** (verified at install, recorded to the lockfile); backend plugins get none. Above asdf (maintained, optional attestation), below aqua. Use when a tool ships only as a plugin.
 - **`asdf`**; ⚠️ legacy plugins: arbitrary code, no checksums, often broken on Windows. Last resort.
 
 ## Blocked Backends
@@ -54,12 +55,12 @@ disable_backends = ["asdf", "vfox"]   # resolve only via verified backends; drop
 
 ## Runtime Integration
 
-Runtimes have extra integration features (package managers, virtualenvs, idiomatic files, dep install). When adding/configuring one of these, **read its file first** — the general rules above still apply:
+Runtimes have extra integration features (package managers, virtualenvs, idiomatic files, dep install). When adding/configuring one of these, **read its file first**; the general rules above still apply:
 
 - **Node** (corepack vs pinned PM, `npm_shim`, deps task) -> [`runtimes/node.md`](runtimes/node.md)
 - **Python** (venv auto-create/activate, `uv`, deps task) -> [`runtimes/python.md`](runtimes/python.md)
 
-Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps** (`npm install`/`uv sync`). Use a `setup` task or a hook — see the runtime file.
+Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps** (`npm install`/`uv sync`). Use a `setup` task or a hook; see the runtime file.
 
 ## Syntax Reminder
 
