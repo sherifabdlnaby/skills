@@ -12,6 +12,7 @@ mise-fy-ing or auditing a project isn't finished until the docs teach a **human*
 - **Concise and dense.** One short section should make a contributor productive. No tour.
 - **Examples should be the examples expected to be run the most**.
 - **Only mention hk if the repo uses it.**
+- **Declare external prerequisites mise can't install.** If the project needs a daemon/service outside mise's scope (a running Docker engine, a database server, a k8s cluster — see [`tools.md`](tools.md)), say so up front: what to install and how to confirm it's running. mise sets up the toolchain; these are the things `mise run setup` can't.
 
 ## Notes & Gotchas:
 
@@ -22,9 +23,10 @@ mise-fy-ing or auditing a project isn't finished until the docs teach a **human*
 Cover, in order (mirror [assets/README.md](../assets/README.md)):
 
 1. **Declare mise as dependency**, in a collapsible section show install steps (brew preferred), and then link to install steps. Guide user to also activate and confirm with doctor.
-2. **Set up the project**; `mise trust` then `mise run setup`, and whatever get the user running.
-3. **Everyday commands**; a tiny list with `check`/`lint` and `test`, and `mise tasks` to find the rest.
-4. **Git hooks** (hk if exists): Give a quick intro that the repo has it, where to find it, how to run locally (e.g mise run check) for example.
+2. **Prerequisites mise can't install** (only if any); external daemons/services like a Docker engine or DB server — what to install and how to confirm it's up. Skip the section entirely when there are none.
+3. **Set up the project**; `mise trust` then `mise run setup`, and whatever get the user running.
+4. **Everyday commands**; a tiny list with `check`/`lint` and `test`, and `mise tasks` to find the rest.
+5. **Git hooks** (hk if exists): Give a quick intro that the repo has it, where to find it, how to run locally (e.g mise run check) for example.
 
 ## AGENTS.md / CLAUDE.md (agents)
 
@@ -38,6 +40,7 @@ Everything the README covers, plus how to *work in* and *extend* the setup. Keep
 ## Audit checklist
 
 - [ ] README: install mise, activate + `mise doctor`, `mise trust` + `mise run setup`, everyday commands.
+- [ ] External prerequisites (Docker engine, DB server, etc.) declared in README/AGENTS when the project depends on them — not stuffed into `[tools]`.
 - [ ] AGENTS.md / CLAUDE.md: setup, run-via-mise + discovery, hk (if used), how to extend (mise skill).
 - [ ] Examples not enumerations; `mise tasks` taught as the discovery path.
 - [ ] hk mentioned only when the repo actually uses it.

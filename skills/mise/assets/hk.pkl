@@ -17,6 +17,19 @@ local commonIgnores =
 local linters: Mapping<String, Step> = new Mapping<String, Step> {
   ["shfmt"] = Builtins.shfmt
   ["actionlint"] = Builtins.actionlint
+  // pinact resolves Action tags to SHAs via the GitHub API, so it needs a token or it hits the
+  // anonymous rate limit. Prefer $GITHUB_TOKEN (CI injects it); locally fall back to the dev's `gh`
+  // login. gh missing/not-logged-in -> empty token, so pinact runs unauthenticated (rate-limited)
+  // instead of failing the commit. hk `env` values are static, so prepend the token to the builtin's
+  // own command (keeps it in sync with the builtin). Needs `gh` on PATH (system or [tools]). See hk.md.
+  ["pinact"] = (Builtins.pinact) {
+    check_diff =
+      "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
+        + Builtins.pinact.check_diff
+    fix =
+      "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
+        + Builtins.pinact.fix
+  }
   // ["rumdl"] = Builtins.rumdl // markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Needs `rumdl` in [tools] + a rumdl.toml. See hk.md.
 }
 

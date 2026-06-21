@@ -60,6 +60,16 @@ Runtimes have extra integration features (package managers, virtualenvs, idiomat
 
 Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps** (`npm install`/`uv sync`). Use a `setup` task or a hook; see the runtime file.
 
+## External Services & Daemons (Docker, DBs, clusters)
+
+mise owns **user-space client binaries**, not **system daemons/services**. The line:
+
+- **Client binaries → mise.** Static CLIs install + pin cleanly via a verified backend: `docker compose` (`aqua:docker/compose`), `buildx`, `kubectl`, `helm`, `psql`, plus Docker-adjacent lint/inspect tools (`hadolint`, `dive`, `lazydocker`). These go in `[tools]` per the version policy.
+- **Daemons/services/engines → NOT mise.** The Docker **engine** (`dockerd`, needs root + a VM on macOS), a running Postgres server, a k8s cluster — these need privilege, a system service, or kernel features. mise can't pin or verify them, and they're machine/infra-level, not per-project. Leave them out of `[tools]`.
+- **The bundled CLI is a gray zone.** The bare `docker` CLI ships with whatever engine you installed (Desktop/Colima/OrbStack); a mise-installed one can shadow it and drift from the daemon's API. Let the engine provide `docker`; let mise own only the *plugins* (`compose`, `buildx`).
+
+**If the project depends on an out-of-scope service, the docs must declare it as a prerequisite** (see [`docs.md`](docs.md)) — README/AGENTS, not `[tools]`. Optionally add a task that fails fast with a helpful message when the service is unreachable (e.g. `docker info` before `docker compose up`).
+
 ## Syntax Reminder
 
 ```toml

@@ -46,7 +46,7 @@ Beyond Popular Runtime Linters (check that yourself, and take a look at builtins
 - trailing_whitespace
 - check_added_large_files (block large blobs; default >500KB)
 - zizmor (GitHub Actions Security)
-- pinact (GitHub Actions pin SHAs)
+- pinact (GitHub Actions pin SHAs; needs a GitHub token, see note below)
 - actionlint (GitHub Actions Linter)
 - check_executables_have_shebangs
 - check_case_conflict
@@ -106,6 +106,23 @@ Note: none of the generic YAML builtins do **JSON-Schema** validation.
 ##### betterleaks (https://github.com/betterleaks/betterleaks)
 
 Secret scanner (gitleaks-compatible). Real codebases hit false positives (example keys, test fixtures), so **confirm with the user before enabling**. When enabled, **scaffold a `.betterleaks.toml`** at the repo root with `[extend] useDefault = true` (keep the built-in rules) plus a commented `[allowlist]` (`paths`, `regexes`, `stopwords`). See this repo's `.betterleaks.toml`.
+
+##### pinact (https://github.com/suzuki-shunsuke/pinact)
+
+Pins GitHub Actions (and reusable workflows) to commit SHAs. It calls the GitHub API to resolve a tag to a SHA, so **without a token it hits the anonymous rate limit** and can't resolve. Pass a token, but don't commit one or set it in a shared `[env]`. pinact reads `PINACT_GITHUB_TOKEN` (its own var, higher priority) then `GITHUB_TOKEN`.
+
+**Recommended**: prefer `$GITHUB_TOKEN` (CI injects it) and fall back to the dev's `gh` login locally. hk `env` values are static strings (no command substitution), so the token can't come from an `env` entry; instead **prepend it to the builtin's own command** so it stays in sync with the builtin (no restating flags):
+
+```pkl
+["pinact"] = (Builtins.pinact) {
+  check_diff = "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" " + Builtins.pinact.check_diff
+  fix        = "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" " + Builtins.pinact.fix
+}
+```
+
+`gh` missing or not logged in yields an empty token, so pinact runs unauthenticated (rate-limited) rather than failing the commit; `${GITHUB_TOKEN:-…}` means `gh` is never called in CI. Needs `gh` on PATH (system or `[tools]`). See `assets/hk.pkl` + `assets/mise.toml`.
+
+**Alternative (no `gh`)**: pinact's OS keyring. Run `pinact token set` once and enable it with a static `env { ["PINACT_KEYRING_ENABLED"] = "true" }`. The keyring auto-disables when `GITHUB_TOKEN` is set, so CI still uses its token. This fits the env-route (builtin command untouched) but requires each dev to store a token in their keychain.
 
 ### Keeping config out of the repo root (optional)
 

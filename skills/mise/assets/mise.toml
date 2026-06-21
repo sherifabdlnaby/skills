@@ -14,6 +14,7 @@ node = "24"
 
 # linters & formatters
 actionlint = "1"
+pinact = "3"   # pin GitHub Actions to SHAs; needs a GitHub token for the API (see hk.pkl pinact step)
 # rumdl = "0.2"  # markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Config in rumdl.toml. See hk.md.
 
 # pre-commit
