@@ -3,12 +3,12 @@
 Running Mise-managed tools and tasks on GitHub Actions. General, platform-agnostic CI rules live in [`../ci.md`](../ci.md); this file is GitHub-specific.
 
 Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and caches.
-The canonical workflow lives at [.github/workflows/check.yml](../../assets/.github/workflows/check.yml). Copy and adapt it.
+The canonical workflow lives at [.github/workflows/check.yml](../../assets/.github/workflows/check.yml) (report-only, `contents: read`). Copy and adapt it. A heavier opt-in variant that opens PRs with the fixes lives alongside it; see [Optional: auto-fix PRs](#optional-auto-fix-prs).
 
 ## Rules and Best Practices:
 
 1. **Pin actions to a commit SHA**, with the version in a trailing comment (`uses: owner/action@<sha> # v1.2.3`). Tags are mutable; SHAs aren't.
-2. **Scope `permissions`** to the minimum. Linting needs `contents: read`; posting the fix-hint comment on the PR needs `pull-requests: write`.
+2. **Scope `permissions`** to the minimum. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint comment. The opt-in [auto-fix variant](#optional-auto-fix-prs) additionally needs `contents: write` to push the fix branch.
 3. **Cancel superseded runs** with a `concurrency` group keyed on the PR number or ref so a new push stops the old run.
 4. Set the GitHub token via `GITHUB_TOKEN` env / `github_token` input so tool installs don't hit API rate limits.
 
@@ -16,17 +16,40 @@ The canonical workflow lives at [.github/workflows/check.yml](../../assets/.gith
 
 The reference workflow reports failures and points the author at the fix; it never touches the PR's code:
 
-- **Scope by event.** PRs lint only changed files (`mise run check --pr`); the daily `schedule` and `workflow_dispatch` lint everything (`mise run check --all`). Checkout with `fetch-depth: 0` so `--pr` can diff against the default branch.
+- **Scope by event.** PRs lint only changed files (`mise run check --pr`); the daily `schedule` lints everything (`mise run check --all`). A manual `workflow_dispatch` defaults to `--all` but exposes a `scope` choice input to pick `--pr` instead. Checkout with `fetch-depth: 0` so `--pr` can diff against the default branch.
 - **No fail-fast** is the task default, so one run reports every failing step, not just the first.
 - **Report only.** CI never auto-fixes. On failure the check step emits a `::error::` annotation telling the author to run `mise run check --fix` locally, and exits non-zero so the check goes red.
 - **One sticky comment.** A single `actions/github-script` step keeps exactly one PR comment (matched by an HTML marker): it posts/updates the comment with the `mise run check --fix --pr` hint when the check fails, and **deletes** it once the check passes. No inline suggestions, no comment spam.
--
+
+## Optional: auto-fix PRs
+
+An **opt-in** variant that, instead of only reporting, opens a PR with the fixes whenever `mise run check --fix` changes something ([check.autofix.yml](../../assets/.github/workflows/check.autofix.yml)). Ship it **instead of** `check.yml`, only where wanted, since it needs `contents: write` + `pull-requests: write`.
+
+**Whether to add it is the user's call** (it grants CI write access):
+
+- **Default to report-only `check.yml`** (`contents: read`, suits any repo).
+- **Planning interactively:** offer the variant, let the user pick.
+- **Working autonomously:** install the read-only default, don't block, mention the variant afterward.
+
+How it works (all `gh` CLI, no extra action):
+
+- **Same scope** as report-only: PRs fix `--pr`, `schedule`/dispatch fix `--all`; the PR body notes its provenance (`#<n>` vs the `--all` sweep).
+- **Stable branch per target.** `TARGET` is `github.head_ref` (PR) or `github.ref_name`; fixes force-push to `bot/ci/<TARGET>` and a PR opens with `base: <TARGET>`, so PR fixes target the PR branch and `main`/schedule target `main`. The stable name updates the existing PR instead of opening a second.
+- **Self-closing.** A clean run closes the PR, deleting its branch and the sticky comment. A fixed commit identity and date hold unchanged fixes at the same SHA, so the push is a no-op that won't re-notify subscribers.
+- **Still fails CI.** A fix PR doesn't green the run; the job exits non-zero whenever anything was fixed or a step failed.
+
+Caveats (why it's opt-in):
+
+- Needs `contents: write` + `pull-requests: write`, exactly what some repos won't grant, hence the `contents: read` default.
+- **No fork support** (by design): a fork PR carries a read-only token and can't push, so it detects the fork and falls back to the `::error::` annotation, staying off `pull_request_target`.
+- **The fix PR runs no CI of its own** under `GITHUB_TOKEN` (token-made PRs don't trigger `on: pull_request`). That's fine since it's clean `--fix` output, and it also blocks recursion; a `bot/ci/*` guard backs that up for PAT users.
+
 ## Notes & Gotchas:
 
 - **`mise-action` defaults**: `install` true, `cache` true, `github_token` defaults to `github.token`. So **caching and version pinning are already handled**: you only deal with checksums/attestation manually if you drop the action and install mise yourself (see [`../ci.md`](../ci.md#verifying-the-mise-install); `gh attestation verify … --repo jdx/mise` works out of the box on GitHub runners).
 - **Cache key** should hash `mise.toml` + `mise.lock`; stale keys reinstall silently. `mise-action` does this for you; only set `cache_key` to override.
 - **`persist-credentials: false`** on checkout unless a later step pushes with the checkout token.
-- **`check --pr` needs the base branch as a _local_ ref.** A `pull_request` checkout leaves HEAD detached on the merge commit with the base only as `origin/<base>`, so hk's `--pr` (it diffs against the default branch) dies with `Failed to parse reference: main`. `fetch-depth: 0` alone doesn't fix it. Before the check step, materialize the branch: `git branch --force "$BASE_REF" "origin/$BASE_REF"` with `BASE_REF` from `github.event.pull_request.base.ref` (passed via `env`, not interpolated). The reference workflow has this step.
+- **`check --pr` needs the base branch as a _local_ ref.** A `pull_request` checkout leaves HEAD detached on the merge commit with the base only as `origin/<base>`, so hk's `--pr` (it diffs against the default branch) dies with `Failed to parse reference: main`. `fetch-depth: 0` alone doesn't fix it. So when scope is `--pr`, materialize the branch right before running check: `git branch --force "$BASE_REF" "origin/$BASE_REF" 2>/dev/null || true` with `BASE_REF` from `github.event.pull_request.base.ref || github.event.repository.default_branch` (passed via `env`, not interpolated). The reference workflow does this inline at the top of the `Run check` step — the `|| true` covers a manual `--pr` dispatch on the default branch, where that ref is already checked out and `--pr` is a no-op.
 - **Never interpolate `${{ … }}` straight into a `run:` block.** Values like `github.ref_name`, branch names, or PR titles can carry shell metacharacters; zizmor flags this `template-injection` (High). Pass them via the step's `env:` and reference the shell var instead: `env: { REF_NAME: ${{ github.ref_name }} }`, then `$REF_NAME` in the script. The reference workflow does exactly this. zizmor's auto-fix for it is held back as "unsafe", so apply the env indirection by hand.
 
 ## Minimal job

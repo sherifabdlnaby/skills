@@ -36,7 +36,8 @@ Explore how the repo manage repetitive tasks. Look for Makefile, package.json (o
 **Flag watch candidates** while you're here: any existing watch/rerun loop (`nodemon`, `webpack --watch`, `cargo watch`, etc) maps to `mise watch <task>` + accurate `sources` drop the bespoke watcher and pin `watchexec` in `[tools]`. (See [`tasks.md`](tasks.md#watch).)
 
 #### CI & Hooks
-Explore the CI, and Local Validations / Tests / Setup / Linters.
+
+Explore the CI, and Local Validations / Tests / Setup / Linters and identify what's already being done, and what can we add. Read [`ci.md`](ci.md) (and Github's if using github actions).
 
 ### 2. Plan**. Map each to its mise target:
 
@@ -74,6 +75,7 @@ Keep this off `pre-push`/CI gates until the tree is clean, otherwise the first C
 - [ ] Pre-commit hooks configured, and have a CI counterpart.
 - [ ] Retrospective lint run (`mise run check --all`) and existing debt triaged/cleared before gating CI
 - [ ] CI uses `jdx/mise-action` and runs the same tasks
+- [ ] CI auto-fix variant decided: report-only by default; opt-in write-access variant raised interactively or suggested without blocking when autonomous ([`ci/github.md`](ci/github.md#optional-auto-fix-prs))
 - [ ] `mise.local.toml` git-ignored; `mise trust` works for a fresh clone
 - [ ] `mise doctor` clean; fresh-clone smoke test passes
 - [ ] README + AGENTS.md/CLAUDE.md onboard a human and an agent per [`docs.md`](docs.md) (install, setup, run-via-mise + discovery, hk if used, how to extend).

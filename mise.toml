@@ -8,6 +8,7 @@ min_version = "2026.6.6"
 # All tools are native binaries — no node/python/ruby runtime dependency.
 # linters & formatters
 actionlint = "1"       # GitHub Actions linter
+shellcheck = "0.11"    # actionlint uses it to lint workflow run: blocks — 0.x, pin minor
 zizmor = "1"           # GitHub Actions security
 pinact = "3"           # pin GitHub Actions to SHAs
 lychee = "0.24"        # dead-link checker (offline; see lychee.toml) — 0.x, pin minor
