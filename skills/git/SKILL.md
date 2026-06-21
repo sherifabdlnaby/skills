@@ -3,6 +3,11 @@ name: git
 description: >
   Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open or stack a Pull Request (PR / stacked diff), review a PR, watch a PR CI (babysitting).
   Carries user's git convention for commits, branches, PRs, rebasing, and reviews. Load skill if you'll deal with Git at any point in the conversation future (as early as possible).
+license: MIT
+argument-hint: "[commit|branch|pr|rebase|review|watch]"
+metadata:
+  author: sherifabdlnaby
+  version: "0.1.0"
 ---
 
 # Git
