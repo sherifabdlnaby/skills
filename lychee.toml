@@ -1,5 +1,5 @@
 # lychee dead-link checker config. Auto-loaded from repo root.
-# See skills/mise/references/hk.md.
+# See skills/mise-fy/references/hk.md.
 
 # Offline: only verify local/relative file links resolve. External http(s) URLs
 # are skipped (no network) — flip to false (or run `lychee` without it) to also
@@ -7,5 +7,5 @@
 #
 # NOTE: do not add `exclude_path` here — its entries are regexes matched against
 # the whole path, so e.g. ".mise" would also match "/mise" and silently drop
-# every file under skills/mise/. hk already scopes the file list it passes in.
+# every file under skills/mise-fy/. hk already scopes the file list it passes in.
 offline = true

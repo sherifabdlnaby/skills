@@ -1,4 +1,4 @@
-# rumdl — Markdown linter/formatter. Auto-loaded from repo root. See skills/mise/references/hk.md.
+# rumdl — Markdown linter/formatter. Auto-loaded from repo root. See skills/mise-fy/references/hk.md.
 # Scoped to TABLE rules only: this is a prose-heavy docs repo, and the full
 # markdownlint set (esp. MD013 line-length) is ~400 issues of noise here.
 # `enable` REPLACES the default rule set — only these rules run.

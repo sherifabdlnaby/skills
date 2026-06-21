@@ -9,7 +9,7 @@ metadata:
   version: "0.1.0"
 ---
 
-# mise
+# mise-fy
 
 Best-practices, tips, and gotchas to maximize the use of [mise](https://mise.jdx.dev) (along-side [hk](http://hk.jdx.dev/)) distilled from experience building dev (& CI).
 

@@ -17,7 +17,7 @@ Needless to say, this is opinionated. And encode _my_ conventions, not best prac
 ## Skills
 
 1. [git](skills/git/)   | My git conventions and PR watching ("babysitting").
-2. [mise](skills/mise/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
+2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
 
 ## Models
 

@@ -12,10 +12,11 @@ This project uses [**mise**](https://mise.jdx.dev) to pin its tools (languages, 
 <summary><b>macOS / Linux</b></summary>
 
 ```sh
-curl https://mise.run | sh
+brew install mise          # macOS / Linux (Homebrew)
+# or: apt install mise · dnf install mise · pacman -S mise · …
 ```
 
-Or via a package manager — `brew install mise`, `apt install mise`, etc. See [installation docs](https://mise.jdx.dev/installing-mise.html).
+No package manager? See the [installation docs](https://mise.jdx.dev/installing-mise.html) for other install methods.
 
 </details>
 
