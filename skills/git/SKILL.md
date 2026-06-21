@@ -74,6 +74,7 @@ the variant by **provenance**, so the reader knows whether a human stands behind
 
 ```markdown
 ---
+
 _<sub>🤖 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, autonomous and not yet reviewed by them.</sub>_
 ```
 
@@ -81,6 +82,7 @@ _<sub>🤖 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, a
 
 ```markdown
 ---
+
 _<sub>🤖 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, with their input.</sub>_
 ```
 

@@ -2,7 +2,7 @@
 
 Covers the procedure for reviewing a PR the user points you at ("Review `<PR name or link>`").
 
-The other direction, responding to review comments on your *own* PR, is [`review-responses.md`](./review-responses.md).
+The other direction, responding to review comments on your _own_ PR, is [`review-responses.md`](./review-responses.md).
 
 ## Procedure
 

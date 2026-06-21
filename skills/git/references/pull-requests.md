@@ -49,6 +49,7 @@ Ask on the first PR of the conversation, when user ask you, and when you think i
 > [!NOTE]
 >
 > ### 🧍🏻Human Note
+>
 > <User's text, verbatim>
 
 <rest of the body…>
@@ -70,6 +71,7 @@ PR Body anatomy.
 - **Collapsible: examples**: when examples genuinely clarify the diff.
 
 ### Notes:
+
 - PR Body and Description needs to be concise, but not miss a spot. Focus on what behavior changed, what breaking changes introduced but do not narrate the diff yourself.
 - Use Emojis to help scanning/glancing, but not as decorations.
 - Use GitHub alerts/callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) to surface information the reviewer must not miss.
@@ -78,25 +80,28 @@ Skeleton (drop any block that doesn't apply):
 
 ```markdown
 > [!NOTE]
+>
 > ### 🧍🏻 Human Note
-> xxxx yyy zz                          <!-- verbatim, only if user gave one -->
+>
+> xxxx yyy zz <!-- verbatim, only if user gave one -->
 
 ### Summary
-[TICKET-123](link) | xxxx yyy zz.      <!-- short summary, always -->
+
+[TICKET-123](link) | xxxx yyy zz. <!-- short summary, always -->
 
 **Changes**
+
 - **Breaking**: xxxx yyy
-- **New Functionality*: xxxx yyy
-- **Backward Compatible: xxxx yyy
-- **Fixed: xxxx yyy
+- \*_New Functionality_: xxxx yyy
+- \*\*Backward Compatible: xxxx yyy
+- \*\*Fixed: xxxx yyy
 - ... and so on.
 
 > [!WARNING]
-> **Breaking:** xxxx yyy.              <!-- important to know, understand, validate, test -->
+> **Breaking:** xxxx yyy. <!-- important to know, understand, validate, test -->
 
 **Review guide**
 start in `xxxx`; then read `yyy`, then the rest is mechanical fallout.
-
 
 <!-- The rest is what you believe should include in the PR Description  -->
 
@@ -111,6 +116,7 @@ start in `xxxx`; then read `yyy`, then the rest is mechanical fallout.
 < relevant links (epic, issues, docs, sources, other stacked PRs)
 
 ---
+
 _<sub>🤖 Created with <Tool> (<Model>) on behalf of @<user></sub>_
 ```
 
@@ -140,6 +146,7 @@ Append AI Disclosure footer at the very end, after a `---` separator:
 
 ```markdown
 ---
+
 _<sub>🤖 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME></sub>_
 ```
 
