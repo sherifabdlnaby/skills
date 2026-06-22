@@ -2,6 +2,12 @@
 
 [![skills.sh](https://skills.sh/b/sherifabdlnaby/skills)](https://skills.sh/sherifabdlnaby/skills)
 
+## Install
+
+```bash
+npx skills add sherifabdlnaby/skills --skill mise-fy
+```
+
 Best-practices, tips, and gotchas to maximize the use of [mise](https://mise.jdx.dev) (along-side [hk](http://hk.jdx.dev/)) distilled from experience building dev (& CI) setups that ✨just works ✨ for diverse teams at different levels that you and your agents would love to use!
 
 **The skill has two modes to trigger for:**

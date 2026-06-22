@@ -2,6 +2,12 @@
 
 [![skills.sh](https://skills.sh/b/sherifabdlnaby/skills)](https://skills.sh/sherifabdlnaby/skills)
 
+## Install
+
+```bash
+npx skills add sherifabdlnaby/skills --skill git
+```
+
 My git conventions, and utilities. Mostly opinionated stuff.
 It also includes a `watch` script that let Agent baby-sit PRs, fix CI with minimum token overhead.
 
