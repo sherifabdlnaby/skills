@@ -11,11 +11,38 @@ metadata:
 
 # mise-fy
 
-Best-practices, tips, and gotchas to maximize the use of [mise](https://mise.jdx.dev) (along-side [hk](http://hk.jdx.dev/)) distilled from experience building dev (& CI).
+[//]: # (If you're an agent, focus on # How to use the SKill, and the progressive disclosure rules!)
 
-Use this skill when adding a mise tool/task/env, or when the user asks you to audit the whole project and "mise-fy" it. Scope your effort to the request:
-- **Narrow change** (one tool/task/env): apply only the best practices that touch that change, plus the "Always applies" floor below. Surface at most one or two adjacent improvements as suggestions; don't refactor the rest.
-- **Explicit "mise-fy" / audit**: apply and recommend everything.
+# Introduction to Humans
+
+Best-practices, tips, and gotchas to maximize the use of [mise](https://mise.jdx.dev) (along-side [hk](http://hk.jdx.dev/)) distilled from experience building dev (& CI) setups that ✨just works ✨ for diverse teams at different levels that you and your agents would love to use!
+
+**The skill has two modes to trigger for:**
+1. Provide tips & gotchas to agents when working with Mise. (duhh!)
+2. **_Mise-fy_** 🪄 an existing project and transform it to a recommended structure.
+
+Read the Skill's [.MD](./SKILL.md) file, as well as each topic's reference in [./references](references) to learn more about what the skill encodes.
+
+> [!TIP]
+> The skill is written and optimized to be used by models with coherence level similar to `Opus 4.8` or `GPT 5.5`, especially when mise-fying.
+
+The skill **does not enumerate** all of Mise's features. It relies on Agents world knowledge, and ability to read docs (and it ask agents to!) but **guide the agent to best practices**. I may cover more use-cases later!
+
+## Is this a `Mise` skill ? or a good local dev setup skill ?
+
+Kinda both; `Mise` is THE tool to use to have a great UX in your dev setups, so there is a lot of overlap. However, the skill is primarily focused on Mise itself, and only encode tips/gotchas **when Mise is involved.** It'll be a good skill to pair with "local-setup" Skill that is runtime specific (maybe soon!).
+
+## So What does the skill encode exactly ?
+
+The skill encodes what needs for dev setup to just work, stay discoverable, and guide you to be set up correctly.
+
+**It just works.** Clone the repo, run `mise trust && mise run setup`, and you're done. Tools install pinned and locked, so your versions match everyone else's and CI's. Setup is idempotent and cached, so re-running it is cheap (and for worktrees too!), and the git hooks install themselves on `mise install`, and will nag you if you didn't (so u trust every one and their agent get all local linters/tests/validations)!
+
+**It's discoverable.** Tasks follow the same names in every repo
+
+---
+
+# How to use the Skill
 
 The skill uses progressive disclosure: each area routes to a `references/` file holding the actual rules and best practices.
 Read the matching one **before** planning or acting, not after. SKILL.md alone is not enough. Plan ahead, and read all references you'll need!
@@ -60,7 +87,7 @@ What to put in README.md and AGENTS.md/CLAUDE.md so a human and an agent can ins
 **Reference setup** (canonical example layout) -> [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md)
 Annotated example file tree + `mise.toml` to copy from.
 
-## Notes
+## Cross Cutting Notes
 
 ### Config environments (`MISE_ENV`)
 
