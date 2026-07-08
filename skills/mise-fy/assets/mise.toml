@@ -18,7 +18,7 @@ pinact = "3"   # pin GitHub Actions to SHAs; needs a GitHub token for the API (s
 # rumdl = "0.2"  # markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Config in rumdl.toml. See hk.md.
 
 # pre-commit
-hk = "1"
+hk = "1.48.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs (see hk.md) (don't put this comment in generated file)
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
@@ -63,7 +63,7 @@ run = "mise install"                                 # installs tools; runtime d
 [tasks.deps] # install runtime/project dependencies; runnable on its own after a lockfile change
 description = "Install runtime dependencies (cached; skipped when the lockfile is unchanged)"
 sources = ["package.json", "package-lock.json"]      # manifest + lockfile(s) (e.g. pnpm-lock.yaml, uv.lock, go.sum)
-outputs = ["node_modules"]                           # install dir (e.g. .venv, vendor); both source+output needed to skip
+outputs = ["node_modules"]                           # install dir (e.g. .venv, vendor); explicit outputs so the cache tracks it
 run = "npm ci"                                        # per runtime: pnpm install --frozen-lockfile, uv sync, go mod download, …
 
 [tasks."setup:stamp"] # write the version of the last run setup to .mise/setup
@@ -84,7 +84,7 @@ postinstall = "hk install --mise"     # canonical hook install: runs after every
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]
-lockfile = true                      # write/commit mise.lock — REQUIRED before any pin resolves reproducibly
+lockfile = true                      # keep mise.lock updated; create it once with `mise lock`, commit it
 minimum_release_age = "7d"           # ignore releases <7d old (supply-chain cooldown); always suggest adding
 disable_backends = ["asdf", "vfox"]  # resolve only via verified backends; drop "vfox" if you need a vfox-only tool
 

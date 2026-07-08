@@ -25,7 +25,6 @@ Each shim then decides **which version of the PM to run** by reading the `packag
 
 ### Other
 
-- mise's `node` is a **core backend**. It provides `npm`/`npx`/`corepack` already; don't add `npm` as a separate `[tools]` entry.
 - Add `node_modules/.bin` to `[env] _.path` so project bins (`vite`, `vitest`, `tsc`, `eslint`, `biome`) run without `npx`.
 - The `[tasks.setup]` below is a sketch. Follow the standard `setup` contract (idempotent, fast, stamped re-run check) in [`reference-setup-and-patterns.md`](../reference-setup-and-patterns.md#setup).
 

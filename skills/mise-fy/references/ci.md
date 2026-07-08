@@ -17,7 +17,7 @@ Platform-specific setup lives under [`ci/`](ci/):
 
 - **Color is off in CI by default.** Set `CLICOLOR_FORCE: "1"` / `FORCE_COLOR: "1"` to keep linter output readable in the logs.
 - **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise install the binary, pin the version, and verify it. See [Installing mise in CI](#installing-mise-in-ci).
-- **`mise.lock` is per-platform, and `mise lock` only locks the platform you run it on.** With `--locked`, CI on `linux-x64` then fails at the mise setup step with `No lockfile URL found for <tool>@<ver> on platform linux-x64`, even though it works on your Mac. Pre-populate every platform CI uses: `mise lock --platform linux-x64,macos-arm64` (add `windows-x64` if relevant), then commit the lockfile. Re-run it whenever you add or bump a tool.
+- **`mise.lock` is per-platform.** `mise install` records only the platform it ran on, so a lockfile grown that way plus `--locked` fails CI on `linux-x64` with `No lockfile URL found for <tool>@<ver> on platform linux-x64`, even though it works on your Mac. Run `mise lock` (resolves all 7 default platforms without installing; scope with `--platform linux-x64,macos-arm64`, or persist the set via the `lockfile_platforms` setting), commit the lockfile, and re-run it whenever you add or bump a tool.
 
 ## Installing mise in CI
 
@@ -46,7 +46,7 @@ Two independent layers
 Use the following script as reference, and pick what you want from it. (you don't have to copy all steps)
 ```bash
 # Mise version, if you update this you must update sha's below.
-ver=v2026.6.11
+ver=v2026.7.0
 
 # Resolve the right asset for THIS runner — ARM and x86 CI need different binaries.
 # uname -m → x64|arm64;  uname -s → linux|macos. (mise also ships *-musl variants.)

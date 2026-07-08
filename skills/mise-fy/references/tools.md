@@ -14,7 +14,7 @@ Guidance on Installing Tools and Runtimes via Mise.
 6. Use mise's core backends. If you're choosing backends, pick the one with checksums + timestamp support as much as possible.
 7. Group relevant tools categories close to each other in the toml when you have >6 tools. Use a code comment as a title for group.
 8. If a tool existence in a list is not obvious, add a 3~4 words sentence to give a hint in a code comment on the same line.
-9. If the repo doesn't contain `minimum_release_age` always suggest to add it.
+9. If the repo doesn't contain `minimum_release_age` always suggest to add it (e.g. `"7d"`; months are `6mo`, not `6m` — `6m` is minutes and filters nothing; exempt fast-moving tools via `minimum_release_age_excludes` if needed).
 10. If a tool/runtime needed **just for a single task** define it just for the task.
 11. Use and enable Lockfile whenever possible, unless the user told you not to.
 
@@ -22,11 +22,11 @@ Guidance on Installing Tools and Runtimes via Mise.
 
 - **Lockfile only updates when enabled.** `mise use`/`install` write `mise.lock` only after `[settings] lockfile = true`. Without it, fuzzy versions resolve fresh each install.
 - **`mise use` edits the closest config**. It may not be the one you expect in a nested/monorepo tree.
+- **A backend spec goes in the KEY, never the value.** `ripgrep = "aqua:BurntSushi/ripgrep"` is a parse error (`invalid tool: invalid prefix: aqua`) that breaks the whole config; write `"aqua:BurntSushi/ripgrep" = "15"` (see Syntax Reminder).
 - **`prefix:`/fuzzy/`latest` need version listing**. They work on backends that enumerate versions (core, aqua, github/gitlab, cargo, go, npm, pipx) but not on fixed-artifact specifiers (direct URLs, git `ref:`).
 - **Per-tool options exist** (`os`, `depends`, `install_env`, `postinstall` via the `name = { ... }` table form) reach for them only when you actually need them; plain `name = "version"` is the norm.
-- **`~/.tool-versions` is not global** (unlike asdf): global config is `~/.config/mise/config.toml`.
+- **`.tool-versions` is read hierarchically** like any config (a `~/.tool-versions` applies to everything under `$HOME`); mise's canonical global config is `~/.config/mise/config.toml`.
 - **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.
-- **Lockfile is opt-in.** No `mise.lock` is written until `[settings] lockfile = true`. Don't assume reproducibility you didn't enable. For *using* the lockfile in CI (`mise install --locked`) and the per-platform gotcha, see [`ci.md`](ci.md).
 - **Tools are lazy by default; `mise install` is the eager step.** To make a *specific* tool lazy and not in everyone's install, scope it to its task or use a tool stub see [Lazy-install for uncommon tools](#lazy-install-for-uncommon-tools).
 
 ## Backends
@@ -39,6 +39,7 @@ Safety, high -> low:
 - **`core`**; runtimes built into mise (node/python/go/ruby/...). Use for these. `node = "22"`.
 - **`aqua`**; preferred for everything else: checksums + cosign + SLSA + attestations, no plugin code. `aqua:BurntSushi/ripgrep`.
 - **`github`/`gitlab`**; release binaries with provenance when not in aqua. (`ubi` is deprecated, use `github`.)
+- **`http`**; a direct URL plus a checksum you record yourself (what tool stubs use). Only as safe as the checksum you pin.
 - **`cargo`/`npm`/`pipx`/`go`/`gem`**; language ecosystems. ⚠️ **No checksums/provenance** and need the runtime installed. Use only when the tool ships nowhere else.
 - **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter). ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts in** (verified at install, recorded to the lockfile); backend plugins get none. Above asdf (maintained, optional attestation), below aqua. Use when a tool ships only as a plugin.
 - **`asdf`**; ⚠️ legacy plugins: arbitrary code, no checksums, often broken on Windows. Last resort.
@@ -57,7 +58,7 @@ disable_backends = ["asdf", "vfox"]   # resolve only via verified backends; drop
 
 Runtimes have extra integration features (package managers, virtualenvs, idiomatic files, dep install). When adding/configuring one of these, **read its file first**; the general rules above still apply:
 
-- **Node** (corepack vs pinned PM, `npm_shim`, deps task) -> [`runtimes/node.md`](runtimes/node.md)
+- **Node** (corepack vs pinned PM, deps task) -> [`runtimes/node.md`](runtimes/node.md)
 
 Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps** (`npm install`/`uv sync`). Use a `setup` task or a hook; see the runtime file.
 
@@ -81,9 +82,9 @@ python = "3.12"                          # prefix-pin at minor
 ruff = "0.15"                            # <1.0 (0.x) → pin minor (0.x breaks on minor)
 
 # --- everything else (aqua preferred) --------------------------------------
-ripgrep = "aqua:BurntSushi/ripgrep"      # explicit backend + version "latest"
-"aqua:sharkdp/fd" = "10"                 # backend as key, version as value
-shellcheck = "github:koalaman/shellcheck"  # provenance when not in aqua
+ripgrep = "15"                           # registry shorthand (resolves via aqua)
+"aqua:sharkdp/fd" = "10"                 # explicit backend as KEY, version as value
+"github:koalaman/shellcheck" = "0.11"    # provenance when not in aqua
 
 # --- fuzzy / prefix pins ----------------------------------------------------
 terraform = "prefix:1.9"                 # newest 1.9.x
@@ -134,7 +135,7 @@ A tool only _some_ workflows touch should be installed **lazily** (only when fir
 - **A bare-`url` stub's only guarantee is the checksum it pins**.
 - **Re-running appends platforms**, never overwrites; an existing platform's URL is replaced only if you re-specify that platform.
 - **The stub is just a file you run by path** (`./bin/x`), `chmod +x` and committed. It is **not** added to `PATH` like `[tools]`. ~4ms overhead once cached (cache busts when the file changes).
--
+
 ## Docs:
 
 - [dev-tools](https://mise.jdx.dev/dev-tools/)

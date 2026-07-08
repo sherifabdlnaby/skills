@@ -59,7 +59,7 @@ Check the reference [mise.toml](../assets/mise.toml)
 
 Runtime/project dependencies (`node_modules`, a Python `.venv`, `vendor/`, …) belong in their **own `deps` task**, never inlined into `setup`. This keeps them runnable on their own after a lockfile change (`mise run deps`) and lets each side cache independently. Setup wires `deps` to run **after** `mise install` (the runtime must exist before its package manager runs) via `depends_post`; gate the `setup:stamp` on it with `wait_for = ["deps"]` so a successful stamp implies deps were installed.
 
-Make it a no-op when nothing changed with `sources` + `outputs` (both are required to skip; see [`tasks.md`](tasks.md)):
+Make it a no-op when nothing changed with `sources` + `outputs` (explicit `outputs` so the cache tracks the install dir itself; see [`tasks.md`](tasks.md)):
 
 - `sources` = the manifest + lockfile(s), e.g. `package.json` + `package-lock.json`/`pnpm-lock.yaml`, `requirements.txt`/`uv.lock`, `go.mod` + `go.sum`.
 - `outputs` = the install dir, e.g. `node_modules`, `.venv`, `vendor`.
@@ -74,8 +74,7 @@ The canonical CI wiring for this task lives at [.github/workflows/check.yml](../
 
 If using hk for pre-commit linters then delegate the actual steps to **hk** (one source of truth; see [`hk.md`](hk.md)) and have the task just forward flags. See the `check` task in the reference [mise.toml](../assets/mise.toml). Key points:
 
-- **`hk check` and `hk fix` are the same command**; the subcommand only sets the default mode, and `--fix`/`--check` override it. So a single `hk check` + an opt-in `--fix` flag covers both reporting and fixing, with no need to branch on the subcommand.
-- **Default scope is staged files**; expose `--all` (everything) and `--pr` (only files changed vs the default branch, what CI uses). hk makes `--all`/`--pr` mutually exclusive.
+- **Stay on `hk check` and forward flags**: `hk check`/`hk fix` command semantics and the scope flags (staged default, `--all`, `--pr`, mutually exclusive) are in [`hk.md`](hk.md); the task exposes an opt-in `--fix` plus `--all`/`--pr`, with no branching on the subcommand.
 - **Forward variadic `--step`/`--skip-step`** to target or skip steps, and wire `complete "step"` off `hk check --plan --json` so completion lists real step names.
 
 ### Test

@@ -15,12 +15,12 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
 ## Notes & Gotchas:
 
 - **`hk check` and `hk fix` are the same command** the subcommand only sets the default mode; `-c/--check` and `-f/--fix` flip it (so `hk check --fix` mutates, `hk fix --check` is dry-run). `check_first = true` runs check before fix; `{{files}}` expands to matched files.
-- **Scope flags**: default is **staged** files. `--all` (whole tree), `--pr` (only files changed vs the default branch, `= --from-ref DEFAULT_BRANCH --to-ref HEAD`;
+- **Scope flags**: default is **staged** files. `--all` (whole tree), `--pr` (only files changed vs the default branch, `= --from-ref DEFAULT_BRANCH --to-ref HEAD`), `--staged` (staged files without stashing unstaged changes; conflicts with `--all`).
 - **Git 2.54+ uses config-based hooks**: install writes `hook.<name>.command` into git config and leaves `.git/hooks/` untouched, so hk coexists with other hook managers; older Git falls back to script shims (`--legacy` forces them). Don't hand-edit `.git/hooks`. Beware: a forced per-repo install on top of a global one (`--force-local`) fires hooks **twice** per event.
 - **Drive one `check` task off this**, not two: stay on `hk check` and forward an opt-in `--fix`, with no branching on subcommand. That `check` task is the repo's standard lint contract (same command CI and the pre-commit hook run); see [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#check-lint).
 - **`hk check`/`hk fix` need their own `check`/`fix` hooks**; they do _not_ fall back to `pre-commit` (`Hook 'check' not found`). DRY it: define `local linters: Mapping<String, Step>` once and assign `steps = linters` in both the `check` and `pre-commit` hooks (see `assets/hk.pkl`). Same builtins, both check and fix commands; the hook's `fix` flag picks the mode.
 - **Manage ignores in one place**: define `local commonIgnores = List(...)` and assign top-level `exclude = commonIgnores`, which applies to every step (see `assets/hk.pkl`). hk already honors `.gitignore` (`walk_ignore = true`), so this list is only for _committed_ paths you don't want linted (vendored/generated/snapshots/minified). A step's own `exclude` **stacks** (unions) on top of the global one; it does _not_ replace it (despite the config docs saying "overrides"), so never re-list the common ones per step. Use `List(...)`, not a Pkl `Listing` (the field is typed `String | List`).
-- **Introspect with `hk config dump|get|explain|sources`** (and `hk validate`) when a setting behaves unexpectedly; `explain` shows the winning source. Precedence: CLI > `HK_*` env > git config (local) > `.hkrc.pkl` (user) > git config (global) > `hk.pkl` > defaults; `exclude`/`skip_steps`/`skip_hooks` **union** across sources rather than overriding.
+- **Introspect with `hk config dump|get|explain|sources`** (and `hk validate`) when a setting behaves unexpectedly; `explain` shows the winning source. Precedence: CLI > `HK_*` env > git config > project `hk.pkl` > user config (`~/.config/hk/config.pkl`; the old `.hkrc.pkl` is deprecated, removed in hk v2) > defaults; `exclude`/`skip_steps`/`skip_hooks` **union** across sources rather than overriding.
 - **`hk check --plan --json`** prints the resolved plan without running it; feed it to tooling (e.g. completions: `… --json --no-progress | jq -r '.steps[].name'`).
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
 - **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.48"` resolves to the git tag `v1.48`, which doesn't exist → `404 Not Found` on install. Use `1.48.0`.
@@ -52,7 +52,7 @@ Beyond Popular Runtime Linters (check that yourself, and take a look at builtins
 - check_executables_have_shebangs
 - check_case_conflict
 - check_merge_conflict
-- check_byte_order_marker
+- byte_order_marker
 - mixed_line_ending (normalize CRLF/LF)
 - check_symlinks (catch broken symlinks)
 - detect_private_key (block committed private keys; cheap, complements betterleaks)
@@ -125,23 +125,25 @@ Pins GitHub Actions (and reusable workflows) to commit SHAs. It calls the GitHub
 
 **Alternative (no `gh`)**: pinact's OS keyring. Run `pinact token set` once and enable it with a static `env { ["PINACT_KEYRING_ENABLED"] = "true" }`. The keyring auto-disables when `GITHUB_TOKEN` is set, so CI still uses its token. This fits the env-route (builtin command untouched) but requires each dev to store a token in their keychain.
 
-### Keeping config out of the repo root (optional)
+### Keeping Config out of the Repo Root (Optional)
 
 Most builtins need **no config file** (all `check_*`, `newlines`, `trailing_whitespace`, `mixed_line_ending`, `detect_private_key`, `yamlfmt`, `actionlint`, `zizmor`, `pinact`, `mise`). Root dotfiles only appear for the tunable opt-ins (`rumdl`, `typos`, `lychee`, `betterleaks`, `yamllint`, `taplo`).
+
+`hk.pkl` itself can live at `.config/hk.pkl` (auto-discovered, along with `hk.local.pkl`/`.config/hk.local.pkl`).
 
 **Gate: only suggest this when the project will have 3+ linters that carry a config file.** Below that, default to the per-tool root scaffolds in the notes above. A `.config/` dir for one or two files is overkill, and don't mention it. At 3+, offer to consolidate them under a single `.config/` directory.
 
 When adopted, wire each tool to read from `.config/`: **prefer the env-var route (leaves the builtin command untouched); use `--config` override only where no env var exists** (it forces you to reproduce the builtin's other flags, which can drift across hk versions):
 
-| Tool            | Route to `.config/`                                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rumdl`         | **native**: auto-discovers `.config/rumdl.toml`, no wiring                                                                                        |
-| `yamllint`      | step `env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" }` (ignored if a root `.yamllint` exists)                                           |
-| `betterleaks`   | step `env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }`                                                                                |
-| `taplo`         | step `env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" }` (re-add `RUST_LOG`; re-declaring `env` replaces the whole mapping)  |
-| `typos`         | override `fix`/`check_diff` cmd with `--config .config/typos.toml` (no env var)                                                                   |
-| `lychee`        | override `check` cmd with `--config .config/lychee.toml` (no env var)                                                                             |
-| `markdown_lint` | override `check`/`fix` cmd with `--config .config/markdownlint.yaml` (no env var)                                                                 |
+| Tool            | Route to `.config/`                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `rumdl`         | **native**: auto-discovers `.config/rumdl.toml`, no wiring                                                                                       |
+| `yamllint`      | step `env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" }` (ignored if a root `.yamllint` exists)                                          |
+| `betterleaks`   | step `env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }`                                                                               |
+| `taplo`         | step `env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" }` (re-add `RUST_LOG`; re-declaring `env` replaces the whole mapping) |
+| `typos`         | override `fix`/`check_diff` cmd with `--config .config/typos.toml` (no env var)                                                                  |
+| `lychee`        | override `check` cmd with `--config .config/lychee.toml` (no env var)                                                                            |
+| `markdown_lint` | override `check`/`fix` cmd with `--config .config/markdownlint.yaml` (no env var)                                                                |
 
 ```pkl
 local linters = new Mapping<String, Step> {
