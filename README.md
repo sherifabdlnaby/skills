@@ -46,6 +46,15 @@ npx skills list sherifabdlnaby/skills             # see what's available
 
 Update with `/plugin marketplace update sherif-plugins`; manage from `/plugin`.
 
+### Cursor (plugin) (WIP)
+
+```bash
+/plugin marketplace add sherifabdlnaby/skills
+/plugin install skills
+```
+
+Manage from `/plugin`. Same repo, same skills — Cursor reads `.cursor-plugin/`.
+
 ---
 
 ## Development

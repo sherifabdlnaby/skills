@@ -1,0 +1,17 @@
+{
+  "name": "sherif-plugins",
+  "owner": {
+    "name": "Sherif Abdel-Naby",
+    "email": "sherifabdlnaby@gmail.com"
+  },
+  "metadata": {
+    "description": "Sherif's Hand-rolled Skills"
+  },
+  "plugins": [
+    {
+      "name": "skills",
+      "source": ".",
+      "description": "Opinionated git and mise skills, plus boilerplate commands, agents, and hooks."
+    }
+  ]
+}
