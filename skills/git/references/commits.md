@@ -24,7 +24,7 @@ For each staged file, articulate why it's there. Can't explain one? Unstage it, 
 
 - Follow the repo's commit style only if already known (stated in this conversation, or set by a skill). Don't infer it from `git log` (wastes time and tokens).
 - None known? Default to conventional commits.
-- Apply [SKILL.md](../SKILL.md) voice rules. One extra: never reference "the user", "as discussed", or the PR itself. Commit messages outlive PRs and chat, so cross-references goes outdated.
+- Never reference "the user", "as discussed", or the PR itself. Commit messages outlive PRs and chat, so cross-references goes outdated.
 
 ## Scoping
 

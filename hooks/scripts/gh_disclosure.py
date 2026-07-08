@@ -13,15 +13,21 @@ verdicts) lives in hooklib; this file owns only the disclosure decision. stdlib
 only. Exit 0 always; "allow" is emitting nothing, "deny" is hooklib.deny().
 """
 
+import re
 import shlex
 import sys
 
 import hooklib
 
-# Marker shared by every disclosure footer in SKILL.md: each one begins with a
-# robot emoji. We check for the marker, not the full template, so the templates
-# stay owned by SKILL.md and the agent keeps the provenance choice.
-MARKER = "\U0001f916"  # 🤖
+# A valid footer line per SKILL.md -> AI Disclosure: `_<sub>` + a provenance emoji
+# (🤖 autonomous / 🤝 user-directed) + attribution ("on behalf of @user") + `</sub>_`.
+# We validate the skeleton, not the full template text, so the templates stay owned
+# by SKILL.md and the agent keeps the provenance choice; requiring one of the two
+# emojis is what forces that choice to be made at all.
+FOOTER_RE = re.compile(
+    r"_<sub>\s*(?:\U0001f916|\U0001f91d)\s.*?\bon behalf of @[A-Za-z0-9-]+\b.*?</sub>_",
+    re.DOTALL,
+)
 
 # gh subcommands that post human-readable content to GitHub. (action verbs only;
 # `gh pr edit` is gated only when it carries a body, handled via body extraction.)
@@ -36,12 +42,12 @@ POSTING = {
 
 REASON = (
     "AI-disclosure guard: this command posts a body to GitHub but the body has no "
-    "disclosure footer (no \U0001f916 robot-emoji marker). Per the git skill "
-    "(SKILL.md -> AI Disclosure), append the footer after a `---`, picking the "
-    "variant by provenance: the autonomous form when you acted without the user's "
-    "input, the user-directed form when they gave input or approved. For a PR body "
-    "use the `created with assistance from ...` footer in references/pull-requests.md. "
-    "Add it, then retry."
+    "valid disclosure footer (`_<sub>\U0001f916|\U0001f91d ... on behalf of @user ... </sub>_`). "
+    "Per the git skill (SKILL.md -> AI Disclosure), append the footer after a `---`, "
+    "picking the emoji by provenance: \U0001f916 autonomous (you acted without the "
+    "user's input), \U0001f91d user-directed (they gave input or approved). For a PR "
+    "body use the `Created with ...` footer in references/pull-requests.md. Add it, "
+    "then retry."
 )
 
 
@@ -102,7 +108,7 @@ def needs_disclosure(command):
         action = (tokens[i + 1], tokens[i + 2])
         if action in POSTING:
             body = extract_body(tokens[i + 3 :])
-            if body is not None and MARKER not in body:
+            if body is not None and not FOOTER_RE.search(body):
                 return True
             # body present+marked, or editor/unreadable -> this action is fine
             return False

@@ -28,6 +28,11 @@ High-signal events (what wakes the agent in `watch`):
 Plain churn (queued -> running, a job starting) updates the snapshot silently and does
 NOT wake the agent. That is the point: the noisy opening burst stays quiet.
 
+Cadence is self-paced: polls run hot (10-30s gaps) while something changed within the
+last 5 minutes, cool to a flat 60s after that, and snap back to hot on any change.
+The phase is persisted per --watcher, so re-runs keep the pace; there are no cadence
+flags to manage (--min/--max-interval exist only as overrides).
+
 Everything is stdlib; `gh` does auth and API. Run with plain `python3` (or `./pr-watch.py`):
 no venv or dependency install, so it works in a read-only sandbox where `uv run` can't
 write its cache.
@@ -242,7 +247,9 @@ def snippet(body: str, max_lines: int = 4, width: int = 100) -> list[str]:
     if not body:
         return []
     lines = [ln.rstrip() for ln in body.splitlines() if ln.strip()]
-    shown = [ln if len(ln) <= width else ln[: width - 1] + "…" for ln in lines[:max_lines]]
+    shown = [
+        ln if len(ln) <= width else ln[: width - 1] + "…" for ln in lines[:max_lines]
+    ]
     if len(lines) > max_lines:
         shown.append("…")
     return shown
@@ -457,9 +464,7 @@ def verdict(name: str, terminal: bool, nxt: str) -> str:
 def state_path(repo: str, pr: int, watcher: str, override: str | None) -> Path:
     if override:
         return Path(override)
-    base = (
-        os.environ.get("WATCH_STATE_DIR") or Path(tempfile.gettempdir()) / "watch"
-    )
+    base = os.environ.get("WATCH_STATE_DIR") or Path(tempfile.gettempdir()) / "watch"
     slug = repo.replace("/", "_")
     return Path(base) / f"{slug}-pr{pr}-{watcher}.json"
 
@@ -515,6 +520,10 @@ def cmd_poll(a) -> int:
     snap = fetch_snapshot(pr, repo, url)
     snap["deadline_ts"] = resolve_deadline(old, a.max_total, a.reset_budget)
     d = diff(old, snap)
+    if old is None or any_change(d):
+        snap["last_change_ts"] = time.time()
+    else:
+        snap["last_change_ts"] = old.get("last_change_ts") or time.time()
     save_state(sp, snap)
     on = parse_on(a.on)
     left = budget_left(snap["deadline_ts"])
@@ -569,6 +578,20 @@ def cmd_poll(a) -> int:
     return 0
 
 
+HOT_WINDOW = 300.0  # seconds since the last change before the cadence cools down
+
+
+def bounds(a, last_change: float) -> tuple[float, float]:
+    """(min, max) poll gap for the current cadence phase.
+
+    Hot (10-30s) while something changed within the last HOT_WINDOW seconds, cold
+    (flat 60s) after. Explicit --min/--max-interval flags override their side."""
+    hot = (time.time() - last_change) < HOT_WINDOW
+    lo = a.min_interval if a.min_interval is not None else (10.0 if hot else 60.0)
+    hi = a.max_interval if a.max_interval is not None else (30.0 if hot else 60.0)
+    return lo, max(lo, hi)
+
+
 def cmd_watch(a) -> int:
     pr, repo, url, sp, old = prepare(a)
     on = parse_on(a.on)
@@ -576,10 +599,14 @@ def cmd_watch(a) -> int:
     # task only exits on a real event or terminal stop), else to 900s.
     max_wait = a.max_wait if a.max_wait is not None else (a.max_total or 900.0)
     start = time.time()
-    interval = a.min_interval
     deadline = resolve_deadline(old, a.max_total, a.reset_budget)
+    # Cadence survives re-runs: a watcher relaunched right after an event starts
+    # hot, one relaunched after a long quiet stretch starts cold.
+    last_change = (old or {}).get("last_change_ts") or time.time()
+    interval, _ = bounds(a, last_change)
     snap = old or fetch_snapshot(pr, repo, url)
     snap["deadline_ts"] = deadline
+    snap["last_change_ts"] = last_change
     save_state(sp, snap)
     if is_closed(snap):
         print(render(snap, empty_delta(), note="(already closed)"))
@@ -623,7 +650,8 @@ def cmd_watch(a) -> int:
             print(verdict("SETTLED", True, "checks finished, no new activity. stop."))
             return 0
 
-        nap = min(interval, max_wait - waited + 0.1)
+        lo, hi = bounds(a, last_change)
+        nap = min(max(lo, min(interval, hi)), max_wait - waited + 0.1)
         if deadline is not None:
             nap = min(nap, max(0.0, deadline - time.time()) + 0.1)
         time.sleep(nap)
@@ -631,6 +659,9 @@ def cmd_watch(a) -> int:
         new = fetch_snapshot(pr, repo, url)
         new["deadline_ts"] = deadline
         d = diff(snap, new)
+        if any_change(d):
+            last_change = time.time()
+        new["last_change_ts"] = last_change
         save_state(sp, new)
 
         if new["ci_settled"] and settled_since is None:
@@ -650,12 +681,9 @@ def cmd_watch(a) -> int:
             return 0
 
         snap = new
-        # Adaptive backoff: changes reset to fast (handle the opening burst),
-        # quiet stretches slow down toward --max-interval.
-        if any_change(d):
-            interval = a.min_interval
-        else:
-            interval = min(interval * 1.6, a.max_interval)
+        # Adaptive backoff within the phase bounds: changes reset to the fast end
+        # (handle the opening burst), quiet stretches slow toward the top.
+        interval = lo if any_change(d) else min(interval * 1.6, hi)
 
 
 def empty_delta() -> dict:
@@ -750,10 +778,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="wake on: fail,done,review,comment,state (default all)",
     )
     w.add_argument(
-        "--min-interval", type=float, default=8.0, help="fastest poll gap, seconds"
+        "--min-interval",
+        type=float,
+        default=None,
+        help="override the fastest poll gap, seconds (default: self-paced, "
+        "10 while active / 60 when quiet)",
     )
     w.add_argument(
-        "--max-interval", type=float, default=60.0, help="slowest poll gap, seconds"
+        "--max-interval",
+        type=float,
+        default=None,
+        help="override the slowest poll gap, seconds (default: self-paced, "
+        "30 while active / 60 when quiet)",
     )
     w.add_argument(
         "--max-wait",

@@ -7,7 +7,8 @@ Covers: Switching branches, naming and slugs, ticket inheritance, switching with
 These are hard; the failure modes are silent or unrecoverable.
 
 - **Never commit to `main`** unless the user told you to, and it makes sense to do so.
-- **Force-push only with `--force-with-lease`**, never plain `--force` without asking first. Lease aborts if upstream moved; plain `--force` silently overwrites other people's commits.
+-  Only push `--force-with-lease` only. There should be no reason to use --force. Don't skip this.
+- **History rewrites (rebase, force-push)** follow [`references/rebase.md`](./rebase.md): backup branch first.
 - **Never auto-rebase a `main` that has diverged locally.** Stop and surface it. Divergence signals an unexpected upstream change, and auto-rebasing can silently drop or duplicate commits.
 - **Never discard uncommitted work** when switching branches. It's the user's only copy.
 
@@ -20,7 +21,7 @@ These are hard; the failure modes are silent or unrecoverable.
 
 ## Naming
 
-Ticket OR Issue Cases ( When user supply a ticket ):
+With a ticket or issue (when the user supplied one):
 
 - **Single PR, ticket:** `<TICKET>-<slug>`, e.g. `CPR-1234-autoscale-zone-1`
 - **Stack, ticket:** `<TICKET>/<n>-<slug>`, `<n>` from 1, e.g. `CPR-1234/1-autoscale-zone-x`, `CPR-1234/2-autoscale-zone-y`
@@ -36,7 +37,7 @@ Where the ticket comes from, in order:
 
 1. **Inherit** the current branch's ticket when branching off it, unless the user says it's a different ticket.
 2. **Referenced** ticket the user mentioned this conversation.
-3. Otherwise ask.
+3. Otherwise, ask.
 
 ## Switching with a dirty tree
 
@@ -44,7 +45,7 @@ Where the ticket comes from, in order:
 2. If dirty, stash with a descriptive message: `agent: pre-switch <reason>`.
 3. Do the work on the other branch.
 4. Restore the stash on return.
-5. If the stash won't reapply cleanly, leave it in place and surface it (never discard, see safety rules).
+5. If the stash doesn't reapply cleanly, leave it in place and surface it (never discard, see safety rules).
 
 ## Stacked PRs
 

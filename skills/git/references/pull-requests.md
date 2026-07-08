@@ -33,13 +33,13 @@ Place it after the ticket and before the colon; with no ticket, prefix the title
 
 When the total becomes known, edit prior titles (`gh pr edit --title`) to replace the literal `N`. Title-only edit, so the `--body` warning below doesn't apply.
 
-## Body: Human Note (always ask)
+## Body: Human Note
 
-Before drafting the body, ask the user with the Ask User tool, default `No`, and an option for the user to entier their note verbatim.
+Ask on the first PR of the conversation, when the user requests one, or when you judge the PR needs a human voice. Ask before drafting the body, with the Ask User tool, default `No`, and an option for the user to enter their note verbatim:
 
 > Want to add a Human Note?
 
-Ask on the first PR of the conversation, when user ask you, and when you think it's necessary:
+When given:
 
 1. Place it at the very top of the body, before the summary line.
 2. Use GitHub's `[!NOTE]` callout.
@@ -55,7 +55,7 @@ Ask on the first PR of the conversation, when user ask you, and when you think i
 <rest of the body…>
 ```
 
-## Body and Description:
+## Body and Description
 
 PR Body anatomy.
 
@@ -65,16 +65,17 @@ PR Body anatomy.
 - **Per-change narration**: NEVER. Let the code diff speak for itself.
 - **Test plan**: ONLY if User explicitly asked. NEVER invent. NEVER assume how to test.
 - **Clickable links** (Jira ticket, parent ticket, related PRs, docs used): ALWAYS when they exist.
-- **Collapsible: rationale**: ALWAYS (when applicable) Include a section for what didn't work, and why we reached the current solution.
-- **Collapsible: rationale**: ONLY for non-obvious design choices.
+- **Collapsible: rationale**: More details on the back and forth between the user on what shaped the PR.
+- **Collapsible: things that didn't work**: when dead ends shaped the solution, what was tried and why it failed.
 - **Collapsible: validation done**: ALWAYS when meaningful manual or automated validation actually happened.
 - **Collapsible: examples**: when examples genuinely clarify the diff.
 
-### Notes:
+### Notes
 
 - PR Body and Description needs to be concise, but not miss a spot. Focus on what behavior changed, what breaking changes introduced but do not narrate the diff yourself.
 - Use Emojis to help scanning/glancing, but not as decorations.
 - Use GitHub alerts/callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) to surface information the reviewer must not miss.
+- The skeleton's hidden `<!-- pr:x -->` markers are structure receipts, invisible on GitHub: keep each with its block, drop it with its block. A post-create hook nudges about missing ones; the nudge is informational.
 
 Skeleton (drop any block that doesn't apply):
 
@@ -87,20 +88,22 @@ Skeleton (drop any block that doesn't apply):
 
 ### Summary
 
+<!-- pr:summary -->
+
 [TICKET-123](link) | xxxx yyy zz. <!-- short summary, always -->
 
-**Changes**
+**Changes** <!-- pr:changes -->
 
 - **Breaking**: xxxx yyy
-- \*_New Functionality_: xxxx yyy
-- \*\*Backward Compatible: xxxx yyy
-- \*\*Fixed: xxxx yyy
+- **New Functionality**: xxxx yyy
+- **Backward Compatible**: xxxx yyy
+- **Fixed**: xxxx yyy
 - ... and so on.
 
 > [!WARNING]
 > **Breaking:** xxxx yyy. <!-- important to know, understand, validate, test -->
 
-**Review guide**
+**Review guide** <!-- pr:review-guide -->
 start in `xxxx`; then read `yyy`, then the rest is mechanical fallout.
 
 <!-- The rest is what you believe should include in the PR Description  -->
@@ -113,11 +116,14 @@ start in `xxxx`; then read `yyy`, then the rest is mechanical fallout.
 
 ### Relevant Links
 
+<!-- pr:links -->
+
 < relevant links (epic, issues, docs, sources, other stacked PRs)
 
 ---
 
-_<sub>🤖 Created with <Tool> (<Model>) on behalf of @<user></sub>_
+_<sub>🤝 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>, with their input and approval.</sub>_
+<!-- footer emoji by provenance: 🤖 autonomous, 🤝 user-directed; see AI footers -->
 ```
 
 ## Body: linking
@@ -140,14 +146,25 @@ gh api user --jq '.login'
 Substitute two values:
 
 - `<Claude|Cursor|OpenCode>`: the tool you're running as.
-- `<MODEL>`: the friendly name of the model you're running `Opus 4.8`, `Sonnet 4.6`.
+- `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
 
-Append AI Disclosure footer at the very end, after a `---` separator:
+Append the footer at the very end, after a `---` separator, picking the variant by **provenance**
+(same rule as [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure): 🤖 autonomous, 🤝 user-directed).
+
+**Autonomous** (🤖), you opened the PR without the user's input on its content:
 
 ```markdown
 ---
 
-_<sub>🤖 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME></sub>_
+_<sub>🤖 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>, fully autonomous, they have not reviewed this.</sub>_
+```
+
+**User-directed** (🤝), the user gave input on or approved the PR:
+
+```markdown
+---
+
+_<sub>🤝 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>, with their input/approval.</sub>_
 ```
 
 For a back-and-forth with the user on how to comment, offer a verbatim Human Note (Ask User tool).
@@ -184,8 +201,4 @@ Output the PR link first, then:
 
 ## Responding to review comments
 
-Full flow lives in [`review-responses.md`](./review-responses.md): classify the reviewer (automated
-bot/AI tool, an AI-disclosed agent behind a human account, or a human), then fix / push back /
-escalate. Quick version: read all first, fix what's right, push back concretely on what's wrong or is over-engineered,
-or is trying to handle an insignificant/rare case for the project, but also escalate genuine tradeoffs to the user, reply to every comment, batch a round's fixes into one
-commit, and append the AI footer to replies posted on the user's behalf.
+Full flow lives in [`review-responses.md`](./review-responses.md): classify the reviewer (automated bot/AI tool, an AI-disclosed agent behind a human account, or a human), then fix / push back / escalate, replying to every comment with the AI footer.

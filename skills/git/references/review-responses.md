@@ -5,7 +5,7 @@ Use `gh` first, GitHub MCP as fallback. Apply [SKILL.md](../SKILL.md) voice rule
 
 Classify who left each comment first, because it sets how much you defer. Then run the same response flow.
 
-## Who left it
+## Who Left It
 
 1. **Automated review (bot / AI tool).** Copilot, CodeQL, Sonar, Snyk, a review bot. Detected by
    author: GitHub `user.type == Bot`, or a review-tool login. `pr-watch.py` tags these `BOTREVIEW`.
@@ -30,7 +30,21 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 3. Don't blindly agree; weigh correctness and proportionality.
 4. Batch fixes from the same review round into one commit.
 5. Reply to every comment, including ones you disagree with, briefly and directly.
-6. End every reply with the AI posts footer ([SKILL.md AI Disclosure](../SKILL.md#ai-disclosure)),
+6. Resolve a thread only after its fix is pushed and the reply is posted; leave threads you pushed
+   back on unresolved, the reviewer closes those. Resolving is a GraphQL mutation:
+
+   ```bash
+   gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "<id>"}) { thread { isResolved } } }'
+   ```
+
+   (Thread ids come from the `reviewThreads` connection on the PR; skip resolving when it's more
+   trouble than it's worth, an unresolved-but-answered thread is fine.)
+
+7. After a round is fully addressed (fix pushed, replies posted), re-request review so it lands
+   back in the reviewer's queue: `gh api repos/<owner>/<repo>/pulls/<num>/requested_reviewers -f "reviewers[]=<login>"`.
+   Skip for bots; they re-review on push.
+
+8. End every reply with the AI posts footer ([SKILL.md AI Disclosure](../SKILL.md#ai-disclosure)),
    picking the variant by **provenance**: the **autonomous** footer when you fixed or pushed back
    without the user's input (so the reviewer knows no human has vetted it yet), the **user-directed**
    footer when the user gave input or approved. You drafted and the user only tweaked? Still

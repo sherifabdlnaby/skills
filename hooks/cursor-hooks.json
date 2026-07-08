@@ -1,10 +1,33 @@
 {
   "version": 1,
   "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "command": "./hooks/scripts/run.sh shell_defaults.py",
+        "matcher": "Shell"
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "command": "./hooks/scripts/run.sh shell_defaults.py",
+        "matcher": "Shell"
+      },
+      {
+        "type": "command",
+        "command": "./hooks/scripts/run.sh pr_structure.py",
+        "matcher": "Shell"
+      }
+    ],
     "beforeShellExecution": [
       {
         "type": "command",
         "command": "./hooks/scripts/run.sh gh_disclosure.py"
+      },
+      {
+        "type": "command",
+        "command": "./hooks/scripts/run.sh rebase_backup.py"
       }
     ],
     "afterFileEdit": [
