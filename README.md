@@ -18,6 +18,11 @@ Needless to say, this is opinionated. And encode _my_ conventions, not best prac
 
 1. [git](skills/git/)   | My git conventions and PR watching ("babysitting").
 2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
+3. [afk](skills/afk/) | Autonomy contract for when I step away. Variants: [afk-careful](skills/afk-careful/), [afk-yolo](skills/afk-yolo/), [afk-soon](skills/afk-soon/).
+4. [local-review](skills/local-review/) | Gate work behind a reviewer panel — fork-session + independent reviewers, cross-model when available.
+5. [watch-pr](skills/watch-pr/) | Babysit a PR: respond to reviews and fix CI, until green (or `forever`).
+
+The `afk`, `local-review`, and `watch-pr` skills are manual-only (`disable-model-invocation: true`) — they exist to make me type less, not to auto-fire.
 
 ## Models
 

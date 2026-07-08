@@ -1,14 +1,20 @@
 ---
-description: Watch a PR's CI/reviews in the background and respond to review comments as they land. Add "forever" to keep watching until the PR merges or closes.
+name: watch-pr
+description: Watch a PR's CI/reviews and respond as they land.
+license: MIT
 argument-hint: "[PR number or URL] [forever] (defaults to current branch's PR)"
-
+disable-model-invocation: true
+metadata:
+  author: sherifabdlnaby
+  version: "0.1.0"
 ---
 
-Load the **git** skill, then read `references/watch.md` and `references/review-responses.md` before acting.
+# watch-pr
+
+Load the [**git**](../git/SKILL.md) skill, then read its [watch](../git/references/watch.md) and [review-responses](../git/references/review-responses.md) references before acting.
 
 Goal: keep the PR under watch without blocking your turn, respond to review comments as they arrive, and debug and fix CI failures.
 Get the PR to green and respond most bot comments automatically; defer decisions that need my input so you keep making progress on everything else. Only after CI is green and bot reviews are addressed may you block waiting on me.
-
 
 ## Target PR
 
