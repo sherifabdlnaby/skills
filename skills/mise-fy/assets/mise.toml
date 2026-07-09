@@ -79,7 +79,7 @@ run = '[ "$(cat .mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] || echo "
 
 # ── 🪝 hooks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [hooks]
-enter = "mise run setup:check"        # nudge users when their setup is stale (see vars.setup_version)
+enter = "MISE_OFFLINE=1 mise run setup:check"  # nudge when setup is stale (see vars.setup_version). MISE_OFFLINE stops this `mise run` re-resolving tools online on every `cd`, which hangs the shell offline (see hooks.md)
 postinstall = "hk install --mise"     # canonical hook install: runs after every `mise install`, idempotent
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────

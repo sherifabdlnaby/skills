@@ -53,6 +53,8 @@ This allows us to version the setup, so we can notify users to re-run `mise run 
 
 The stamp is written to `.mise/setup`. Add a committed `.mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see [.mise/.gitignore](../assets/.mise/.gitignore)) that ignores just the generated `setup` file.
 
+Wrap this enter hook in `MISE_OFFLINE=1` (`enter = "MISE_OFFLINE=1 mise run setup:check"`) so it never resolves tools online and can't hang the shell offline — see [`hooks.md`](hooks.md).
+
 Check the reference [mise.toml](../assets/mise.toml)
 
 ### Deps

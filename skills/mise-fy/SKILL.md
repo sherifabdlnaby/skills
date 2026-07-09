@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # mise-fy
@@ -73,7 +73,10 @@ Installing a tool or runtime; lazy-installing **uncommon** tools (task-scoped to
 **Tasks** (run scripts, build pipelines, watch) -> [`references/tasks.md`](references/tasks.md)
 TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running and parallelism, `mise watch` (re-run on change).
 
-**hk** (pre-commit / git hooks) -> [`references/hk.md`](references/hk.md)
+**Hooks** (directory & lifecycle: `enter`/`cd`, `watch_files`, `postinstall`) -> [`references/hooks.md`](references/hooks.md)
+Keeping `enter`/`cd` hooks offline-safe (`MISE_OFFLINE`, or they hang the shell), trust impact, the shim caveat. For git/pre-commit hooks specifically, see hk below.
+
+**hk Hooks** (pre-commit / git hooks) -> [`references/hk.md`](references/hk.md)
 `hk.pkl` (Pkl), `check` vs `fix`, builtins, mise integration, install, extending with custom steps.
 
 **CI** (running mise tasks/tools in CI: shims, caching, pinning, tokens) -> [`references/ci.md`](references/ci.md)
