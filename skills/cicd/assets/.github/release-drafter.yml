@@ -1,0 +1,50 @@
+# release-drafter config, used two ways:
+#   - DEFAULT model: release.yml's `autolabel` job runs the autolabeler sub-action against this file —
+#     it applies category labels; the sibling .github/release.yml (GitHub's native notes config) makes
+#     `gh release create --generate-notes` group by them. The version is computed by release.yml's bump,
+#     so the version-resolver below stays commented (an active resolver the hand-rolled bump ignores is
+#     drift bait).
+#   - DRAFT model: auto-release.yml drafts a categorized prerelease using the categories/template below.
+#     There release-drafter DOES resolve the version, so uncomment the version-resolver block.
+categories:
+  - title: "🚀 Enhancements"
+    labels: ["enhancement", "feature"]
+  - title: "⬆️ Upgrades"
+    labels: ["upgrades"]
+  - title: "🐛 Bug Fixes"
+    labels: ["fix", "bug", "hotfix"]
+  - title: "🤖 Automatic Updates"
+    labels: ["auto-update"]
+  - title: "📝 Documentation"
+    labels: ["docs"]
+autolabeler:
+  - label: "docs"
+    files: ["*.md"]
+  - label: "enhancement"
+    title: "/enhancement/i"
+  - label: "upgrades"
+    title: "/⬆️/i"
+  - label: "bug"
+    title: "/🐛|🐞|bug|bugfix/i"
+  - label: "auto-update"
+    title: "/🤖/i"
+  - label: "feature"
+    title: "/🚀|🎉/i"
+change-template: |
+  <details>
+    <summary>$TITLE @$AUTHOR (#$NUMBER)</summary>
+
+    $BODY
+  </details>
+template: |
+  ## Changes
+
+  $CHANGES
+# DRAFT model only — uncomment so release-drafter resolves the version from bump labels:
+# name-template: "v$RESOLVED_VERSION 🚀"
+# tag-template: "v$RESOLVED_VERSION"
+# version-resolver:
+#   major: { labels: ["major"] }
+#   minor: { labels: ["minor", "enhancement", "feature"] }
+#   patch: { labels: ["patch", "fix", "bug", "chore", "auto-update"] }
+#   default: patch

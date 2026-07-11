@@ -1,0 +1,18 @@
+# GitHub's NATIVE generated-release-notes config (this exact path is required; not a workflow — the
+# release workflow is workflows/release.yml). `gh release create --generate-notes` groups entries by
+# these categories; without this file the notes are a flat list and the autolabeler's category labels
+# decorate nothing. Keep the labels in sync with release-drafter.yml (the autolabeler that applies them).
+changelog:
+  categories:
+    - title: 🚀 Enhancements
+      labels: [enhancement, feature]
+    - title: ⬆️ Upgrades
+      labels: [upgrades]
+    - title: 🐛 Bug Fixes
+      labels: [fix, bug, hotfix]
+    - title: 🤖 Automatic Updates
+      labels: [auto-update]
+    - title: 📝 Documentation
+      labels: [docs]
+    - title: Other Changes
+      labels: ["*"]

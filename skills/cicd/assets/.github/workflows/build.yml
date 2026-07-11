@@ -1,0 +1,59 @@
+name: Build
+# Packaged-artifact variant for the release-drafter DRAFT model: a human publishes the drafted release,
+# which fires this workflow to build the bundle, attest it, and attach it. Pair with auto-release.yml
+# (draft). The auto-tag-on-merge model builds inside release.yml instead — use one or the other.
+on:
+  release:
+    types: [published]
+
+# Default read-only; the job widens to upload + attest.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & attach
+    runs-on: ubuntu-latest
+    # Publish jobs queue, never cancel (see SKILL.md "Always"); keyed per tag so distinct releases
+    # can still run in parallel.
+    concurrency:
+      group: build-${{ github.event.release.tag_name }}
+      cancel-in-progress: false
+    permissions:
+      contents: write # upload the artifact onto the release
+      id-token: write # keyless attestation (OIDC)
+      attestations: write # provenance for the artifact
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@dba19683ed58901619b14f395a24841710cb4925 # v4.1.0
+        with:
+          install: true
+          install_args: "--locked" # honor mise.lock
+          cache: false # one-shot release build; no cache to poison (zizmor: cache-poisoning)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # so tool installs don't hit API rate limits
+
+      - name: Build artifacts
+        env:
+          VERSION: ${{ github.event.release.tag_name }} # via env, never interpolated (zizmor: template-injection)
+        run: |
+          set -euo pipefail
+          # Same build task local dev runs; it stamps VERSION and drops release files under build/.
+          mise run build --version "${VERSION}"
+          ( cd build && sha256sum ./* > checksums.txt )
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: "build/*"
+
+      - name: Attach artifacts to the release
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" build/* --clobber

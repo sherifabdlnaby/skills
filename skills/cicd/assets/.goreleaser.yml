@@ -1,0 +1,45 @@
+# GoReleaser v2 config for a Go binary/CLI: cross-compiled binaries, checksums, an SBOM, and keyless
+# cosign signatures. Run it from a release job that has `id-token: write` + `attestations: write` +
+# `contents: write` and has installed cosign + syft (see references/go.md). A pure library needs none of
+# this — it ships as a module via a git tag.
+version: 2
+
+builds:
+  - env: [CGO_ENABLED=0]
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    # Stamp the version the release job resolved (the release.yml contract) into the binary.
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .FullCommit }}
+
+archives:
+  - formats: [tar.gz]
+
+checksum:
+  name_template: "checksums.txt"
+
+# Syft SBOMs per archive, attached to the release (GoReleaser default format is SPDX).
+sboms:
+  - artifacts: archive
+
+# Keyless cosign over the checksums blob (OIDC identity, no key). Signs the whole artifact set by
+# covering checksums.txt. The certificate must ship next to the signature — keyless `verify-blob`
+# needs it, and an unverifiable signature protects no one.
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    certificate: "${artifact}.pem"
+    args:
+      [
+        "sign-blob",
+        "--yes",
+        "--output-signature=${signature}",
+        "--output-certificate=${certificate}",
+        "${artifact}",
+      ]
+
+changelog:
+  use: github # the Release body is the changelog; GitHub groups it
+
+release:
+  prerelease: auto # a -rc.N tag publishes as a prerelease automatically

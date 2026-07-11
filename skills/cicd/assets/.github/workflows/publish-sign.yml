@@ -1,0 +1,111 @@
+name: Publish & Sign
+# Push the multi-arch image to GHCR, sign it keyless (cosign + OIDC), and attest provenance + an SBOM.
+# Fires when a release is published (the draft model: a human publishes -> this runs). For auto-tag-on-
+# merge, a release created by GITHUB_TOKEN will NOT trigger this (token events don't recurse) — either
+# fold these steps into release.yml's release job, or publish via the draft model. Manual dispatch is
+# provided for re-runs. See references/docker.md.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v1.2.3)."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }} # GHCR requires lowercase; hardcode a lowercase name if the repo has capitals
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Publish jobs queue, never cancel — a cancelled push leaves a half-published image/tag.
+    concurrency:
+      group: publish-${{ github.event.release.tag_name || inputs.tag }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write # push to GHCR
+      id-token: write # keyless cosign + attestation (OIDC)
+      attestations: write # provenance + SBOM attestations
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ env.TAG }} # build the tagged commit — a manual dispatch would otherwise build default-branch HEAD under the tag's name
+          persist-credentials: false
+
+      # One job builds both arches, so it needs emulation. Native per-arch runners (see
+      # build-test-scan.yml) are faster for per-PR CI; QEMU is fine for the occasional release push.
+      - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Log in to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
+      - name: Install syft
+        uses: anchore/sbom-action/download-syft@7b36ad622f042cab6f59a75c2ac24ccb256e9b45 # v0.20.4
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # One consistent scheme: 1.2.3 always; moving aliases (1.2, 1, latest) only for a stable
+          # release, so an rc never steals them. Prerelease is detected from the tag itself (`-` =
+          # pre-release): the release event's `prerelease` field is empty on workflow_dispatch, the
+          # tag never lies.
+          tags: |
+            type=semver,pattern={{version}},value=${{ env.TAG }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.TAG }},enable=${{ !contains(env.TAG, '-') }}
+            type=semver,pattern={{major}},value=${{ env.TAG }},enable=${{ !contains(env.TAG, '-') }}
+            type=raw,value=latest,enable=${{ !contains(env.TAG, '-') }}
+
+      - name: Build & push
+        id: build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the image (keyless)
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${REGISTRY}/${IMAGE_NAME}@${DIGEST}"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Generate SBOM
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: syft "${REGISTRY}/${IMAGE_NAME}@${DIGEST}" -o spdx-json=sbom.spdx.json
+
+      - name: Attest SBOM
+        uses: actions/attest-sbom@4651f806c01d8637787e274ac3bdf724ef169f34 # v3.0.0
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          sbom-path: sbom.spdx.json
+          push-to-registry: true
