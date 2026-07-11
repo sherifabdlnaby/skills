@@ -1,0 +1,10 @@
+# yamllint — structural YAML only. Cosmetic defaults (line-length, truthy,
+# comments, document-start) are noisy on workflow/docs YAML; keep the
+# structural rules (syntax, key-duplicates, indentation, anchors).
+extends: default
+rules:
+  line-length: disable
+  truthy: disable
+  comments: disable
+  comments-indentation: disable
+  document-start: disable
