@@ -24,7 +24,7 @@ The `afk`, `local-review`, and `watch-pr` skills are manual-only (`disable-model
 
 ## Models
 
-I mostly use `opus-4.8` and `gpt 5.5`, weaker models might not work as good, especially that I rely on model's world knowledge over explicit examples.
+I mostly use (`opus-4.8`,`gpt 5.5`,`gpt 5.6 sol|terra`, and `grok 4.5`), weaker models might not work as good, especially that I rely on model's world knowledge over explicit examples.
 
 ## Installation
 

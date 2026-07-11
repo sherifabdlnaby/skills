@@ -25,7 +25,7 @@ hk = "1.48.0" # keep in sync with the pin in hk.pkl
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
-HK_MISE = "1" # default every hk run to mise's env (`--mise`); hooks resolve tools via `mise x`
+#EXAMPLE_ENV=X
 
 # ── 📏 vars ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 [vars]
