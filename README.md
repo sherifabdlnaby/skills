@@ -12,8 +12,6 @@
 
 Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 
-Needless to say, this is opinionated. And encode _my_ conventions, not best practice for everyone.
-
 ## Skills
 
 1. [git](skills/git/)   | My git conventions and PR watching ("babysitting").
@@ -38,11 +36,11 @@ Installs skills into any SKILL.md-aware agent. You don't need a plugin host.
 
 ```bash
 npx skills add sherifabdlnaby/skills              # all skills
-npx skills add sherifabdlnaby/skills --skill git  # just one (git or mise)
+npx skills add sherifabdlnaby/skills --skill git  # just one skill
 npx skills list sherifabdlnaby/skills             # see what's available
 ```
 
-### Claude Code (plugin) (WIP)
+### Claude Code (plugin)
 
 ```bash
 /plugin marketplace add sherifabdlnaby/skills
@@ -51,7 +49,7 @@ npx skills list sherifabdlnaby/skills             # see what's available
 
 Update with `/plugin marketplace update sherif-plugins`; manage from `/plugin`.
 
-### Cursor (plugin) (WIP)
+### Cursor (plugin)
 
 ```bash
 /plugin marketplace add sherifabdlnaby/skills
@@ -70,7 +68,7 @@ This repo is managed by [mise](https://mise.jdx.dev). One-time setup:
 mise run setup   # installs tools (mise install) and self-installs the pre-commit hook
 ```
 
-Linters, formatters, and validators (ruff, actionlint, zizmor, pinact, betterleaks, typos, and lychee for dead links) run via [hk](https://hk.jdx.dev):
+Linters, formatters, and validators (e.g. ruff, lychee for dead links) run via [hk](https://hk.jdx.dev):
 
 ```bash
 mise run check          # report on staged files (alias: mise run lint)
@@ -78,4 +76,4 @@ mise run check --fix    # apply fixes
 mise run check --all    # whole repo (what CI runs)
 ```
 
-The same `check` task runs in the pre-commit hook and in CI (`.github/workflows/check.yml`). lychee checks local/relative links only by default (see `lychee.toml`).
+The same `check` task runs in the pre-commit hook and in CI. lychee checks local/relative links only by default (see `lychee.toml`).
