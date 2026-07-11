@@ -14,6 +14,7 @@ Guidance on mise's directory & lifecycle hooks (`enter`/`cd`/`leave`, `watch_fil
 ## Notes & Gotchas:
 
 - **Adding any hook makes the whole `mise.toml` untrusted** until `mise trust` (see SKILL.md "Always applies"). Fresh clones and CI need the trust step or a `trusted_config_paths` entry.
+- **Hooks are no longer experimental**: You don't need to enable experiments for hooks.
 
 ## Docs:
 
