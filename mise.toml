@@ -7,27 +7,29 @@ min_version = "2026.6.6"
 
 # All tools are native binaries — no node/python/ruby runtime dependency.
 # linters & formatters
-actionlint = "1"       # GitHub Actions linter
-shellcheck = "0.11"    # actionlint uses it to lint workflow run: blocks — 0.x, pin minor
-zizmor = "1"           # GitHub Actions security
-pinact = "3"           # pin GitHub Actions to SHAs
-lychee = "0.24"        # dead-link checker (offline; see lychee.toml) — 0.x, pin minor
-ruff = "0.15"          # python lint + format (skills/git/scripts/babysit.py); native binary, no python — 0.x, pin minor
-betterleaks = "1"      # secret scanning (allowlist in .betterleaks.toml)
-typos = "1"            # source-code spell checker (excludes/words in typos.toml)
-pkl = "0.31"           # pkl lint + format (hk.pkl) — 0.x, pin minor
-rumdl = "0.2"          # markdown lint + format; table cell-alignment (MD060) — config in rumdl.toml — 0.x, pin minor
+actionlint = "1"    # GitHub Actions linter
+shellcheck = "0.11" # actionlint uses it to lint workflow run: blocks — 0.x, pin minor
+zizmor = "1"        # GitHub Actions security
+pinact = "3"        # pin GitHub Actions to SHAs
+lychee = "0.24"     # dead-link checker (offline; see lychee.toml) — 0.x, pin minor
+ruff = "0.15"       # python lint + format (skills/git/scripts/*.py); native binary, no python — 0.x, pin minor
+betterleaks = "1"   # secret scanning (allowlist in .betterleaks.toml)
+typos = "1"         # source-code spell checker (excludes/words in typos.toml)
+pkl = "0.31"        # pkl lint + format (hk.pkl) — 0.x, pin minor
+rumdl = "0.2"       # markdown lint + format; table cell-alignment (MD060) — config in rumdl.toml — 0.x, pin minor
+yamllint = "1"      # YAML structure (duplicate keys, indentation); cosmetic rules off in .yamllint
+taplo = "0.10"      # TOML lint + format (mise.toml, *.toml) — 0.x, pin minor
 
 # pre-commit
-hk = "1.48.0"   # keep in sync with the pin in hk.pkl
+hk = "1.48.0" # keep in sync with the pin in hk.pkl
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
-HK_MISE = "1"          # default every hk run to mise's env (`--mise`); hooks resolve tools via `mise x`
+HK_MISE = "1" # default every hk run to mise's env (`--mise`); hooks resolve tools via `mise x`
 
 # ── 📏 vars ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 [vars]
-setup_version = "1"    # increment when setup steps change / users must re-run setup
+setup_version = "1" # increment when setup steps change / users must re-run setup
 
 # ── ▶️ tasks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tasks.check]
@@ -51,12 +53,14 @@ hk check $ff ${usage_fix:+--fix} ${usage_all:+--all} ${usage_pr:+--pr} \
 
 [tasks.test]
 description = "Run tests (no automated tests yet — no-op placeholder)"
-depends = ["lint"]                                   # ordering only; depends run in parallel, don't see this task's env
+depends = [
+  "lint",
+] # ordering only; depends run in parallel, don't see this task's env
 run = "echo 'no tests yet'"
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
-depends_post = ["setup:stamp"]                       # stamp the version only after a successful setup
-run = "mise install"                                 # installs tools (+ anything else per use-case)
+depends_post = ["setup:stamp"] # stamp the version only after a successful setup
+run = "mise install"           # installs tools (+ anything else per use-case)
 
 [tasks."setup:stamp"] # write the version of the last run setup to .mise/setup
 hide = true
@@ -70,15 +74,18 @@ run = '[ "$(cat .mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] || echo "
 
 # ── 🪝 hooks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [hooks]
-enter = "mise run setup:check"        # nudge users when their setup is stale (see vars.setup_version)
-postinstall = "hk install --mise"     # canonical hook install: runs after every `mise install`, idempotent
+enter = "MISE_OFFLINE=1 mise run setup:check" # nudge when setup is stale; MISE_OFFLINE keeps cd offline-safe
+postinstall = "hk install --mise"             # canonical hook install: runs after every `mise install`, idempotent
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]
-experimental = true                  # to support hooks
-lockfile = true                      # write/commit mise.lock — REQUIRED before any pin resolves reproducibly
-minimum_release_age = "7d"           # ignore releases <7d old (supply-chain cooldown)
-disable_backends = ["asdf", "vfox"]  # legacy plugins run arbitrary code, no checksums — fail loud
+experimental = true # to support hooks
+lockfile = true # write/commit mise.lock — REQUIRED before any pin resolves reproducibly
+minimum_release_age = "7d" # ignore releases <7d old (supply-chain cooldown)
+disable_backends = [
+  "asdf",
+  "vfox",
+] # legacy plugins run arbitrary code, no checksums — fail loud
 
 # Use `gh` token to overcome GitHub limits, fallback to gcm if gh is not working.
 github.gh_cli_tokens = true

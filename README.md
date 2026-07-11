@@ -65,15 +65,16 @@ Manage from `/plugin`. Same repo, same skills — Cursor reads `.cursor-plugin/`
 This repo is managed by [mise](https://mise.jdx.dev). One-time setup:
 
 ```bash
-mise run setup   # installs tools (mise install) and self-installs the pre-commit hook
+mise trust && mise run setup   # trust config, install tools, self-install the pre-commit hook
 ```
 
-Linters, formatters, and validators (e.g. ruff, lychee for dead links) run via [hk](https://hk.jdx.dev):
+Linters, formatters, and validators run via [hk](https://hk.jdx.dev):
 
 ```bash
 mise run check          # report on staged files (alias: mise run lint)
 mise run check --fix    # apply fixes
-mise run check --all    # whole repo (what CI runs)
+mise run check --all    # whole repo
+mise tasks              # discover every task
 ```
 
 The same `check` task runs in the pre-commit hook and in CI. lychee checks local/relative links only by default (see `lychee.toml`).

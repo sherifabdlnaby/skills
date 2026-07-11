@@ -19,6 +19,9 @@ local linters: Mapping<String, Step> = new Mapping<String, Step> {
   ["pkl-format"] = Builtins.pkl_format // pkl formatter (hk.pkl)
   ["pkl"] = Builtins.pkl // pkl validate (`pkl eval`)
   ["rumdl"] = Builtins.rumdl // markdown lint + format; table cell-alignment — config in rumdl.toml
+  ["taplo"] = Builtins.taplo // TOML lint + format
+  ["yamllint"] = Builtins.yamllint // YAML structure only — cosmetic rules off in .yamllint
+  ["mise"] = Builtins.mise // validate mise.toml
 
   // spelling — accepted words / excludes live in typos.toml
   ["typos"] = Builtins.typos // source-code spell checker
@@ -29,17 +32,29 @@ local linters: Mapping<String, Step> = new Mapping<String, Step> {
   // GitHub Actions
   ["actionlint"] = Builtins.actionlint // workflow syntax
   ["zizmor"] = Builtins.zizmor // workflow security
-  ["pinact"] = Builtins.pinact // actions pinned to SHAs
+  // pinact needs a GitHub token for tag→SHA resolution (CI: $GITHUB_TOKEN; local: gh auth).
+  // Prepend onto the builtin commands so flags stay in sync. See mise-fy references/hk.md.
+  ["pinact"] = (Builtins.pinact) {
+    check_diff =
+      "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
+        + Builtins.pinact.check_diff
+    fix =
+      "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
+        + Builtins.pinact.fix
+  }
 
   // safety / hygiene
   ["betterleaks"] = Builtins.betterleaks // secret scanning — allowlist in .betterleaks.toml
+  ["detect-private-key"] = Builtins.detect_private_key // block committed private keys
   ["newlines"] = Builtins.newlines // trailing newline
   ["trailing-whitespace"] = Builtins.trailing_whitespace // strip trailing whitespace
+  ["mixed-line-ending"] = Builtins.mixed_line_ending // normalize CRLF/LF
   ["check-added-large-files"] = Builtins.check_added_large_files // block large blobs (>500KB default)
   ["check-merge-conflict"] = Builtins.check_merge_conflict
   ["check-byte-order-marker"] = Builtins.byte_order_marker
   ["check-case-conflict"] = Builtins.check_case_conflict
   ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
+  ["check-symlinks"] = Builtins.check_symlinks // catch broken symlinks
 }
 
 exclude = commonIgnores
