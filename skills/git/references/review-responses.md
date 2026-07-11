@@ -45,8 +45,8 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
    Skip for bots; they re-review on push.
 
 8. End every reply with the AI posts footer ([SKILL.md AI Disclosure](../SKILL.md#ai-disclosure)),
-   picking the variant by **provenance**: the **autonomous** footer when you fixed or pushed back
-   without the user's input (so the reviewer knows no human has vetted it yet), the **user-directed**
+   picking the variant by **decision source**: the **autonomous** footer when you fixed or pushed back
+   without the user's input (so the reviewer knows no human has vetted it yet), the **human-directed**
    footer when the user gave input or approved. You drafted and the user only tweaked? Still
    user-directed. A reply posted from a watch loop is autonomous by definition.
 

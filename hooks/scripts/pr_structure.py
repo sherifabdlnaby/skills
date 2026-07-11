@@ -2,12 +2,12 @@
 """PR-structure soft nudge.
 
 Companion to the PR-body skeleton in skills/git/references/pull-requests.md: each
-structure block there carries a hidden `<!-- pr:x -->` marker. Wired to the
-post-shell hook (PostToolUse:Bash / postToolUse:Shell); after a `gh pr create` or
-`gh pr edit` that carried a body, it lists the markers the body is missing and
-points the agent back to the skill guide. Informational only, it never blocks and
-never rewrites: a PR may deviate from the skeleton on purpose, this just makes the
-deviation a decision instead of an accident.
+structure block there carries a required hidden `<!-- pr:x -->` marker. Wired to
+the post-shell hook (PostToolUse:Bash / postToolUse:Shell); after a
+`gh pr create` or `gh pr edit` that carried a body, it lists missing markers and
+points the agent back to the skill guide. A marker stays when its block does not
+apply; the block instead says why it is not applicable. Informational only, this
+hook never blocks or rewrites.
 
 Body extraction is shared with gh_disclosure (same dir, launcher puts it on
 sys.path). stdlib only. Exit 0 always; "no nudge" is emitting nothing.
@@ -24,9 +24,9 @@ from gh_disclosure import extract_body
 # reformatted marker still counts.
 MARKERS = {
     "pr:summary": "the one-line summary",
-    "pr:changes": "changelog-style bullets (multi-change PRs)",
-    "pr:review-guide": "where the reviewer should start",
-    "pr:links": "ticket / docs / related-PR links",
+    "pr:changes": "changelog-style bullets or why they do not apply",
+    "pr:review-guide": "where the reviewer should start or why no guide is needed",
+    "pr:links": "relevant links or why there are none",
 }
 
 # Only bodies of the PR itself carry the skeleton; comments and reviews don't.
@@ -64,13 +64,13 @@ def format_nudge(missing):
     bullets = "\n".join(f"- `<!-- {name} -->`: {MARKERS[name]}" for name in missing)
     return (
         "PR-structure nudge (informational, nothing was blocked): the PR body just "
-        "posted is missing these skeleton blocks/markers:\n"
+        "posted is missing these required structure markers:\n"
         f"{bullets}\n\n"
         "The body guide and skeleton live in the git skill, "
-        "skills/git/references/pull-requests.md -> 'Body and Description'; follow it "
-        "unless this PR deliberately deviates. If blocks are missing by accident, fix "
-        "with `gh pr edit --body` (read the current body first, the flag replaces it "
-        "whole)."
+        "skills/git/references/pull-requests.md -> 'Body and Description'. Every "
+        "marker stays in every PR body. If a block does not apply, keep its marker "
+        "and add a short `Not applicable: ...` sentence explaining why. Fix with "
+        "`gh pr edit --body` (read the current body first, the flag replaces it whole)."
     )
 
 

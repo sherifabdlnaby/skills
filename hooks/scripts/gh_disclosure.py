@@ -4,9 +4,9 @@
 Single source of truth for the rule "anything posted to GitHub on the user's
 behalf carries an AI footer" (see skills/git/SKILL.md -> AI Disclosure). Wired to
 the pre-shell hook (PreToolUse:Bash / beforeShellExecution) so it catches the case
-where the agent forgets the footer; it does NOT pick the footer variant (provenance
-is the agent's call) and never rewrites the command, it only blocks when a posted
-body is missing disclosure.
+where the agent forgets the footer; it does NOT pick the footer variant (who made
+the specific decision is the agent's call) and never rewrites the command, it only
+blocks when a posted body is missing disclosure.
 
 Cross-tool stdin/stdout plumbing (Claude vs Cursor payload shapes, the deny
 verdicts) lives in hooklib; this file owns only the disclosure decision. stdlib
@@ -19,11 +19,12 @@ import sys
 
 import hooklib
 
-# A valid footer line per SKILL.md -> AI Disclosure: `_<sub>` + a provenance emoji
-# (🤖 autonomous / 🤝 user-directed) + attribution ("on behalf of @user") + `</sub>_`.
+# A valid footer line per SKILL.md -> AI Disclosure: `_<sub>` + a decision-source
+# emoji (🤖 Agent Decided / 🤝 Human Guided) + attribution ("on behalf of @user")
+# + `</sub>_`.
 # We validate the skeleton, not the full template text, so the templates stay owned
-# by SKILL.md and the agent keeps the provenance choice; requiring one of the two
-# emojis is what forces that choice to be made at all.
+# by SKILL.md and the agent keeps the decision-source choice; requiring one of the
+# two emojis is what forces that choice to be made at all.
 FOOTER_RE = re.compile(
     r"_<sub>\s*(?:\U0001f916|\U0001f91d)\s.*?\bon behalf of @[A-Za-z0-9-]+\b.*?</sub>_",
     re.DOTALL,
@@ -44,10 +45,11 @@ REASON = (
     "AI-disclosure guard: this command posts a body to GitHub but the body has no "
     "valid disclosure footer (`_<sub>\U0001f916|\U0001f91d ... on behalf of @user ... </sub>_`). "
     "Per the git skill (SKILL.md -> AI Disclosure), append the footer after a `---`, "
-    "picking the emoji by provenance: \U0001f916 autonomous (you acted without the "
-    "user's input), \U0001f91d user-directed (they gave input or approved). For a PR "
-    "body use the `Created with ...` footer in references/pull-requests.md. Add it, "
-    "then retry."
+    "picking who made the specific decision: \U0001f916 Agent Decided (you chose "
+    "without the user's direction on that decision), \U0001f91d Human Guided (the "
+    "user chose or materially directed that decision). A general request to handle "
+    "the task does not make it Human Guided. For a PR body use the `Created with ...` "
+    "footer in references/pull-requests.md. Add it, then retry."
 )
 
 

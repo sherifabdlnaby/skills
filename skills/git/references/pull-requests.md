@@ -75,9 +75,9 @@ PR Body anatomy.
 - PR Body and Description needs to be concise, but not miss a spot. Focus on what behavior changed, what breaking changes introduced but do not narrate the diff yourself.
 - Use Emojis to help scanning/glancing, but not as decorations.
 - Use GitHub alerts/callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) to surface information the reviewer must not miss.
-- The skeleton's hidden `<!-- pr:x -->` markers are structure receipts, invisible on GitHub: keep each with its block, drop it with its block. A post-create hook nudges about missing ones; the nudge is informational.
+- The skeleton's hidden `<!-- pr:x -->` markers are structure receipts, invisible on GitHub. Keep every marker in every PR body. When a block does not apply, retain its marker and replace its content with one short, specific `Not applicable: <reason>.` sentence. A post-create hook nudges about missing markers; the nudge is informational.
 
-Skeleton (drop any block that doesn't apply):
+Skeleton (keep every marker; explain inapplicable blocks instead of dropping them):
 
 ```markdown
 > [!NOTE]
@@ -94,17 +94,14 @@ Skeleton (drop any block that doesn't apply):
 
 **Changes** <!-- pr:changes -->
 
-- **Breaking**: xxxx yyy
-- **New Functionality**: xxxx yyy
-- **Backward Compatible**: xxxx yyy
-- **Fixed**: xxxx yyy
-- ... and so on.
+<user-facing changelog bullets, or `Not applicable: this PR contains one focused change.`>
 
 > [!WARNING]
 > **Breaking:** xxxx yyy. <!-- important to know, understand, validate, test -->
 
 **Review guide** <!-- pr:review-guide -->
-start in `xxxx`; then read `yyy`, then the rest is mechanical fallout.
+
+<where to start, or `Not applicable: the diff is small and can be reviewed linearly.`>
 
 <!-- The rest is what you believe should include in the PR Description  -->
 
@@ -118,12 +115,12 @@ start in `xxxx`; then read `yyy`, then the rest is mechanical fallout.
 
 <!-- pr:links -->
 
-< relevant links (epic, issues, docs, sources, other stacked PRs)
+<epic, issues, docs, sources, or related PRs; otherwise `Not applicable: no relevant external links.`>
 
 ---
 
-_<sub>🤝 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>, with their input and approval.</sub>_
-<!-- footer emoji by provenance: 🤖 autonomous, 🤝 user-directed; see AI footers -->
+_<sub>🤝 Human Guided: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+<!-- footer emoji by decision source: 🤖 Agent Decided, 🤝 Human Guided; see AI footers -->
 ```
 
 ## Body: linking
@@ -135,7 +132,8 @@ _<sub>🤝 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB
 
 ## AI footers
 
-This is the PR-**body** footer. Comment and reply footers, chosen by provenance (autonomous vs user-directed), live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
+This is the PR-**body** footer. Comment and reply footers, chosen by who made the specific decision
+(Agent Decided vs Human Guided), live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
 
 Resolve the GitHub username once per session and cache it as `<GITHUB_USERNAME>`:
 
@@ -148,23 +146,26 @@ Substitute two values:
 - `<Claude|Cursor|OpenCode>`: the tool you're running as.
 - `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
 
-Append the footer at the very end, after a `---` separator, picking the variant by **provenance**
-(same rule as [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure): 🤖 autonomous, 🤝 user-directed).
+Append the footer at the very end, after a `---` separator. Use the same decision-source rule as
+[SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
 
-**Autonomous** (🤖), you opened the PR without the user's input on its content:
+**Agent Decided** (🤖): the agent chose the substantive approach and PR content without the user's
+direction on those specific decisions. A general request to fix an issue or open a PR does not make
+the PR Human Guided.
 
 ```markdown
 ---
 
-_<sub>🤖 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>, fully autonomous, they have not reviewed this.</sub>_
+_<sub>🤖 Agent Decided: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-**User-directed** (🤝), the user gave input on or approved the PR:
+**Human Guided** (🤝): the user chose or materially directed the specific decisions reflected in the
+PR. This does not mean they reviewed the final body or implementation.
 
 ```markdown
 ---
 
-_<sub>🤝 Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>, with their input/approval.</sub>_
+_<sub>🤝 Human Guided: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 For a back-and-forth with the user on how to comment, offer a verbatim Human Note (Ask User tool).

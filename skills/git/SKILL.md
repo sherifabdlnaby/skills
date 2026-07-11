@@ -16,7 +16,7 @@ Route first: each action's actual rules live in a `references/` file. Open the m
 
 ## Always
 
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**. The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md); the post templates, chosen by provenance (autonomous vs user-directed), live in [AI Disclosure](#ai-disclosure) below. Use them as verbatim as possible, do not write from memory.
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**. The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md); the post templates, chosen by who made the specific decision (Agent Decided vs Human Guided), live in [AI Disclosure](#ai-disclosure) below. Use them as verbatim as possible, do not write from memory.
 
 **Parallelize read-only calls.** Batch independent read-only `git`/`gh` calls (`status`, `diff`, `log`, `gh pr view/diff/checks`) into a single tool call; each sequential read is a roundtrip for nothing. Mutating commands (`commit`, `push`, `rebase`, `gh pr create/edit/merge`) stay sequential.
 
@@ -57,23 +57,25 @@ Spawning the cheap background watcher sub-agent (and the background-task fallbac
 ## AI Disclosure
 
 Every post on the user's behalf (comment, reply, issue) ends with this footer, after a `---`. Pick
-the variant by **provenance**, so the reader knows whether a human stands behind the content. The
-emoji carries the provenance at a glance: 🤖 autonomous, 🤝 user-directed.
+the variant by who made the specific decision behind the post. A request to handle a task, fix an
+issue, or open a PR does not count as guidance on the decisions the agent makes while doing it.
 
-**Autonomous** (🤖), you decided and acted without the user's input (a fix or push-back in a watch loop, etc.):
-
-```markdown
----
-
-_<sub>🤖 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, fully autonomous, they have not reviewed this.</sub>_
-```
-
-**User-directed** (🤝), the user gave input on or approved the content:
+**Agent Decided** (🤖): the agent chose the position, change, or response without the user's
+direction on that specific decision.
 
 ```markdown
 ---
 
-_<sub>🤝 Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>, with their input and approval.</sub>_
+_<sub>🤖 Agent Decided: Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-When unsure, use the autonomous form; it claims less human oversight, the safer default.
+**Human Guided** (🤝): the user chose or materially directed the specific decision. This does not
+mean they reviewed the final wording or implementation.
+
+```markdown
+---
+
+_<sub>🤝 Human Guided: Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>.</sub>_
+```
+
+When unsure, use Agent Decided.
