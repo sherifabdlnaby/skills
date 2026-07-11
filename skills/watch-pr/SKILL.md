@@ -2,7 +2,7 @@
 name: watch-pr
 description: Watch a PR's CI/reviews and respond as they land.
 license: MIT
-argument-hint: "[PR number or URL] [forever] (defaults to current branch's PR)"
+argument-hint: "[PR number or URL] [duration|forever] (defaults to current branch's PR, 30m)"
 disable-model-invocation: true
 metadata:
   author: sherifabdlnaby
@@ -23,6 +23,14 @@ Get the PR to green and respond most bot comments automatically; defer decisions
 ```
 gh pr view --json number,url,headRefName,state
 ```
+
+## Time Budget
+
+`$ARGUMENTS` may include a duration (`30m`, `1h`, `2h`, …) or `forever` / `indefinitely`.
+
+- **Duration** → pass `--max-total <seconds>` (`s` / `m` / `h` / `d`). Default **30m** when neither a duration nor `forever` is given.
+- On `BUDGET SPENT`, send the digest and stop.
+- After you push a fix on a budgeted watch, re-run with `--reset-budget` so the new CI gets a full window.
 
 ## Indefinite Mode
 
