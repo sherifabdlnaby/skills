@@ -1,6 +1,6 @@
 # Container image
 
-Deliverable is a multi-arch image in a registry (GHCR), signed and attested. Two workflows:
+Deliverable is a multi-arch image in a registry (e.g GHCR), signed and attested. Two workflows:
 [`build-test-scan.yml`](../assets/.github/workflows/build-test-scan.yml) gates every PR;
 [`publish-sign.yml`](../assets/.github/workflows/publish-sign.yml) ships on release.
 
@@ -46,13 +46,14 @@ stable release, detected from the tag string itself (a `-` marks a pre-release �
 `publish-sign.yml` runs on `release: published`. In the **draft model** a human publishes and it fires
 normally. With **auto-tag-on-merge**, the release is created by `GITHUB_TOKEN`, and token-made events do
 not trigger further workflows (recursion guard), so it will NOT fire on its own. Options: fold the
-push/sign/attest steps into `release.yml`'s release job, publish via the draft model, or push the tag with
-a PAT/app token. The `workflow_dispatch` input is there for manual re-runs.
+push/sign/attest steps into [`release.yml`](../assets/.github/workflows/release.yml)'s release job,
+publish via the draft model, or push the tag with a PAT/app token. The `workflow_dispatch` input is there
+for manual re-runs.
 
-Mind the publish gate (SKILL.md): any `release: published` path makes the notes public *before* the image
-lands. To honor the gate strictly, fold the steps into `release.yml` so `gh release create` runs after the
-image is pushed and signed — or create the release as a draft, run the publish steps, then
-`gh release edit --draft=false`.
+Mind the [publish gate](../SKILL.md#publish-sign-attest): any `release: published` path makes the notes
+public *before* the image lands. To honor the gate strictly, fold the steps into `release.yml` so
+`gh release create` runs after the image is pushed and signed — or create the release as a draft, run the
+publish steps, then `gh release edit --draft=false`.
 
 ## Scan
 

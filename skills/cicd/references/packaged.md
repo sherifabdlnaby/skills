@@ -1,11 +1,11 @@
 # Packaged artifact
 
 A project whose deliverable is a file you attach to a GitHub Release: a bundle, a zip, a single binary, a
-plugin package (e.g. an Alfred workflow bundle). Distribution is the Release asset, no registry.
+plugin package.
 
 ## The build contract
 
-The pipeline never knows how to build your artifact; it calls `mise run build --version <tag>`. That task:
+The pipeline never knows how to build your artifact; it calls build tool `mise run build --version <tag>`. That task:
 
 - stamps the version into the artifact (e.g. into a manifest), building a throwaway copy so the working
   tree stays clean;
@@ -23,12 +23,14 @@ job and a local `mise run build` produce the identical artifact.
   [`build.yml`](../assets/.github/workflows/build.yml). release-drafter keeps a curated draft; a human
   publishes it, and `on: release: published` fires `build.yml` to build + attach. Use this when you want
   to eyeball notes before shipping. Trade-off: publishing is the trigger, so the release is public and
-  asset-less for the minute the build takes — the strict publish gate (SKILL.md) holds only in the
-  auto-tag model, where `gh release create` runs after the build.
+  asset-less for the minute the build takes — the strict
+  [publish gate](../SKILL.md#publish-sign-attest) holds only in the auto-tag model, where
+  `gh release create` runs after the build.
 
 ## Attest the bundle too
 
-The sign/attest principle is artifact-agnostic (see SKILL.md). A packaged artifact does not get to skip
+The sign/attest principle is artifact-agnostic
+([SKILL.md](../SKILL.md#publish-sign-attest)). A packaged artifact does not get to skip
 it: generate `checksums.txt` over `build/*` and run `actions/attest-build-provenance` on the set, so a
 downloader can `gh attestation verify <file> --owner <you>`. why: a bundle pulled from a Release is exactly
 the kind of artifact provenance is for. Signing the bundle with cosign is optional for a Release asset

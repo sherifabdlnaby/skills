@@ -4,23 +4,6 @@ Two shapes, very different CD needs.
 
 ## Library (imported via `go get`)
 
-**No CD, no release automation, no changelog.** A library ships as a module: cut a version by pushing a
-semver git tag; the module proxy serves it. That is the whole release process, deliberately.
-
-CI is just tests (linting is mise-fy's `check`). Run the suite with the race detector across the Go
-versions you support:
-
-```yaml
-strategy:
-  matrix:
-    go: ["1.25", "1.24"] # the versions you promise to work on
-jobs...
-  - run: go test -race -covermode=atomic ./...
-```
-
-Keep the matrix honest (the versions in your `go.mod` support window), single-OS unless you actually
-target Windows/macOS. Cache modules with `actions/setup-go`'s built-in caching (keys on `go.sum`).
-
 **Rollback is `retract`.** A bad published version can't be unpublished; add a `retract` directive to
 `go.mod` and tag a new patch. why: the proxy is immutable, so you steer consumers off the bad tag rather
 than deleting it.
