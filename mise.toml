@@ -66,6 +66,19 @@ base="${usage_base:-${BASE_REF:-origin/main}}"            # default matches defa
 content="skills hooks"                                    # + manifests below = the version-bump glob in hk.pkl; keep in sync
 manifests=".claude-plugin/plugin.json .cursor-plugin/plugin.json"
 
+# Version-parity: every manifest must carry the same version — a split version is a broken
+# contract (the release workflow tags off one of them), not a per-run concern, so this runs
+# before the "no content changed" early exit below.
+prev=""
+for m in $manifests; do
+  v="$(jq -r .version "$m")"
+  if [ -n "$prev" ] && [ "$v" != "$prev" ]; then
+    echo "❌ manifest version mismatch: $m is $v, expected $prev (every manifest must match)" >&2
+    exit 1
+  fi
+  prev="$v"
+done
+
 git rev-parse --verify --quiet "$base" >/dev/null || { echo "⚠️  base ref '$base' not found — skipping"; exit 0; }
 if git diff --quiet "$base"...HEAD -- $content; then
   echo "✅ no shipped plugin content changed vs $base — no version bump needed"; exit 0
