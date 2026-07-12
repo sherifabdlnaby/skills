@@ -58,7 +58,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0 # tags, so the preview can compare against the latest one
           persist-credentials: false
@@ -112,7 +112,7 @@ jobs:
       # Keeps the checkout token: the tag-push step below needs it.
       - name: Checkout
         # zizmor: ignore[artipacked] -- this job pushes the release tag
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0 # full history + tags, for the latest-tag lookup and generated notes
 
