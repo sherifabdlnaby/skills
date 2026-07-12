@@ -31,8 +31,9 @@ Guiding Principles:
    contextual awareness of how the project evolved, no memory of the task that produced it. A
    comment that echoes this session's instructions fails (e.g. `// Doing X (no Y)` where Y is
    something only this conversation knows).
+2. Write to a reader who isn't aware of our chats, and does not include explanations or justifications based on our current conversation, or from our chat.
 2. STOP Making code comments that make sense only in the context of the chat that overfit to our current conversation.
-3. DO Not add comments about changes that are not on main. A comment to explain evolution of something in the same branch is redundant and won't make sense once commits are squashed.
+3. DO Not add comments about delta that are not with main. A comment to explain evolution of something between two commit of the same branch is redundant and won't make sense once commits are squashed.
 2. **Describe the steady state, not the delta**: `// reads users_v2`, not `// migrated from
    users_v1`. Git records the transition, and delta comments become lies the moment it
    completes. A transition that must live in the code is a TODO with an end condition, never
