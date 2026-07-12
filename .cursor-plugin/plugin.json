@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "description": "Opinionated git and mise skills, plus boilerplate commands, agents, and hooks.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"
@@ -11,7 +11,7 @@
   "license": "MIT",
   "keywords": ["skills", "git", "mise", "commands", "hooks", "agents"],
   "logo": "assets/logo.svg",
-  "skills": "skills",
+  "skills": ["skills", "skills/variants"],
   "commands": "commands",
   "hooks": "hooks/cursor-hooks.json"
 }

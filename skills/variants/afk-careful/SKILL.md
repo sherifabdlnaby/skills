@@ -10,6 +10,6 @@ metadata:
 
 # afk-careful
 
-Apply the [**afk**](../afk/SKILL.md) contract:
+Apply the **afk** contract:
 
 - Park all ambiguity: only do work with one obvious right answer; everything else goes to the summary.

@@ -10,7 +10,7 @@ metadata:
 
 # afk-yolo
 
-Apply the [**afk**](../afk/SKILL.md) contract with the ceiling raised:
+Apply the **afk** contract with the ceiling raised:
 
 - Also allowed: respondand reply to review comments, babysit the PR until green.
 - Still blocked: destructive or data-losing actions deploy/publish, force-push shared branches, delete remote data.

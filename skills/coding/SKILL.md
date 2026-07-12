@@ -18,6 +18,7 @@ metadata:
 - **Separation of Concerns & Extendable Components**: Insist on separation of concerns.
 - **Duplication over the wrong abstraction governs structure**: tolerate two similar blocks until the shared concept is obvious (rule of three); a helper/component that needs a `mode` flag to serve both callers is the wrong abstraction.
 - **Extend along the promised axis**: at three cases the axis is promised (rule of three); shape code to make the fourth easy to add, without overfitting to just today's use-cases.
+- **Don't name a general structure after its first occupant**: once something is a shared slot or grouping, name it for the axis it opens — not for today's only member. Specificity belongs on the leaves.
 - **Tidy/Refactor separate from feature work**: an opportunistic refactor is in its own commit. Each stays reviewable.
 
 ## Code Comments

@@ -11,7 +11,7 @@ metadata:
 
 # watch-pr
 
-Load the [**git**](../git/SKILL.md) skill, then read its [watch](../git/references/watch.md) and [review-responses](../git/references/review-responses.md) references before acting.
+Load the **git** skill, then read its watch and review-responses references before acting.
 
 Goal: keep the PR under watch without blocking your turn, respond to review comments as they arrive, and debug and fix CI failures.
 Get the PR to green and respond most bot comments automatically; defer decisions that need my input so you keep making progress on everything else. Only after CI is green and bot reviews are addressed may you block waiting on me.
