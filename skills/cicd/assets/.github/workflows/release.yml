@@ -4,10 +4,12 @@ name: Release
 # + attach to the Release). Container images FOLD publish-sign.yml's push/sign/attest steps into the
 # release job below (a GITHUB_TOKEN-created release does not fire `release: published`, so the two
 # files won't chain on their own); Go binaries use GoReleaser — see the cicd runtime references.
-# Linting is a separate workflow (mise-fy's check.yml).
+# Linting is a separate workflow (check.yml).
 #
 # The version contract (this file is the single source of truth for it):
-#   merged PR, no bump label ....... default `patch`
+#   open PR ........................ bump gate: no bump label fails the job; a sticky comment previews
+#                                    the exact tag a merge would cut (refreshed after each stable release)
+#   merged PR, no bump label ....... default `patch` (the gate's fallback when merged anyway)
 #   merged PR, multiple labels ..... precedence major > minor > patch
 #   `skip-release` label ........... abort, cut nothing
 #   dispatch, explicit `version` ... use verbatim (via env, never interpolated); v-prefixed if missing
@@ -23,7 +25,8 @@ on:
     branches:
       - main
   pull_request:
-    types: [opened, reopened, synchronize, edited] # edited: re-apply title-regex labels on retitle
+    # edited: re-apply title-regex labels on retitle; labeled/unlabeled: re-run the bump gate/preview
+    types: [opened, reopened, synchronize, edited, labeled, unlabeled]
   workflow_dispatch:
     inputs:
       version:
@@ -61,9 +64,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # ── Autolabel PRs (category labels for the notes; release-drafter releases nothing here) ──
-  # Fork PRs carry a read-only token, so labeling 403s there — acceptable for solo repos.
-  # (pull_request_target would fix it but runs with elevated permissions; avoid unless you need it.)
+  # ── Autolabel PRs + bump gate/preview (category labels for the notes; nothing is released here) ──
+  # Fork PRs carry a read-only token, so labeling/commenting 403s there — acceptable for solo repos;
+  # the gate still fails the run. (pull_request_target would fix the 403 but runs with elevated
+  # permissions; avoid unless you need it.)
   autolabel:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -73,6 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          fetch-depth: 0 # tags, so the preview can compute the next version
           persist-credentials: false
       # The dedicated autolabeler sub-action (split out of the main action in release-drafter v7).
       - uses: release-drafter/release-drafter/autolabeler@4d75298e00d9e34c483e5ff8c68d0ea1c1940c1e # v7.5.1
@@ -80,6 +85,59 @@ jobs:
           config-name: release-drafter.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Bump gate + version preview: one sticky comment shows the exact tag a merge would cut,
+      # recomputed on every label change; no bump label fails the job (make it a required check to
+      # enforce — release runs still fall back to `patch` if an unlabeled PR merges anyway).
+      - name: Bump gate & version preview
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }} # via env, never interpolated (zizmor: template-injection)
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          MARKER="<!-- bump-preview -->"
+          # Keep in sync with the release job's "Refresh bump previews" step.
+          last_stable() { git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1 || true; }
+          next_version() { # $1 = bump
+            PREV="$(last_stable)"; [ -z "$PREV" ] && PREV="v0.0.0"
+            IFS='.' read -r MA MI PA <<< "${PREV#v}"
+            case "$1" in
+              major) MA=$((MA + 1)); MI=0; PA=0 ;;
+              minor) MI=$((MI + 1)); PA=0 ;;
+              *)     PA=$((PA + 1)) ;;
+            esac
+            echo "v${MA}.${MI}.${PA}"
+          }
+          bump_of() { # exact label match, precedence skip > major > minor > patch
+            case ",$1," in
+              *,skip-release,*) echo skip ;;
+              *,major,*) echo major ;;
+              *,minor,*) echo minor ;;
+              *,patch,*) echo patch ;;
+              *) echo "" ;;
+            esac
+          }
+          BUMP="$(bump_of "$LABELS")"
+          case "$BUMP" in
+            skip) BODY="$MARKER 🏷️ \`skip-release\` — merging this PR cuts no release." ;;
+            "")   BODY="$MARKER ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; merged as-is this falls back to \`patch\` → **$(next_version patch)**." ;;
+            *)    BODY="$MARKER 🔖 Merging this PR cuts **$(next_version "$BUMP")** (\`$BUMP\`)." ;;
+          esac
+          CID="$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty" || true)"
+          if [ -n "$CID" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$CID" -f body="$BODY" >/dev/null \
+              || echo "::warning::could not update the preview comment (fork PR?)"
+          else
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$BODY" >/dev/null \
+              || echo "::warning::could not post the preview comment (fork PR?)"
+          fi
+          if [ -z "$BUMP" ]; then
+            echo "::error::No bump label (major/minor/patch/skip-release) on this PR — add one; an unlabeled merge falls back to patch."
+            exit 1
+          fi
 
   # ── Resolve the next version from labels or dispatch inputs ──
   version:
@@ -118,13 +176,14 @@ jobs:
           fi
           LABELS=$(echo "$PR_JSON" | jq -r '[.labels[].name] | join(",")')
           echo "number=$(echo "$PR_JSON" | jq -r '.number')" >> "$GITHUB_OUTPUT"
-          if echo "$LABELS" | grep -qw "skip-release"; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
-          fi
-          # Precedence major > minor > patch; default patch.
-          if   echo "$LABELS" | grep -qw "major"; then echo "bump=major" >> "$GITHUB_OUTPUT"
-          elif echo "$LABELS" | grep -qw "minor"; then echo "bump=minor" >> "$GITHUB_OUTPUT"
-          else echo "bump=patch" >> "$GITHUB_OUTPUT"; fi
+          # Exact label match (grep -w would also hit e.g. `major-redesign`).
+          # Precedence skip-release > major > minor > patch; default patch.
+          case ",${LABELS}," in
+            *,skip-release,*) echo "skip=true"   >> "$GITHUB_OUTPUT"; exit 0 ;;
+            *,major,*)        echo "bump=major"  >> "$GITHUB_OUTPUT" ;;
+            *,minor,*)        echo "bump=minor"  >> "$GITHUB_OUTPUT" ;;
+            *)                echo "bump=patch"  >> "$GITHUB_OUTPUT" ;;
+          esac
 
       - name: Compute next version
         if: >-
@@ -260,3 +319,48 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           gh pr comment "$PR_NUMBER" --body "🚀 **Release ${TAG}** published: https://github.com/${REPO}/releases/tag/${TAG}"
+
+      # The base version just moved, so open PRs' bump previews are stale — recompute them. Stable
+      # releases only (an rc doesn't move the last stable). Updates existing preview comments only;
+      # a PR gets its first one from its own PR events (the autolabel job).
+      - name: Refresh bump previews on open PRs
+        if: needs.version.outputs.prerelease == 'false'
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          MARKER="<!-- bump-preview -->"
+          # Keep in sync with the autolabel job's "Bump gate & version preview" step.
+          last_stable() { git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1 || true; }
+          next_version() { # $1 = bump
+            PREV="$(last_stable)"; [ -z "$PREV" ] && PREV="v0.0.0"
+            IFS='.' read -r MA MI PA <<< "${PREV#v}"
+            case "$1" in
+              major) MA=$((MA + 1)); MI=0; PA=0 ;;
+              minor) MI=$((MI + 1)); PA=0 ;;
+              *)     PA=$((PA + 1)) ;;
+            esac
+            echo "v${MA}.${MI}.${PA}"
+          }
+          bump_of() {
+            case ",$1," in
+              *,skip-release,*) echo skip ;;
+              *,major,*) echo major ;;
+              *,minor,*) echo minor ;;
+              *,patch,*) echo patch ;;
+              *) echo "" ;;
+            esac
+          }
+          gh pr list --state open --json number --jq '.[].number' | while read -r NUM; do
+            CID="$(gh api "repos/$REPO/issues/$NUM/comments" \
+              --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty")"
+            [ -z "$CID" ] && continue
+            LABELS="$(gh api "repos/$REPO/issues/$NUM/labels" --jq 'map(.name) | join(",")')"
+            BUMP="$(bump_of "$LABELS")"
+            case "$BUMP" in
+              skip) BODY="$MARKER 🏷️ \`skip-release\` — merging this PR cuts no release." ;;
+              "")   BODY="$MARKER ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; merged as-is this falls back to \`patch\` → **$(next_version patch)**." ;;
+              *)    BODY="$MARKER 🔖 Merging this PR cuts **$(next_version "$BUMP")** (\`$BUMP\`)." ;;
+            esac
+            gh api -X PATCH "repos/$REPO/issues/comments/$CID" -f body="$BODY" >/dev/null
+          done

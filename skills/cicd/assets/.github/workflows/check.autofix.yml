@@ -1,0 +1,148 @@
+# Auto-fix variant of check.yml. Runs the SAME `mise run check` but with --fix: if it changes
+# anything it pushes the fixes to a `bot/ci/<target>` branch, opens (or updates) a PR targeting
+# the branch that was checked, and fails CI. A later clean run closes that PR again. Needs write
+# access — see references/github.md ("Check workflows"). The report-only check.yml
+# (contents: read) stays the default for repos that don't want this. Copy and adapt.
+# Twin: the mise-fy skill ships an identical copy of this file — keep edits in sync.
+name: 🎨 Linters, Validators, and Formatters
+
+on:
+  pull_request: {}
+  schedule:
+    # Daily sweep so the default branch can't quietly rot.
+    - cron: "0 0 * * *"
+  # Run manually — pick the scope: --all (whole tree) or --pr (this branch's diff vs the default branch).
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: "Files to check"
+        type: choice
+        options: [all, pr]
+        default: all
+
+# Push the fix branch; open/close its PR and the sticky comment.
+permissions:
+  contents: write
+  pull-requests: write
+
+# One run per PR (or ref) — newer pushes cancel stale runs.
+concurrency:
+  group: lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    # Never act on our own fix branches (matters only with a PAT; GITHUB_TOKEN PRs can't self-trigger).
+    if: ${{ !startsWith(github.head_ref, 'bot/ci/') }}
+
+    env:
+      # Pretty colors in the CI!
+      CLICOLOR_FORCE: "1"
+      FORCE_COLOR: "1"
+      GH_TOKEN: ${{ github.token }} # gh CLI auth
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0 # full history so `check --pr` can diff against the default branch
+          ref: ${{ github.head_ref || github.ref_name }} # the branch we fix and target
+          # zizmor: ignore[artipacked] -- intentional: keep the token to push the bot/ci/<target> fix branch
+          persist-credentials: true
+
+      - name: Setup mise
+        uses: jdx/mise-action@dba19683ed58901619b14f395a24841710cb4925 # v4.1.0
+        with:
+          install: true
+          install_args: "--locked" # honor mise.lock
+          cache: true
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # so tool installs don't hit API rate limits
+
+      # Run the fixer over every step (no --fail-fast) and record whether it changed anything.
+      - name: Run check & fix
+        id: fix
+        env:
+          EVENT: ${{ github.event_name }}
+          SCOPE_INPUT: ${{ inputs.scope }} # 'all'|'pr' on manual dispatch; empty on PR/schedule
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          [ "$EVENT" = pull_request ] && scope="pr" || scope="${SCOPE_INPUT:-all}"
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          # hk's --pr resolves the base via origin/HEAD, which the Actions checkout never sets; point it
+          # at the default branch so hk diffs origin/<default>...HEAD (else it finds 0 files and passes).
+          [ "$scope" = pr ] && git remote set-head origin "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
+          # Apply fixes across every step (no --fail-fast); keep the exit code, don't abort.
+          rc=0; mise run check --fix "--$scope" || rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          if [ -n "$(git status --porcelain)" ]; then echo "fixed=1"; else echo "fixed=0"; fi >> "$GITHUB_OUTPUT"
+
+      # If the fixer changed anything, push it to bot/ci/<target> and open/update a PR targeting the
+      # checked branch; on a clean run, close that PR. PR-trigger runs also keep one sticky comment.
+      - name: Sync fix PR
+        env:
+          FIXED: ${{ steps.fix.outputs.fixed }}
+          TARGET: ${{ github.head_ref || github.ref_name }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+          IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Fork PRs carry a read-only token (by design, see github.md) → annotation only, no PR.
+          [ "$IS_FORK" = true ] && { echo "Fork PR — skipping auto-fix."; exit 0; } || true
+
+          BRANCH="bot/ci/$TARGET"
+          MARKER="<!-- mise-autofix -->"
+          comment_id() { gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty"; }
+
+          if [ "$FIXED" = 1 ]; then
+            # Fixed identity + date → identical fixes reproduce the same commit (a no-op push, so an
+            # unchanged fix PR isn't force-pushed and its subscribers aren't re-notified every sync).
+            export GIT_AUTHOR_NAME="github-actions[bot]" GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+            export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME" GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+            export GIT_AUTHOR_DATE="2020-01-01T00:00:00Z" GIT_COMMITTER_DATE="2020-01-01T00:00:00Z"
+            git checkout -B "$BRANCH"
+            git add -A && git commit -qm "ci: auto-fix lint & format"
+            git push -fq origin "$BRANCH"
+
+            # Open the PR if none is open yet; an existing one just got updated by the push above.
+            if [ -z "$(gh pr list --head "$BRANCH" --base "$TARGET" --state open --json number --jq '.[0].number // empty')" ]; then
+              [ "$IS_PR" = true ] \
+                && origin="the changed files in #$PR_NUMBER (\`mise run check --fix --pr\`)" \
+                || origin="the scheduled whole-tree sweep (\`mise run check --fix --all\`)"
+              printf "%s\n\nMerge to apply. This PR closes itself once \`%s\` is clean.\n" \
+                "Automated lint & format fixes from $origin." "$TARGET" > /tmp/pr-body.md
+              gh pr create --head "$BRANCH" --base "$TARGET" \
+                --title "🤖 ci: auto-fixes for $TARGET" --body-file /tmp/pr-body.md
+            fi
+
+            # Sticky comment on the triggering PR, linking the fix PR (PR triggers only).
+            if [ "$IS_PR" = true ]; then
+              URL="$(gh pr list --head "$BRANCH" --base "$TARGET" --state open --json url --jq '.[0].url')"
+              BODY="$MARKER 🤖 Lint & format fixes are ready in $URL — merge it to apply, or run \`mise run check --fix\` locally."
+              CID="$(comment_id || true)"
+              if [ -n "$CID" ]; then gh api -X PATCH "repos/$REPO/issues/comments/$CID" -f body="$BODY" >/dev/null
+              else gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$BODY" >/dev/null; fi
+            fi
+          else
+            # Clean run: close the fix PR (and delete its branch), and drop the sticky comment.
+            gh pr close "$BRANCH" --delete-branch 2>/dev/null || true
+            if [ "$IS_PR" = true ]; then
+              CID="$(comment_id || true)"
+              [ -n "$CID" ] && gh api -X DELETE "repos/$REPO/issues/comments/$CID" >/dev/null || true
+            fi
+          fi
+
+      # Fail the run if anything was fixed (code wasn't clean) or any non-fixable step failed.
+      - name: Fail if issues were found
+        if: ${{ steps.fix.outputs.fixed == '1' || steps.fix.outputs.rc != '0' }}
+        env:
+          REF_NAME: ${{ github.ref_name }} # via env, never interpolated into the shell (zizmor: template-injection)
+        run: |
+          echo "::error::Lint & format issues on $REF_NAME — review the auto-fix PR (if one was opened) or run 'mise run check --fix' locally, then push."
+          exit 1

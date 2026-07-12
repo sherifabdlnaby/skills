@@ -5,7 +5,7 @@ plugin package.
 
 ## The build contract
 
-The pipeline never knows how to build your artifact; it calls build tool `mise run build --version <tag>`. That task:
+The pipeline never knows how to build your artifact; it calls the project's build task, `mise run build --version <tag>`. That task:
 
 - stamps the version into the artifact (e.g. into a manifest), building a throwaway copy so the working
   tree stays clean;
