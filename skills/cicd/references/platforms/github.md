@@ -52,12 +52,10 @@ Surface errors as annotations:
 - **One pending run per concurrency group.** On rapid merges a superseded queued release run is
   dropped, not queued behind: its changes still land in the next release's notes, but its bump label
   isn't consumed — re-run the dropped run from the UI if that bump mattered.
-- **The pin comment is machine-owned; nothing else shares its line.** Dependabot rewrites the
-  `# vX.Y.Z` comment when it bumps a SHA pin, but only when that comment is the line's only trailing
-  text. Anything appended after it (a `zizmor: ignore[...]`, a note) stops the rewrite: the SHA moves,
-  the stale version text stays behind, and `pinact --verify` fails the line on the bump PR. Put
-  suppressions on their own line inside the finding's span — between `name:` and `uses:`, or inside the
-  `with:` block; a comment line above the step's first line is outside the span and does nothing.
+- **The pin comment is machine-owned; nothing shares its line.** Text appended after `# vX.Y.Z` (a
+  `zizmor: ignore[...]`, a note) stops Dependabot's comment rewrite on bump: stale comment, and
+  `pinact --verify` fails the line. Suppressions go on their own line inside the finding's span
+  (between `name:` and `uses:`, or in the `with:` block); above the step they do nothing.
 - **GHCR image names must be lowercase.** `${{ github.repository }}` breaks the push when the owner or
   repo has capitals; hardcode a lowercase image name instead.
 - **Release builds run with `cache: false`** on tool setup: a one-shot job has no cache to reuse, and a
