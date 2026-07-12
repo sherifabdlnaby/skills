@@ -1,6 +1,6 @@
 # Drives the project's own `mise run check` (the same task local dev + the pre-commit
 # hook use) and reports lint/format failures. On a PR it leaves one sticky comment
-# pointing the author at `mise run check --fix`. Copy and adapt. See references/github.md.
+# pointing the author at `mise run check --fix`. Copy and adapt. See references/platforms/github.md.
 # Twin: the mise-fy skill ships an identical copy of this file — keep edits in sync.
 name: 🎨 Linters, Validators, and Formatters
 

@@ -1,7 +1,7 @@
 // hk.pkl — git hooks for hk. See skills/mise-fy/references/hk.md.
 // Pin matches `hk` in mise.toml; both URLs must match. `hk init` regenerates.
-amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
 
 // Anchor for branch-scoped checks (--pr and the pushGates' base). Keep in sync with
 // the base default in mise.toml's version:check task.

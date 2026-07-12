@@ -24,7 +24,7 @@ taplo = "0.10"      # TOML lint + format (mise.toml, *.toml) — 0.x, pin minor
 jq = "1" # JSON reads in tasks (version:check manifests, check completions)
 
 # pre-commit
-hk = "1.48.0" # keep in sync with the pin in hk.pkl
+hk = "1.50.0" # keep in sync with the pin in hk.pkl
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]

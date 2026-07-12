@@ -1,6 +1,6 @@
 # GitHub Actions notes & gotchas
 
-The GitHub mechanics behind SKILL.md's `## Always` principles, plus platform gotchas. All demonstrated
+The GitHub mechanics behind [SKILL.md's `## Always`](../../SKILL.md#always) floor, plus platform gotchas. All demonstrated
 in `assets/`; lint the workflows themselves with `actionlint` + `zizmor`.
 
 ## Mechanics
@@ -16,7 +16,7 @@ in `assets/`; lint the workflows themselves with `actionlint` + `zizmor`.
 - **Concurrency**: PR groups keyed `<name>-${{ github.event.pull_request.number || github.ref }}` with
   `cancel-in-progress: true`; publish groups static with `cancel-in-progress: false`. A workflow mixing
   both events can key the group by `github.event_name`
-  (see [`release.yml`](../assets/.github/workflows/release.yml)).
+  (see [`release.yml`](../../assets/.github/workflows/release.yml)).
 - **Untrusted input**: pass through `env:` and reference the shell var; never `${{ }}` inside `run:`
   (zizmor `template-injection`; its auto-fix is marked unsafe, apply the indirection by hand). Repo-wide
   exceptions go in `.github/zizmor.yml` with a written justification.
@@ -59,8 +59,8 @@ Surface errors as annotations:
 
 ## Check workflows
 
-Notes for [`check.yml`](../assets/.github/workflows/check.yml) /
-[`check.autofix.yml`](../assets/.github/workflows/check.autofix.yml) (ship one, not both):
+Notes for [`check.yml`](../../assets/.github/workflows/check.yml) /
+[`check.autofix.yml`](../../assets/.github/workflows/check.autofix.yml) (ship one, not both):
 
 - **Report-only** (`check.yml`) needs `contents: read` + `pull-requests: write` and suits any repo: it
   fails with a `::error::` and keeps one sticky marker comment pointing at `mise run check --fix --pr`,

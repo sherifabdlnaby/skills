@@ -1,8 +1,8 @@
 # Container image
 
 Deliverable is a multi-arch image in a registry (e.g GHCR), signed and attested. Two workflows:
-[`build-test-scan.yml`](../assets/.github/workflows/build-test-scan.yml) gates every PR;
-[`publish-sign.yml`](../assets/.github/workflows/publish-sign.yml) ships on release.
+[`build-test-scan.yml`](../../assets/.github/workflows/build-test-scan.yml) gates every PR;
+[`publish-sign.yml`](../../assets/.github/workflows/publish-sign.yml) ships on release.
 
 ## Multi-arch: native for CI, QEMU for the push
 
@@ -22,7 +22,7 @@ stable release, detected from the tag string itself (a `-` marks a pre-release â
 `prerelease` field is empty on manual dispatch, the tag never lies). why: an `-rc.N` must never steal
 `latest` or a major alias from the last stable image.
 
-## Sign & attest (the how; principle is in SKILL.md)
+## Sign & attest (the how; principles in [`publish.md`](../publish.md))
 
 - **cosign, keyless.** `cosign sign --yes <registry>/<image>@<digest>` signs by digest using the
   workflow's OIDC identity. No key. The signer is the workflow, provable at verify time.
@@ -49,11 +49,11 @@ stable release, detected from the tag string itself (a `-` marks a pre-release â
 `publish-sign.yml` runs on `release: published`. In the **draft model** a human publishes and it fires
 normally. With **auto-tag-on-merge**, the release is created by `GITHUB_TOKEN`, and token-made events do
 not trigger further workflows (recursion guard), so it will NOT fire on its own. Options: fold the
-push/sign/attest steps into [`release.yml`](../assets/.github/workflows/release.yml)'s release job,
+push/sign/attest steps into [`release.yml`](../../assets/.github/workflows/release.yml)'s release job,
 publish via the draft model, or push the tag with a PAT/app token. The `workflow_dispatch` input is there
 for manual re-runs.
 
-Mind the [publish gate](../SKILL.md#publish-sign-attest): any `release: published` path makes the notes
+Mind the [publish gate](../publish.md#the-publish-gate): any `release: published` path makes the notes
 public *before* the image lands. To honor the gate strictly, fold the steps into `release.yml` so
 `gh release create` runs after the image is pushed and signed â€” or create the release as a draft, run the
 publish steps, then `gh release edit --draft=false`.

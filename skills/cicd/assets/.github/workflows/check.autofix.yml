@@ -1,7 +1,7 @@
 # Auto-fix variant of check.yml. Runs the SAME `mise run check` but with --fix: if it changes
 # anything it pushes the fixes to a `bot/ci/<target>` branch, opens (or updates) a PR targeting
 # the branch that was checked, and fails CI. A later clean run closes that PR again. Needs write
-# access — see references/github.md ("Check workflows"). The report-only check.yml
+# access — see references/platforms/github.md ("Check workflows"). The report-only check.yml
 # (contents: read) stays the default for repos that don't want this. Copy and adapt.
 # Twin: the mise-fy skill ships an identical copy of this file — keep edits in sync.
 name: 🎨 Linters, Validators, and Formatters

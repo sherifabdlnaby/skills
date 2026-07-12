@@ -16,21 +16,21 @@ job and a local `mise run build` produce the identical artifact.
 
 ## Two ways to release (pick one)
 
-- **Auto-tag on merge** (default) -> [`release.yml`](../assets/.github/workflows/release.yml). The bump
+- **Auto-tag on merge** (default) -> [`release.yml`](../../assets/.github/workflows/release.yml). The bump
   label on the merged PR tags a version, builds, and publishes with generated notes. The build/attest/
   upload steps live at the end of `release.yml`; nothing extra to add.
-- **Draft, then publish** -> [`auto-release.yml`](../assets/.github/workflows/auto-release.yml) (draft) +
-  [`build.yml`](../assets/.github/workflows/build.yml). release-drafter keeps a curated draft; a human
+- **Draft, then publish** -> [`auto-release.yml`](../../assets/.github/workflows/auto-release.yml) (draft) +
+  [`build.yml`](../../assets/.github/workflows/build.yml). release-drafter keeps a curated draft; a human
   publishes it, and `on: release: published` fires `build.yml` to build + attach. Use this when you want
   to eyeball notes before shipping. Trade-off: publishing is the trigger, so the release is public and
   asset-less for the minute the build takes — the strict
-  [publish gate](../SKILL.md#publish-sign-attest) holds only in the auto-tag model, where
+  [publish gate](../publish.md#the-publish-gate) holds only in the auto-tag model, where
   `gh release create` runs after the build.
 
 ## Attest the bundle too
 
 The sign/attest principle is artifact-agnostic
-([SKILL.md](../SKILL.md#publish-sign-attest)). A packaged artifact does not get to skip
+([`publish.md`](../publish.md)). A packaged artifact does not get to skip
 it: generate `checksums.txt` over `build/*` and run `actions/attest-build-provenance` on the set, so a
 downloader can `gh attestation verify <file> --owner <you>`. why: a bundle pulled from a Release is exactly
 the kind of artifact provenance is for. Signing the bundle with cosign is optional for a Release asset

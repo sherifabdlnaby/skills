@@ -27,11 +27,11 @@ than deleting it.
 ## Binary / CLI (a downloadable executable, maybe an image)
 
 Now you have artifacts to build, sign, and attest. Use **GoReleaser** ->
-[`.goreleaser.yml`](../assets/.goreleaser.yml): it cross-compiles, checksums, generates an SBOM, and
+[`.goreleaser.yml`](../../assets/.goreleaser.yml): it cross-compiles, checksums, generates an SBOM, and
 keyless-signs the checksums with cosign.
 
 The release workflow follows the shared version contract (labels -> bump -> tag; RCs by hand; see
-[`release.yml`](../assets/.github/workflows/release.yml)), then swaps the build/attest/publish steps
+[`release.yml`](../../assets/.github/workflows/release.yml)), then swaps the build/attest/publish steps
 for GoReleaser. `goreleaser release` creates the GitHub Release itself — drop the `gh release create`
 step (it errors on the release GoReleaser already made) and let the config carry the notes and
 prerelease behavior. The adapted release job:
@@ -43,7 +43,7 @@ prerelease behavior. The adapted release job:
 
 `release.prerelease: auto` in the config means a `-rc.N` tag publishes as a prerelease with no extra
 flags. For an image, either let GoReleaser build it (`dockers_v2` + `docker_signs`) or hand off to
-[`publish-sign.yml`](../assets/.github/workflows/publish-sign.yml) — don't do both.
+[`publish-sign.yml`](../../assets/.github/workflows/publish-sign.yml) — don't do both.
 
 One contract caveat: GoReleaser's changelog runs since the *previous tag* — after an rc line, that's
 the last rc, not the last stable, so the whole-line notes promise (`--notes-start-tag` in the shared

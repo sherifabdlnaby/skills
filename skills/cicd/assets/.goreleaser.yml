@@ -1,6 +1,6 @@
 # GoReleaser v2 config for a Go binary/CLI: cross-compiled binaries, checksums, an SBOM, and keyless
 # cosign signatures. Run it from a release job that has `id-token: write` + `attestations: write` +
-# `contents: write` and has installed cosign + syft (see references/go.md). A pure library needs none of
+# `contents: write` and has installed cosign + syft (see references/artifacts/go.md). A pure library needs none of
 # this — it ships as a module via a git tag.
 version: 2
 

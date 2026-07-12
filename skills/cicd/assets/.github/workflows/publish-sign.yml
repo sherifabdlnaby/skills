@@ -3,7 +3,7 @@ name: Publish & Sign
 # Fires when a release is published (the draft model: a human publishes -> this runs). For auto-tag-on-
 # merge, a release created by GITHUB_TOKEN will NOT trigger this (token events don't recurse) — either
 # fold these steps into release.yml's release job, or publish via the draft model. Manual dispatch is
-# provided for re-runs. See references/docker.md.
+# provided for re-runs. See references/artifacts/docker.md.
 on:
   release:
     types: [published]
