@@ -8,7 +8,7 @@ license: MIT
 argument-hint: "Cicd-fy this project | Audit CI/CD | Add a release pipeline"
 metadata:
   author: sherifabdlnaby
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # cicd
@@ -59,6 +59,10 @@ Branch protection / rulesets + required checks, merge method, label seeding, act
 workflows.
 
 **Community control & hygiene** (stale PRs/issues, locking old threads, abandoned branches) -> [`references/community.md`](references/community.md)
+
+**Security** (Dependabot, secret scanning, code scanning) -> [`references/security.md`](references/security.md)
+Alerts + update PRs with cooldown and groups, push protection, CodeQL default setup, SARIF uploads;
+report-only by default, gates offered to the user.
 
 **Cicd-fy an existing repo** (set up, reshape, or audit) -> [`references/cicd-fy.md`](references/cicd-fy.md)
 Inventory -> plan with the user -> convert -> verify -> document, plus the full audit checklist.

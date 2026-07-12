@@ -12,8 +12,8 @@ not inside the workflow YAML. GitHub mechanics named; the concepts port to any f
 3. **Required checks are wired by job name; keep names stable.** Renaming a workflow or job orphans the
    required check.
 4. **Pins need an updater.** SHA-pinned actions don't move; without upkeep, pinning trades supply-chain
-   risk for CVE rot. Wire  Dependabot to bump the pinned SHAs (both keep the `# vX.Y.Z`
-   comment in sync), or run `pinact` in the scheduled sweep.
+   risk for CVE rot. Wire Dependabot to bump the pinned SHAs (it keeps the `# vX.Y.Z` comment in
+   sync — [`security.md`](security.md)), or run `pinact` in the scheduled sweep.
 5. **Gate publish jobs behind an environment when a human should approve.** A protected environment
    (required reviewers) on the job that pushes and signs never on the check jobs, which must stay
    frictionless.

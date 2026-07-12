@@ -32,7 +32,8 @@ Guidance on converting a repo's CI/CD to the recommended shape, or auditing one 
 - **Artifacts.** What the repo publishes (image, binary, bundle, package), to where, and whether any of
   it is signed or attested today.
 - **Repo settings.** Branch protection / rulesets and their required checks, merge method, existing
-  labels, CODEOWNERS, update-bot config (Renovate / Dependabot) ([`hygiene.md`](hygiene.md)).
+  labels, CODEOWNERS, update-bot config (Renovate / Dependabot) ([`hygiene.md`](hygiene.md)), and which
+  security features are already on (Dependabot, secret/code scanning — [`security.md`](security.md)).
 - Local Setup/Validations/Tests in a Makefile, Justfile, or Mise.
 - **On another CI system** (Jenkins, CircleCI, …): inventory it the same way, then rebuild on the target
   platform via the greenfield path below — the references translate by concept, not per-platform.
@@ -121,6 +122,14 @@ the user):
 - [ ] Action pins have an updater (Renovate / Dependabot / pinact in the sweep)
 - [ ] Publish jobs environment-gated where a human approves
 - [ ] `timeout-minutes` set on every job; dead workflows pruned; badges wired
+
+### Security
+
+- [ ] Dependabot alerts + security updates on; version updates configured per ecosystem incl.
+      `github-actions`, with cooldown + groups.
+- [ ] Secret scanning on; push protection offered to the user
+- [ ] Code scanning wired (CodeQL default setup; other scanners via SARIF); gates report-only unless
+      the user armed them.
 
 ### Community
 
