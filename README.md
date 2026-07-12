@@ -83,3 +83,17 @@ mise tasks              # discover every task
 ```
 
 The same `check` task runs in the pre-commit hook and in CI. lychee checks local/relative links only by default (see `lychee.toml`).
+
+## Releases
+
+Claude/Cursor marketplaces install straight from git and key the plugin on the `version` field in
+`.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` — there's no published artifact.
+Cutting a release:
+
+1. Bump both manifests' `version` to the same value in your PR. `mise run version:check` (also an
+   `hk` pre-push gate) fails if shipped `skills/`/`hooks/` content changed without the bump.
+2. Merge to `main`. CI notices the version moved past the latest `vX.Y.Z` tag and cuts the tag plus
+   a GitHub release, with notes generated from merged PRs and grouped by label: `skill`, `hooks`,
+   `fix`, `docs`, `ci`, `deps`.
+3. No version bump ships no release. A PR's sticky comment previews which outcome a merge would
+   produce.
