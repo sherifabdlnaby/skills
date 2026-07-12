@@ -16,11 +16,13 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 
 1. [git](skills/git/)   | My git conventions and PR watching ("babysitting").
 2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
-3. [afk](skills/afk/) | Autonomy contract for when I step away. Variants: [afk-careful](skills/afk-careful/), [afk-yolo](skills/afk-yolo/), [afk-soon](skills/afk-soon/).
-4. [local-review](skills/local-review/) | Gate work behind a reviewer panel — fork-session + independent reviewers, cross-model when available.
-5. [watch-pr](skills/watch-pr/) | Babysit a PR: respond to reviews and fix CI, until green (or `forever`).
+3. [cicd](skills/cicd/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
+4. [kubernetes-debug](skills/kubernetes-debug/) | The mental model that prevents misdiagnosing a converging cluster: independent controllers, events as weak evidence, converging-vs-stuck.
+5. [afk](skills/afk/) | Autonomy contract for when I step away. Variants: [afk-careful](skills/afk-careful/), [afk-yolo](skills/afk-yolo/), [afk-soon](skills/afk-soon/).
+6. [review](skills/review/) | Gate work behind a reviewer panel — fork-session + independent reviewers, cross-model when available.
+7. [watch-pr](skills/watch-pr/) | Babysit a PR: respond to reviews and fix CI, until green (or `forever`).
 
-The `afk`, `local-review`, and `watch-pr` skills are manual-only (`disable-model-invocation: true`) — they exist to make me type less, not to auto-fire.
+The `afk`, `review`, and `watch-pr` skills are manual-only (`disable-model-invocation: true`) — they exist to make me type less, not to auto-fire.
 
 ## Models
 
