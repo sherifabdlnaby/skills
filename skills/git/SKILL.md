@@ -14,30 +14,6 @@ metadata:
 
 Route first: each action's actual rules live in a `references/` file. Open the matching one before planning or acting; rules like commit grouping and branch naming shape the plan, so reading them late means redoing it. Several actions, several references.
 
-## Always
-
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**.
-The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md);
-the post templates, chosen by who made the specific decision (Agent Decided vs Human Guided),
-live in [AI Disclosure](#ai-disclosure) below.
-Use them as verbatim as possible, do not write from memory.
-
-**Parallelize read-only calls.** Batch independent read-only `git`/`gh` calls
-(`status`, `diff`, `log`, `gh pr view/diff/checks`) into a single tool call; each
-sequential read is a roundtrip for nothing. Mutating commands (`commit`, `push`,
-`rebase`, `gh pr create/edit/merge`) stay sequential.
-
-**Voice** for everything public (commit messages, PR titles and bodies, comments, issues):
-
-- Omit needless words. Concise sentences, no padding paragraphs.
-- Emojis sparingly, only where one helps the reader catch something while glancing.
-- NO em dashes in any public-facing text. Use commas, parentheses, or periods. (why: em dashes are a classic AI tell and repel readers.)
-- No vague reaffirmations like "for accountability", "for performance", "for resiliency" unless that reason is already in the conversation. (why: invented justification misrepresents the change.)
-- Dry, low-key humor.
-- Don't overdo formatting. Keep it balanced. (why: visual noise crowds out the content.)
-- A user-supplied Human Note is exempt: it goes in the PR body verbatim.
-
-
 ## Router
 
 **Branches** (create, name, stack) -> [`references/branches.md`](references/branches.md)
@@ -60,6 +36,29 @@ Procedure, review lenses, severity tiers, posting mechanics.
 
 **Watch a PR's CI and automated reviews** -> [`references/watch.md`](references/watch.md)
 Spawning the cheap background watcher sub-agent (and the background-task fallback), hot/cold polling, what to relay vs hold, auto-addressing bot reviews, the final digest. Uses `scripts/pr-watch.py`, never a sleep loop.
+
+## Always
+
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**.
+The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md);
+the post templates, chosen by who made the specific decision (Agent Decided vs Human Guided),
+live in [AI Disclosure](#ai-disclosure) below.
+Use them as verbatim as possible, do not write from memory.
+
+**Parallelize read-only calls.** Batch independent read-only `git`/`gh` calls
+(`status`, `diff`, `log`, `gh pr view/diff/checks`) into a single tool call; each
+sequential read is a roundtrip for nothing. Mutating commands (`commit`, `push`,
+`rebase`, `gh pr create/edit/merge`) stay sequential.
+
+**Voice** for everything public (commit messages, PR titles and bodies, comments, issues):
+
+- Omit needless words. Concise sentences, no padding paragraphs.
+- Emojis sparingly, only where one helps the reader catch something while glancing.
+- NO em dashes in any public-facing text. Use commas, parentheses, or periods. (why: em dashes are a classic AI tell and repel readers.)
+- No vague reaffirmations like "for accountability", "for performance", "for resiliency" unless that reason is already in the conversation. (why: invented justification misrepresents the change.)
+- Dry, low-key humor.
+- Don't overdo formatting. Keep it balanced. (why: visual noise crowds out the content.)
+- A user-supplied Human Note is exempt: it goes in the PR body verbatim.
 
 ## AI Disclosure
 

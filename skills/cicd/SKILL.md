@@ -18,6 +18,35 @@ CI/CD patterns and the why behind them. Flex them to fit the app and the user's 
   [`assets/`](assets/.github/workflows/) workflows, route via the [Router](#router).
 - This skill uses `mise` as the task runner; substitute the project's own (e.g. Make) — the patterns hold.
 
+Read the matching reference page **before** planning or building that pipeline; it carries the exact actions, tags, and commands. SKILL.md alone is not enough.
+
+## Router
+
+**Go library / binary** -> [`references/go.md`](references/go.md)
+Race-detector version matrix, module semver tags (no CD for a library), optional GoReleaser for signed
+binaries + SBOM + attestation, `retract` for rollback, module caching.
+
+**Container image** -> [`references/docker.md`](references/docker.md)
+Native multi-arch CI matrix (amd64 + arm64 runners; QEMU only for the release push), `metadata-action`
+tag strategy, Trivy -> SARIF, buildx `gha` cache, registry push, cosign-on-digest + provenance/SBOM
+attest, un-tag/re-point rollback.
+
+**Packaged artifact** (bundle/zip attached to a Release) -> [`references/packaged.md`](references/packaged.md)
+Build a versioned bundle with `mise run build --version`, attach it (and its attested checksums) to the
+Release on publish; the release-drafter draft variant.
+
+**GitHub Actions notes & gotchas** -> [`references/github.md`](references/github.md)
+Pin/permissions/concurrency mechanics; token-event recursion, pending-slot drop, fork tokens, `edited`
+type, GHCR case, release-build caching.
+
+**Audit a repo's CI/CD** -> [`references/audit.md`](references/audit.md)
+Inventory -> compare -> plan with the user; the full checklist (checks, hardening, release, artifacts).
+
+**Local tool / pre-commit-hook setup** (what `mise run check` is made of) -> the **mise-fy** skill.
+The CI side lives here: [CI checks](#ci-checks) and its two check workflows.
+
+**Local git, commits, PRs, reviews** -> the **git** skill.
+
 ## Principles
 
 1. **CI reuses local commands.** CI runs the same tasks you run locally (e.g `mise run build` or `make build`), args aside.
@@ -126,32 +155,3 @@ each live in [`references/github.md`](references/github.md); demonstrated in
 - **Concurrency by intent.** PR/check runs cancel superseded. Publish jobs **queue, never cancel**.
   why: cancelling mid-publish leaves a half-pushed tag or image.
 - **Authenticate tool installs and API calls** so they dodge anonymous rate limits.
-
-## Router
-
-Read the runtime page before building that pipeline; it carries the exact actions, tags, and commands.
-
-**Go library / binary** -> [`references/go.md`](references/go.md)
-Race-detector version matrix, module semver tags (no CD for a library), optional GoReleaser for signed
-binaries + SBOM + attestation, `retract` for rollback, module caching.
-
-**Container image** -> [`references/docker.md`](references/docker.md)
-Native multi-arch CI matrix (amd64 + arm64 runners; QEMU only for the release push), `metadata-action`
-tag strategy, Trivy -> SARIF, buildx `gha` cache, registry push, cosign-on-digest + provenance/SBOM
-attest, un-tag/re-point rollback.
-
-**Packaged artifact** (bundle/zip attached to a Release) -> [`references/packaged.md`](references/packaged.md)
-Build a versioned bundle with `mise run build --version`, attach it (and its attested checksums) to the
-Release on publish; the release-drafter draft variant.
-
-**GitHub Actions notes & gotchas** -> [`references/github.md`](references/github.md)
-Pin/permissions/concurrency mechanics; token-event recursion, pending-slot drop, fork tokens, `edited`
-type, GHCR case, release-build caching.
-
-**Audit a repo's CI/CD** -> [`references/audit.md`](references/audit.md)
-Inventory -> compare -> plan with the user; the full checklist (checks, hardening, release, artifacts).
-
-**Local tool / pre-commit-hook setup** (what `mise run check` is made of) -> the **mise-fy** skill.
-The CI side lives here: [CI checks](#ci-checks) and its two check workflows.
-
-**Local git, commits, PRs, reviews** -> the **git** skill.
