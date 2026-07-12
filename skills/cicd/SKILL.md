@@ -8,7 +8,7 @@ license: MIT
 argument-hint: "Cicd-fy this project | Audit CI/CD | Add a release pipeline"
 metadata:
   author: sherifabdlnaby
-  version: "0.3.0"
+  version: "0.3.2"
 ---
 
 # cicd

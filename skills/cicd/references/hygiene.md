@@ -29,3 +29,4 @@ not inside the workflow YAML. GitHub mechanics named; the concepts port to any f
   check after quiet periods.
 - **Rulesets over classic branch protection**: they layer, apply across branches by pattern, and
   export/import as JSON — so the protection itself can be reviewed and restored, not just remembered.
+- **Dependabot** should add applicable version bump labels.
