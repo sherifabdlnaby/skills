@@ -68,6 +68,9 @@ jobs:
             LATEST_TAG="$(git tag -l 'v*' --sort=-v:refname | head -1)"
             if [ -n "$LATEST_TAG" ] && [ "v$CLAUDE_VERSION" = "$LATEST_TAG" ]; then
               BODY="$MARKER"$'\n'"No version bump — merge ships no release (still \`$LATEST_TAG\`)."
+            elif git rev-parse -q --verify "refs/tags/v$CLAUDE_VERSION" >/dev/null; then
+              # Mirrors the release job's existence check: an older, already-tagged version no-ops.
+              BODY="$MARKER"$'\n'"⚠️ \`v$CLAUDE_VERSION\` is already tagged (latest is \`$LATEST_TAG\`) — merge ships no release; bump past \`$LATEST_TAG\` to cut one."
             else
               BODY="$MARKER"$'\n'"🏷️ Merging cuts release \`v$CLAUDE_VERSION\`."
             fi
@@ -84,7 +87,9 @@ jobs:
   # ── Tag + release on merge ──
   release:
     name: 🚀 Release
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # The ref guard covers workflow_dispatch, which can be pointed at any branch — a dispatch off a
+    # topic branch must not tag that branch's manifest version. (push is already filtered to main.)
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -111,7 +116,10 @@ jobs:
 
           TAG="v$CLAUDE_VERSION"
           LATEST_TAG="$(git tag -l 'v*' --sort=-v:refname | head -1)"
-          if [ "$TAG" = "$LATEST_TAG" ]; then
+          # Existence check, not equality-with-latest: also catches a version reverted to an OLDER
+          # tag (recreating it must be a no-op, not a confusing tag-push failure) and makes
+          # dispatch re-runs idempotent.
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
             echo "$TAG already exists — no version bump, nothing to release."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
