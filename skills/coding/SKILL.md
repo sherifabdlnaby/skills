@@ -15,6 +15,7 @@ metadata:
 **Note:** These rules are defaults; deviate only when you can state what following the rule would cost here.
 
 - **DRY**: a string, a threshold, a supported-values list has one authoritative home, easy to change/update/extend.
+- **Do not overfit**: Avoid overfitting solutions to problems in this chat. Think bigger.
 - **Separation of Concerns & Extendable Components**: Insist on separation of concerns.
 - **Duplication over the wrong abstraction governs structure**: tolerate two similar blocks until the shared concept is obvious (rule of three); a helper/component that needs a `mode` flag to serve both callers is the wrong abstraction.
 - **Extend along the promised axis**: at three cases the axis is promised (rule of three); shape code to make the fourth easy to add, without overfitting to just today's use-cases.
@@ -30,6 +31,8 @@ Guiding Principles:
    contextual awareness of how the project evolved, no memory of the task that produced it. A
    comment that echoes this session's instructions fails (e.g. `// Doing X (no Y)` where Y is
    something only this conversation knows).
+2. STOP Making code comments that make sense only in the context of the chat that overfit to our current conversation.
+3. DO Not add comments about changes that are not on main. A comment to explain evolution of something in the same branch is redundant and won't make sense once commits are squashed.
 2. **Describe the steady state, not the delta**: `// reads users_v2`, not `// migrated from
    users_v1`. Git records the transition, and delta comments become lies the moment it
    completes. A transition that must live in the code is a TODO with an end condition, never
