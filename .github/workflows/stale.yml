@@ -1,0 +1,59 @@
+# DRY RUN — arm after observing a sweep: flip `debug-only` to `false` once a scheduled run's
+# annotations (what it WOULD have staled/closed) look right. Aggressive on PRs (they rot: conflicts
+# accumulate, code moves under them); issues are scoped to awaiting-reply states only — blanket
+# auto-closing issues silently kills valid bug reports.
+name: 🧹 Stale
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # daily
+  workflow_dispatch: {}
+
+# Top-level read-only; the job below widens to what it needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: stale
+  cancel-in-progress: false
+
+jobs:
+  stale:
+    name: stale sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10.4.0
+        with:
+          # DRY RUN — logs what it would do without staling/closing/labeling anything.
+          debug-only: true
+          # Conservative cap per run: an old repo's backlog drains over several sweeps, not one.
+          operations-per-run: 100
+
+          # PRs: stale after 30 days idle, closed 14 days after that.
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          stale-pr-label: "stale"
+          stale-pr-message: >
+            This PR has had no activity for 30 days and is now marked stale. It will close in 14
+            days without further activity.
+          close-pr-message: >
+            Closing for inactivity. If this is still wanted, rebase against current `main` and
+            reopen (or open a fresh PR) — a rebased PR is easier to review than reopening a stale one.
+          exempt-pr-labels: "pinned,security"
+
+          # Issues: only the awaiting-reply states go stale; everything else is exempt by omission.
+          only-issue-labels: "needs-more-info,cannot-reproduce"
+          days-before-issue-stale: 60
+          days-before-issue-close: 30
+          stale-issue-label: "stale"
+          stale-issue-message: >
+            This issue is awaiting more information and has had no activity for 60 days. It will
+            close in 30 days without a reply.
+          close-issue-message: >
+            Closing for inactivity. Reopen (or link a new issue back here) once you have the
+            requested information.
+          exempt-issue-labels: "pinned,security"

@@ -1,0 +1,35 @@
+# Applies category labels (config: labeler.yml) from the PR's changed files. These labels group
+# the generated release notes (release.yml) — a separate axis from the release workflow's own
+# version-parity gate, which decides nothing here.
+#
+# pull_request_target (not pull_request): a fork PR carries a read-only token under `pull_request`,
+# so the label API call 403s. This is the documented safe use of pull_request_target for
+# actions/labeler — it never checks out or executes the PR's code, only reads the diff and the
+# labeler config via the API (from the base ref, so a fork can't rewrite its own labeling rules).
+name: 🏷️ Labeler
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+# Top-level read-only; the job below widens to what it needs.
+permissions:
+  contents: read
+
+# One run per PR — newer pushes cancel stale runs.
+concurrency:
+  group: labeler-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    name: label
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+        with:
+          configuration-path: .github/labeler.yml
