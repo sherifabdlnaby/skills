@@ -9,7 +9,8 @@ name: Release
 # The version contract (this file is the single source of truth for it):
 #   open PR ........................ bump gate: no bump label fails the job; a sticky comment previews
 #                                    the exact tag a merge would cut (refreshed after each stable release)
-#   merged PR, no bump label ....... default `patch` (the gate's fallback when merged anyway)
+#   merged PR, no bump label ....... default `minor` (the gate's fallback when merged anyway;
+#                                    patch is too easy to ship by accident, major is costly under immutable releases)
 #   merged PR, multiple labels ..... precedence major > minor > patch
 #   `skip-release` label ........... abort, cut nothing
 #   dispatch, explicit `version` ... use verbatim (via env, never interpolated); v-prefixed if missing
@@ -37,8 +38,8 @@ on:
         description: "Bump when no explicit version is given."
         required: false
         type: choice
-        options: [patch, minor, major]
-        default: patch
+        options: [minor, patch, major]
+        default: minor
       prerelease:
         description: "Cut a release candidate (-rc.N) of the computed bump."
         required: false
@@ -88,7 +89,7 @@ jobs:
 
       # Bump gate + version preview: one sticky comment shows the exact tag a merge would cut,
       # recomputed on every label change; no bump label fails the job (make it a required check to
-      # enforce — release runs still fall back to `patch` if an unlabeled PR merges anyway).
+      # enforce — release runs still fall back to `minor` if an unlabeled PR merges anyway).
       - name: Bump gate & version preview
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -124,8 +125,8 @@ jobs:
           NOTE=""
           case "$BUMP" in
             skip) ROW="| \`$PREV\` | \`skip-release\` | — no release |" ;;
-            "")   ROW="| \`$PREV\` | ⚠️ none | \`patch\` fallback → **\`$(next_version patch)\`** |"
-                  NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`patch\`." ;;
+            "")   ROW="| \`$PREV\` | ⚠️ none | \`minor\` fallback → **\`$(next_version minor)\`** |"
+                  NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`minor\`." ;;
             *)    ROW="| \`$PREV\` | \`$BUMP\` | **\`$(next_version "$BUMP")\`** |" ;;
           esac
           BODY="$MARKER"$'\n'"### 🔖 Release preview"$'\n\n'"| Current | Bump | On merge |"$'\n'"|:--|:--|:--|"$'\n'"$ROW"
@@ -140,7 +141,7 @@ jobs:
               || echo "::warning::could not post the preview comment (fork PR?)"
           fi
           if [ -z "$BUMP" ]; then
-            echo "::error::No bump label (major/minor/patch/skip-release) on this PR — add one; an unlabeled merge falls back to patch."
+            echo "::error::No bump label (major/minor/patch/skip-release) on this PR — add one; an unlabeled merge falls back to minor."
             exit 1
           fi
 
@@ -182,12 +183,13 @@ jobs:
           LABELS=$(echo "$PR_JSON" | jq -r '[.labels[].name] | join(",")')
           echo "number=$(echo "$PR_JSON" | jq -r '.number')" >> "$GITHUB_OUTPUT"
           # Exact label match (grep -w would also hit e.g. `major-redesign`).
-          # Precedence skip-release > major > minor > patch; default patch.
+          # Precedence skip-release > major > minor > patch; unlabeled default minor.
           case ",${LABELS}," in
             *,skip-release,*) echo "skip=true"   >> "$GITHUB_OUTPUT"; exit 0 ;;
             *,major,*)        echo "bump=major"  >> "$GITHUB_OUTPUT" ;;
             *,minor,*)        echo "bump=minor"  >> "$GITHUB_OUTPUT" ;;
-            *)                echo "bump=patch"  >> "$GITHUB_OUTPUT" ;;
+            *,patch,*)        echo "bump=patch"  >> "$GITHUB_OUTPUT" ;;
+            *)                echo "bump=minor"  >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Compute next version
@@ -211,7 +213,7 @@ jobs:
             NEW_TAG="${INPUT_VERSION}"; [ "${NEW_TAG#v}" = "${NEW_TAG}" ] && NEW_TAG="v${NEW_TAG}"
           else
             # 2) Otherwise bump the latest stable. Bump source: PR label (push) or dispatch input.
-            BUMP="${LABEL_BUMP:-${INPUT_BUMP:-patch}}"
+            BUMP="${LABEL_BUMP:-${INPUT_BUMP:-minor}}"
             PREV="$(last_stable)"; [ -z "$PREV" ] && PREV="v0.0.0"
             IFS='.' read -r MA MI PA <<< "${PREV#v}"; PA="${PA%%-*}"
             case "$BUMP" in
@@ -386,8 +388,8 @@ jobs:
             NOTE=""
             case "$BUMP" in
               skip) ROW="| \`$PREV\` | \`skip-release\` | — no release |" ;;
-              "")   ROW="| \`$PREV\` | ⚠️ none | \`patch\` fallback → **\`$(next_version patch)\`** |"
-                    NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`patch\`." ;;
+              "")   ROW="| \`$PREV\` | ⚠️ none | \`minor\` fallback → **\`$(next_version minor)\`** |"
+                    NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`minor\`." ;;
               *)    ROW="| \`$PREV\` | \`$BUMP\` | **\`$(next_version "$BUMP")\`** |" ;;
             esac
             BODY="$MARKER"$'\n'"### 🔖 Release preview"$'\n\n'"| Current | Bump | On merge |"$'\n'"|:--|:--|:--|"$'\n'"$ROW"
