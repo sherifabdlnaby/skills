@@ -65,7 +65,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
         run: |
           # PRs check changed files (--pr); schedule/dispatch default to --all (dispatch can pick --pr).
-          [ "$EVENT" = pull_request ] && scope=pr || scope="${SCOPE_INPUT:-all}"
+          [ "$EVENT" = pull_request ] && scope="pr" || scope="${SCOPE_INPUT:-all}"
           # hk's --pr resolves the base via origin/HEAD, which the Actions checkout never sets; point it
           # at the PR base so hk diffs origin/<base>...HEAD (else it finds 0 files and passes green).
           [ "$scope" = pr ] && git remote set-head origin "$BASE_REF" >/dev/null 2>&1 || true
