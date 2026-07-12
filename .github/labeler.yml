@@ -1,0 +1,24 @@
+# actions/labeler config (label.yml). Category labels only — group the release notes
+# (release.yml); the release workflow's own version-parity gate is separate and unaffected.
+# Add a bucket per meaningful area as the repo grows; a label with no source glob here never fills.
+skill:
+  - changed-files:
+      - any-glob-to-any-file: "skills/**"
+
+hooks:
+  - changed-files:
+      - any-glob-to-any-file: "hooks/**"
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: "*.md"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - "mise.toml"
+          - "mise.lock"
+          - "hk.pkl"
+          - "*.toml"
+          - ".yamllint"
