@@ -69,10 +69,13 @@ issue, or open a PR does not count as guidance on the decisions the agent makes 
 **Agent Decided** (🤖): the agent chose the position, change, or response without the user's
 direction on that specific decision.
 
+- `<Claude|Cursor|OpenCode>`: the tool you're running as.
+- `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
+
 ```markdown
 ---
 
-_<sub>🤖 Agent Decided: Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤖 Agent Decided: Posted by <Claude|Cursor|OpenCode> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 **Human Guided** (🤝): the user chose or materially directed the specific decision. This does not
@@ -81,7 +84,7 @@ mean they reviewed the final wording or implementation.
 ```markdown
 ---
 
-_<sub>🤝 Human Guided: Posted by <Claude|Cursor|OpenCode> on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided Response: Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 When unsure, use Agent Decided.

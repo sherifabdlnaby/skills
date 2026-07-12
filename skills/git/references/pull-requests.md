@@ -160,16 +160,16 @@ the PR Human Guided.
 ```markdown
 ---
 
-_<sub>🤖 Agent Decided: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 **Human Guided** (🤝): the user chose or materially directed the specific decisions reflected in the
-PR. This does not mean they reviewed the final body or implementation.
+PR. This does not mean they reviewed the final body or implementation. Asking to fix and issue and open a PR alone is not enough, they have to have had back and forth between you on implementation.
 
 ```markdown
 ---
 
-_<sub>🤝 Human Guided: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 For a back-and-forth with the user on how to comment, offer a verbatim Human Note (Ask User tool).
