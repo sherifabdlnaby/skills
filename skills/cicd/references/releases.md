@@ -37,6 +37,20 @@ from the last stable. The next stable release passes `--notes-start-tag <last-st
 cover the whole line, not just rc -> final. (GoReleaser projects need a regeneration step to keep that
 promise — [`artifacts/go.md`](artifacts/go.md).)
 
+## Manual releases (dispatch)
+
+Every release workflow carries a `workflow_dispatch` with an explicit `version` input, whatever the
+model (label-driven, manifest-driven, drafted). The input wins over any computed bump and is used
+verbatim (v-prefixed if missing); a `-` in it marks a pre-release and follows the rc rules above. Pass
+it via `env`, never interpolated — it's user-controlled. Make the tag-existence check a clean no-op so
+a re-dispatch is idempotent, and guard the job to the default branch — a dispatch can be pointed at
+any ref, and a topic branch must not get tagged.
+
+**Dispatch permission is repo-wide, not per-actor**: anyone with write access can run it. When a
+manual release needs an approval step, gate the tag/publish job behind a protected environment with
+required reviewers ([`hygiene.md`](hygiene.md)); a tag ruleset restricting who may create `v*` tags
+blocks the push itself as a harder backstop.
+
 ## Alternative: the release-drafter draft model
 
 When you want curated notes over auto-generated ones: a continuous draft prerelease with categorized
