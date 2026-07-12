@@ -32,11 +32,11 @@ setup_version = "1" # Increment when you update setup steps, or require users to
 
 # ── ▶️ tasks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tasks.check]
-description = "Run all linters, formatters & validators as ran by pre-commit and in PR's CI"
+description = "Run all checks the repo enforces on the working tree (uncommitted changes) — the same suite CI runs"
 alias = ["lint"]
 usage = '''
     flag "--fix"              help="apply fixes instead of only reporting"
-    flag "--all"              help="run on all files (default: staged only)"
+    flag "--all"              help="run on all files (default: uncommitted changes)"
     flag "--pr"               help="only files changed vs the default branch (conflicts with --all)"
     flag "--fail-fast"        help="stop at the first failing step (default: run all, report every failure)"
     flag "--step <step>"      var=#true help="run only these step(s)"

@@ -11,13 +11,22 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
 3. **For custom linters/tests, delegate to a mise task.** Avoid putting logic in `hk.pkl` where possible.
 4. Pin the `<VER>` in the `amends`/`import` URLs; regenerate with `hk init`, don't hardcode from memory.
 5. Always use a linter hk builtin settings.
+6. **Steps live in tier mappings named by moment** (`commitGates` / `pushGates`, see `assets/hk.pkl`); hooks only compose tiers. The scaffold
+   stubs `pushGates` empty to be filled late if no gates defined.
+7. **`check` mounts the union of all tiers** (`steps { ...commitGates; ...pushGates }`) and is the one command CI runs; local hooks mount
+   subsets by cost (`pre-commit` = commitGates, `pre-push` = pushGates). Anything outside the union — an inline hook step, an unmounted tier —
+   is invisible to CI.
 
 ## Notes & Gotchas:
 
 - **`hk check` and `hk fix` are the same command** the subcommand only sets the default mode;
   `-c/--check` and `-f/--fix` flip it (so `hk check --fix` mutates, `hk fix --check` is dry-run).
   `check_first = true` runs check before fix; `{{files}}` expands to matched files.
-- **Scope flags**: default is **staged** files. `--all` (whole tree), `--pr` (only files changed vs the default branch, `= --from-ref DEFAULT_BRANCH --to-ref HEAD`), `--staged` (staged files without stashing unstaged changes; conflicts with `--all`).
+- **`fix = true` in pre-commit requires `stash = "git"`** to only check staged files.
+- **Profiles are runtime opt-in** (`profiles = List("slow")` + `--slow`/`--profile`), for expensive steps within a mounted tier — not a
+  substitute for tier membership.
+- **Scope flags**: default is **uncommitted changes** (staged + unstaged). `--all` (whole tree), `--pr` (only files changed vs the default
+  branch, `= --from-ref DEFAULT_BRANCH --to-ref HEAD`), `--staged` (staged files only, without stashing unstaged changes; conflicts with `--all`).
 - **Git 2.54+ uses config-based hooks**: install writes `hook.<name>.command` into git
   config and leaves `.git/hooks/` untouched, so hk coexists with other hook managers;
   older Git falls back to script shims (`--legacy` forces them). Don't hand-edit
@@ -27,11 +36,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
   opt-in `--fix`, with no branching on subcommand. That `check` task is the repo's
   standard lint contract (same command CI and the pre-commit hook run); see
   [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#check-lint).
-- **`hk check`/`hk fix` need their own `check`/`fix` hooks**; they do _not_ fall back to
-  `pre-commit` (`Hook 'check' not found`). DRY it: define `local linters: Mapping<String,
-  Step>` once and assign `steps = linters` in both the `check` and `pre-commit` hooks
-  (see `assets/hk.pkl`). Same builtins, both check and fix commands; the hook's `fix`
-  flag picks the mode.
+- **`hk check` needs its own `check` hook**; it does _not_ fall back to `pre-commit` (`Hook 'check' not found`). Deliberately define **no**
+  `fix` hook — `hk check --fix` covers write mode.
 - **Manage ignores in one place**: define `local commonIgnores = List(...)` and assign
   top-level `exclude = commonIgnores`, which applies to every step (see `assets/hk.pkl`).
   hk already honors `.gitignore` (`walk_ignore = true`), so this list is only for

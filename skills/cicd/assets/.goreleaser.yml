@@ -43,3 +43,21 @@ changelog:
 
 release:
   prerelease: auto # a -rc.N tag publishes as a prerelease automatically
+  # Generated changelog says what changed; this footer says how to install + verify. GoReleaser owns the
+  # body, so keep it here (not a `gh release edit` step). Mirror the same block in the README.
+  footer: |
+    ---
+    ## Install
+
+    ```bash
+    go install {{ .ModulePath }}@{{ .Tag }}   # or download the archive for your OS/arch below
+    ```
+
+    ## Verify
+
+    Binaries are provenance-attested and checksummed:
+
+    ```bash
+    gh attestation verify <archive> --owner {{ .Env.GITHUB_REPOSITORY_OWNER }}
+    sha256sum --check checksums.txt
+    ```

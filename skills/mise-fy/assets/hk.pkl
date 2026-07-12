@@ -13,8 +13,11 @@ local commonIgnores =
     "**/*.min.*",
   )
 
-// Linters defined once, shared by the hooks below.
-local linters: Mapping<String, Step> = new Mapping<String, Step> {
+// Gates by moment; each step lives in exactly one tier, hooks below only compose tiers.
+// `check` mounts the union — the repo's full contract and the only hook CI runs.
+
+// Commit gates — run on every commit: file-scoped, fast, auto-fixable.
+local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["shfmt"] = Builtins.shfmt
   ["actionlint"] = Builtins.actionlint
   // pinact resolves Action tags to SHAs via the GitHub API, so it needs a token or it hits the
@@ -33,26 +36,39 @@ local linters: Mapping<String, Step> = new Mapping<String, Step> {
   // ["rumdl"] = Builtins.rumdl // markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Needs `rumdl` in [tools] + a rumdl.toml. See hk.md.
 }
 
+// Push gates — run before a push: slower or branch-scoped checks that would drag the commit loop.
+// Logic lives in mise tasks (runnable standalone, identical in CI); steps here only route to them.
+local pushGates: Mapping<String, Step> = new Mapping<String, Step> {
+// ["test"] { check = "mise run test" }
+}
+
 exclude = commonIgnores
 
 hooks {
-  // `hk check` / `mise run check` — CI + manual lint (read-only; `--fix` applies).
+  // `hk check` / `mise run check` — the union: everything this repo enforces, and the only
+  // hook CI runs. Read-only; `--fix` applies. (No ["fix"] hook on purpose — `hk fix` errors,
+  // shunting to the one blessed entry point; a fix hook would be a second mapping to keep in sync.)
   ["check"] {
-    steps = linters
+    stage = false // `--fix` fixes the tree only; outside a commit, nothing touches the index
+    steps {
+      ...commitGates
+      ...pushGates
+    }
   }
 
-  // `git commit` (staged) — fix inline; stash guards unstaged hunks.
+  // `git commit` (staged) — commit gates only; fix inline. `stash` makes tools judge (and fix)
+  // the staged snapshot, not the working tree — without it, partially-staged files get fixes
+  // computed on (and re-staged with) unstaged hunks.
   ["pre-commit"] {
     fix = true
     stash = "git"
-    steps = linters
+    steps = commitGates
   }
 
-  // `git push` — no-op; add slower gates here.
+  // `git push` — push gates only (every commit already passed the commit gates). Best-effort
+  // locally (`--no-verify` skips); CI's union run is the authoritative gate.
   ["pre-push"] {
-    steps {
-    // ["test"] { check = "mise run test" }
-    }
+    steps = pushGates
   }
 
   // Commit message ({{commit_msg_file}}) — no-op.

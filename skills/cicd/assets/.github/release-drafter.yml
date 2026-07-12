@@ -6,6 +6,15 @@
 #     drift bait).
 #   - DRAFT model: auto-release.yml drafts a categorized prerelease using the categories/template below.
 #     There release-drafter DOES resolve the version, so uncomment the version-resolver block.
+#
+# TAILOR PER REPO — do not ship this as-is. The categories/autolabeler below are a starting point;
+# make them cover what THIS repo actually ships:
+#   - Read existing labels (`gh label list`) and the last ~40 PR titles (`gh pr list --state all -L 40`)
+#     to see the real change types and the label names already in use — reuse those, don't invent parallel ones.
+#   - Walk the tree for the areas that matter (`.github/`, `docs/`, `charts/`, `migrations/`, `deploy/`, …)
+#     and add a category + a matching autolabeler rule per meaningful bucket; delete buckets this repo never has.
+#   - Keep three sets consistent: category labels, autolabeler labels, and release.yml's bump labels. A label
+#     the autolabeler applies but no category groups is dead; a category with no source label never fills.
 categories:
   - title: "🚀 Enhancements"
     labels: ["enhancement", "feature"]
@@ -13,23 +22,29 @@ categories:
     labels: ["upgrades"]
   - title: "🐛 Bug Fixes"
     labels: ["fix", "bug", "hotfix"]
+  - title: "⚙️ CI & Build"
+    labels: ["ci", "build"]
   - title: "🤖 Automatic Updates"
     labels: ["auto-update"]
   - title: "📝 Documentation"
     labels: ["docs"]
 autolabeler:
   - label: "docs"
-    files: ["*.md"]
+    files: ["**/*.md", "docs/**"]
+    title: ['/\bdocs?\b|readme/i']
+  - label: "ci"
+    files: [".github/**"]
+    title: ['/\bci\b|workflow|pipeline|actions/i']
   - label: "enhancement"
-    title: "/enhancement/i"
+    title: ["/enhancement/i"]
   - label: "upgrades"
-    title: "/⬆️/i"
+    title: ["/⬆️/i"]
   - label: "bug"
-    title: "/🐛|🐞|bug|bugfix/i"
+    title: ["/🐛|🐞|bug|bugfix/i"]
   - label: "auto-update"
-    title: "/🤖/i"
+    title: ["/🤖/i"]
   - label: "feature"
-    title: "/🚀|🎉/i"
+    title: ["/🚀|🎉/i"]
 change-template: |
   <details>
     <summary>$TITLE @$AUTHOR (#$NUMBER)</summary>
@@ -46,5 +61,5 @@ template: |
 # version-resolver:
 #   major: { labels: ["major"] }
 #   minor: { labels: ["minor", "enhancement", "feature"] }
-#   patch: { labels: ["patch", "fix", "bug", "chore", "auto-update"] }
+#   patch: { labels: ["patch", "fix", "bug", "chore", "auto-update", "ci"] }
 #   default: patch

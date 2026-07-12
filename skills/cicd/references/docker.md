@@ -34,6 +34,9 @@ stable release, detected from the tag string itself (a `-` marks a pre-release â
 - **Verify (put in the Release body / README):**
 
   ```bash
+  # Install
+  docker pull ghcr.io/<owner>/<repo>@<digest>
+  # Verify
   cosign verify \
     --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
     --certificate-identity-regexp="https://github.com/<owner>/<repo>/.*" \

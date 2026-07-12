@@ -99,9 +99,8 @@ jobs:
           set -euo pipefail
           MARKER="<!-- bump-preview -->"
           # Keep in sync with the release job's "Refresh bump previews" step.
-          last_stable() { git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1 || true; }
-          next_version() { # $1 = bump
-            PREV="$(last_stable)"; [ -z "$PREV" ] && PREV="v0.0.0"
+          last_stable() { t="$(git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1 || true)"; echo "${t:-v0.0.0}"; }
+          next_version() { # $1 = bump (reads $PREV)
             IFS='.' read -r MA MI PA <<< "${PREV#v}"
             case "$1" in
               major) MA=$((MA + 1)); MI=0; PA=0 ;;
@@ -119,12 +118,18 @@ jobs:
               *) echo "" ;;
             esac
           }
+          PREV="$(last_stable)"
           BUMP="$(bump_of "$LABELS")"
+          # Preview as a table; the marker stays first so the sticky-comment lookup still matches.
+          NOTE=""
           case "$BUMP" in
-            skip) BODY="$MARKER 🏷️ \`skip-release\` — merging this PR cuts no release." ;;
-            "")   BODY="$MARKER ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; merged as-is this falls back to \`patch\` → **$(next_version patch)**." ;;
-            *)    BODY="$MARKER 🔖 Merging this PR cuts **$(next_version "$BUMP")** (\`$BUMP\`)." ;;
+            skip) ROW="| \`$PREV\` | \`skip-release\` | — no release |" ;;
+            "")   ROW="| \`$PREV\` | ⚠️ none | \`patch\` fallback → **\`$(next_version patch)\`** |"
+                  NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`patch\`." ;;
+            *)    ROW="| \`$PREV\` | \`$BUMP\` | **\`$(next_version "$BUMP")\`** |" ;;
           esac
+          BODY="$MARKER"$'\n'"### 🔖 Release preview"$'\n\n'"| Current | Bump | On merge |"$'\n'"|:--|:--|:--|"$'\n'"$ROW"
+          [ -n "$NOTE" ] && BODY="$BODY"$'\n\n'"$NOTE"
           CID="$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
             --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty" || true)"
           if [ -n "$CID" ]; then
@@ -311,6 +316,27 @@ jobs:
           [ "$DRAFT" = true ] && args+=(--draft)
           gh release create "$TAG" build/* "${args[@]}"
 
+      # Generated notes say what changed; append a footer telling consumers how to install and verify
+      # the artifact (SKILL.md#publish-sign-attest). Per-repo install steps live in
+      # .github/release-footer.md; the Verify block is generated. Idempotent via a marker.
+      - name: Append Install + Verify footer to the release notes
+        env:
+          TAG: ${{ needs.version.outputs.new_tag }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          BODY="$(gh release view "$TAG" --repo "$REPO" --json body --jq .body)"
+          case "$BODY" in *'<!-- verify-footer -->'*) echo "footer already present"; exit 0 ;; esac
+          INSTALL=""
+          [ -f .github/release-footer.md ] && INSTALL="$(printf '\n\n%s' "$(cat .github/release-footer.md)")"
+          VERIFY="$(printf '%s\n' '' '<!-- verify-footer -->' '---' '## Verify' '' \
+            'Assets are provenance-attested and checksummed — confirm before use:' '' \
+            '```bash' \
+            "gh attestation verify <asset> --repo $REPO" \
+            'sha256sum --check checksums.txt' \
+            '```')"
+          gh release edit "$TAG" --repo "$REPO" --notes "${BODY}${INSTALL}${VERIFY}"
+
       - name: Comment on the merged PR
         if: github.event_name == 'push' && needs.version.outputs.pr_number != ''
         env:
@@ -331,9 +357,8 @@ jobs:
           set -euo pipefail
           MARKER="<!-- bump-preview -->"
           # Keep in sync with the autolabel job's "Bump gate & version preview" step.
-          last_stable() { git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1 || true; }
-          next_version() { # $1 = bump
-            PREV="$(last_stable)"; [ -z "$PREV" ] && PREV="v0.0.0"
+          last_stable() { t="$(git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1 || true)"; echo "${t:-v0.0.0}"; }
+          next_version() { # $1 = bump (reads $PREV)
             IFS='.' read -r MA MI PA <<< "${PREV#v}"
             case "$1" in
               major) MA=$((MA + 1)); MI=0; PA=0 ;;
@@ -351,16 +376,21 @@ jobs:
               *) echo "" ;;
             esac
           }
+          PREV="$(last_stable)"
           gh pr list --state open --json number --jq '.[].number' | while read -r NUM; do
             CID="$(gh api "repos/$REPO/issues/$NUM/comments" \
               --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty")"
             [ -z "$CID" ] && continue
             LABELS="$(gh api "repos/$REPO/issues/$NUM/labels" --jq 'map(.name) | join(",")')"
             BUMP="$(bump_of "$LABELS")"
+            NOTE=""
             case "$BUMP" in
-              skip) BODY="$MARKER 🏷️ \`skip-release\` — merging this PR cuts no release." ;;
-              "")   BODY="$MARKER ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; merged as-is this falls back to \`patch\` → **$(next_version patch)**." ;;
-              *)    BODY="$MARKER 🔖 Merging this PR cuts **$(next_version "$BUMP")** (\`$BUMP\`)." ;;
+              skip) ROW="| \`$PREV\` | \`skip-release\` | — no release |" ;;
+              "")   ROW="| \`$PREV\` | ⚠️ none | \`patch\` fallback → **\`$(next_version patch)\`** |"
+                    NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`patch\`." ;;
+              *)    ROW="| \`$PREV\` | \`$BUMP\` | **\`$(next_version "$BUMP")\`** |" ;;
             esac
+            BODY="$MARKER"$'\n'"### 🔖 Release preview"$'\n\n'"| Current | Bump | On merge |"$'\n'"|:--|:--|:--|"$'\n'"$ROW"
+            [ -n "$NOTE" ] && BODY="$BODY"$'\n\n'"$NOTE"
             gh api -X PATCH "repos/$REPO/issues/comments/$CID" -f body="$BODY" >/dev/null
           done
