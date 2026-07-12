@@ -13,8 +13,9 @@ the full case table).
 - **Gate + preview on the PR.** The PR job fails when no bump label is set and keeps one comment
   showing the exact version a merge would cut, recomputed on every label change; the release job
   refreshes open PRs' previews after each stable release so they never go stale. An unlabeled PR that
-  merges anyway falls back to `patch`. **Ask the user** whether that gate/fallback pair fits or they
-  want a different unlabeled-PR policy.
+  merges anyway falls back to `minor` (patch is too easy to ship by accident; major is costly under
+  immutable releases). **Ask the user** whether that gate/fallback pair fits or they want a different
+  unlabeled-PR policy.
 - **Publish with generated notes.** `gh release create <tag> --generate-notes`. release-drafter's
   `autolabeler` ([config](../assets/.github/release-drafter.yml)) applies *category* labels
   (enhancement/bug/ci/docs) on PRs, and [`.github/release.yml`](../assets/.github/release.yml) (GitHub's

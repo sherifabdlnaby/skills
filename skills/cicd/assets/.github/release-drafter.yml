@@ -62,4 +62,4 @@ template: |
 #   major: { labels: ["major"] }
 #   minor: { labels: ["minor", "enhancement", "feature"] }
 #   patch: { labels: ["patch", "fix", "bug", "chore", "auto-update", "ci"] }
-#   default: patch
+#   default: minor

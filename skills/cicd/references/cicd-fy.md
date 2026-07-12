@@ -95,7 +95,7 @@ the user):
 ### Release
 
 - [ ] Version bump is label-driven (`major`/`minor`/`patch`/`skip-release`); unlabeled PRs gated (fail
-      + `patch` fallback on merge) with a sticky bump-preview comment, or another policy consciously chosen
+      + `minor` fallback on merge) with a sticky bump-preview comment, or another policy consciously chosen
 - [ ] Tag + release cut automatically on merge; rapid-merge behavior understood
       ([`platforms/github.md`](platforms/github.md#gotchas))
 - [ ] Notes generated from PRs (no hand-kept `CHANGELOG.md`); category labels actually group the notes
