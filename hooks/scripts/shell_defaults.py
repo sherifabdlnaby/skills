@@ -28,14 +28,24 @@ def _has_assignee(tokens):
     return False
 
 
+# Characters that shlex.split/join cannot round-trip: operators, expansions, redirects,
+# globs, quotes-in-quotes. A rewrite would re-serialize the command and corrupt it, and `-f`
+# in a compound line may belong to another command entirely (e.g. `gh api -f`).
+_NO_REWRITE_CHARS = set("\n;&|<>$`(){}[]*?~")
+
+
 def rewrite_force_push(command):
-    """Replace bare --force / -f on git push with --force-with-lease."""
+    """Replace bare --force / -f with --force-with-lease, on plain `git push` commands only."""
+    if set(command) & _NO_REWRITE_CHARS:
+        return command, []
     try:
         tokens = shlex.split(command)
     except ValueError:
         return command, []
 
-    if "git" not in tokens or "push" not in tokens:
+    # Only a command that IS a git push, not one that merely mentions git or push somewhere.
+    # `git -C path push` is deliberately missed: cheaper to skip than to parse global options.
+    if len(tokens) < 2 or tokens[0] != "git" or tokens[1] != "push":
         return command, []
     if "--force-with-lease" in tokens:
         return command, []
