@@ -1,5 +1,5 @@
 ---
-name: local-review
+name: review
 description: Gate the work behind a local reviewer panel.
 license: MIT
 argument-hint: "[number of reviewers, default 2]"
@@ -9,7 +9,7 @@ metadata:
   version: "0.1.0"
 ---
 
-# local-review
+# review
 
 The task isn't done until it passes a reviewer panel. Implement as usual, then run the gate before declaring done.
 
@@ -19,7 +19,9 @@ The task isn't done until it passes a reviewer panel. Implement as usual, then r
 
 - `1` → fork reviewer only.
 - `2` → 1 independent + 1 fork.
-- `N` → N−1 independents with distinct lenses (correctness, simplification, security, tests) + 1 fork.
+- `N` → N−1 independents with distinct lenses (correctness, functionality, simplification, security, tests) + 1 fork.
+
+Functionality = does the diff actually do what was asked? Flag missing behavior, scope creep (unasked behavior), and asked-for behavior built wrong. Give this reviewer the intent — the task description, plus any linked issue/PRD/spec — alongside the diff.
 
 Reviewer types:
 
