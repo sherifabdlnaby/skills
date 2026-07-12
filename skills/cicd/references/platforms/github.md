@@ -12,7 +12,7 @@ in `assets/`; lint the workflows themselves with `actionlint` + `zizmor`.
   Sign/attest/push adds `id-token: write` + `attestations: write` + `packages: write`.
 - **Credentials**: `persist-credentials: false` on every checkout; only jobs that push with the checkout
   token (the release tag, the auto-fix branch) keep them, marked `# zizmor: ignore[artipacked]` with the
-  reason.
+  reason — on its own line inside the step, never on the pin line (see Gotchas).
 - **Concurrency**: PR groups keyed `<name>-${{ github.event.pull_request.number || github.ref }}` with
   `cancel-in-progress: true`; publish groups static with `cancel-in-progress: false`. A workflow mixing
   both events can key the group by `github.event_name`
@@ -52,6 +52,10 @@ Surface errors as annotations:
 - **One pending run per concurrency group.** On rapid merges a superseded queued release run is
   dropped, not queued behind: its changes still land in the next release's notes, but its bump label
   isn't consumed — re-run the dropped run from the UI if that bump mattered.
+- **The pin comment is machine-owned; nothing shares its line.** Text appended after `# vX.Y.Z` (a
+  `zizmor: ignore[...]`, a note) stops Dependabot's comment rewrite on bump: stale comment, and
+  `pinact --verify` fails the line. Suppressions go on their own line inside the finding's span
+  (between `name:` and `uses:`, or in the `with:` block); above the step they do nothing.
 - **GHCR image names must be lowercase.** `${{ github.repository }}` breaks the push when the owner or
   repo has capitals; hardcode a lowercase image name instead.
 - **Release builds run with `cache: false`** on tool setup: a one-shot job has no cache to reuse, and a

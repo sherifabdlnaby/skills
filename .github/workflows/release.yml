@@ -111,7 +111,8 @@ jobs:
     steps:
       # Keeps the checkout token: the tag-push step below needs it.
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3 # zizmor: ignore[artipacked] -- this job pushes the release tag
+        # zizmor: ignore[artipacked] -- this job pushes the release tag
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0 # full history + tags, for the latest-tag lookup and generated notes
 
