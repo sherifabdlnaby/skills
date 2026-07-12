@@ -11,7 +11,7 @@ metadata:
 
 # review
 
-The task isn't done until it passes a reviewer panel. Implement as usual, then run the gate before declaring done.
+The task isn't done until it passes a reviewer panel. Run the gate before declaring done.
 
 ## Panel
 
@@ -20,11 +20,6 @@ The task isn't done until it passes a reviewer panel. Implement as usual, then r
 - `1` → fork reviewer only.
 - `2` → 1 independent + 1 fork.
 - `N` → N−1 independents with distinct lenses (correctness, functionality, simplification, security, tests) + 1 fork.
-
-Functionality = does the diff actually do what was asked? Flag missing behavior,
-scope creep (unasked behavior), and asked-for behavior built wrong. Give this
-reviewer the intent — the task description, plus any linked issue/PRD/spec —
-alongside the diff.
 
 Reviewer types:
 
@@ -37,6 +32,6 @@ For example, Opus 4.8 <-> GPT 5.5
 ## Gate
 
 1. Run the panel in parallel.
-2. Triage findings: fix the real ones; reject with a stated reason (you have context reviewers lack).
+2. Triage findings: fix the real ones; reject with a stated reason (you have context reviewers lack), or escalate to user.
 3. One re-review round, of the fixes only.
-4. Gate opens. Contested or rejected findings go in the final summary.
+4. Gate opens. Escalate, contested or rejected findings go in the final summary.
