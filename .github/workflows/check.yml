@@ -19,10 +19,8 @@ on:
         options: [all, pr]
         default: all
 
-# Push the fix branch; open/close its PR and the sticky comment.
-permissions:
-  contents: write
-  pull-requests: write
+# Top-level least-privilege floor; the job below widens to what it needs.
+permissions: {}
 
 # One run per PR (or ref) — newer pushes cancel stale runs.
 concurrency:
@@ -33,8 +31,13 @@ jobs:
   check:
     name: check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # Never act on our own fix branches (matters only with a PAT; GITHUB_TOKEN PRs can't self-trigger).
     if: ${{ !startsWith(github.head_ref, 'bot/ci/') }}
+    # Push the fix branch; open/close its PR and the sticky comment.
+    permissions:
+      contents: write
+      pull-requests: write
 
     env:
       # Pretty colors in the CI!

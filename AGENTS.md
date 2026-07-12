@@ -29,3 +29,13 @@ Changing tools, tasks, env, or hooks? Edit the config, don't bolt on scripts, th
 - **`mise.lock`**: resolved versions plus checksums. Commit it; regenerate with `mise install` after a `[tools]` change.
 - **`.mise/`**: project-local state (the setup stamp is gitignored). File tasks can live in `.mise/tasks/`.
 - **`hk.pkl`**: the pre-commit and `check` pipeline (linters and formatters, in Pkl). Add or edit a lint step here.
+
+## Releases
+
+Shipping a change under `skills/` or `hooks/` needs both manifest versions bumped to the same
+value (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`) — `mise run version:check`
+enforces this pre-push and in CI. A release cuts itself: merging a version bump to `main` tags and
+publishes automatically; there's no separate release step to run by hand.
+
+CI workflows live in `.github/workflows/`. Changing one still has to pass `mise run check`
+(actionlint, zizmor included) and follow the `skills/cicd` doctrine.

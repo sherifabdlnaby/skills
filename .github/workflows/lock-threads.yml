@@ -1,0 +1,38 @@
+# DRY RUN — dessant/lock-threads has no dry-run/debug flag, so the lock step itself stays
+# commented out until we've watched a schedule run and are ready to arm it. Locks (never deletes)
+# closed issues/PRs after a year of inactivity, so necro-comments on old threads push people to
+# open a fresh issue that links back instead.
+name: 🔒 Lock threads
+
+on:
+  schedule:
+    - cron: "0 4 * * *" # daily
+  workflow_dispatch: {}
+
+# Top-level read-only; the job below widens to what it needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: lock-threads
+  cancel-in-progress: false
+
+jobs:
+  lock:
+    name: lock inactive threads
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      # ARM SWITCH — uncomment once ready; no dry-run flag exists on this action, so this comment
+      # guard is the observe-before-acting gate instead.
+      # - uses: dessant/lock-threads@89ae32b08ed1a541efecbab17912962a5e38981c # v6.0.2
+      #   with:
+      #     issue-inactive-days: "365"
+      #     pr-inactive-days: "365"
+      #     exclude-issue-created-before: ""
+      #     exclude-pr-created-before: ""
+      - name: Not armed yet
+        run: echo "lock-threads step is commented out — arm it in .github/workflows/lock-threads.yml after observing a sweep"

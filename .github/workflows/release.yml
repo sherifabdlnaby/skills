@@ -1,0 +1,157 @@
+# Auto-tag on version change: no label-driven bumping. A human bumps BOTH manifest versions
+# (.claude-plugin/plugin.json, .cursor-plugin/plugin.json, kept equal) in the PR; version:check
+# (mise.toml, wired as an hk pushGate) already blocks a merge that ships content without the bump.
+# This workflow reacts to the merge itself.
+#
+# The version contract (this file is the single source of truth for it):
+#   open PR ........................ preview: one sticky comment shows the tag a merge would cut,
+#                                    or that no bump ships no release; refreshed on every push
+#   push to main, version bumped ... tag `v<version>` + a GitHub release with generated notes,
+#                                    created in one shot (immutable-friendly: never edited after)
+#   push to main, version unchanged  clean no-op
+#   manifests disagree ............. fail loudly — a split version is a broken contract, not a
+#                                    release decision
+#   workflow_dispatch .............. re-run the same push-to-main logic on demand
+name: 🏷️ Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch: {}
+
+# Top-level read-only; each job widens only what it needs.
+permissions:
+  contents: read
+
+# Release runs (push/dispatch) queue serially, never cancelled mid-publish — cancelling mid-tag
+# would leave a pushed tag with no release, or a half-written release. PR previews cancel
+# superseded runs, same as any other check.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('release-preview-{0}', github.event.pull_request.number) || 'release' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # ── PR preview: what a merge would cut, kept as one sticky comment ──
+  # Fork PRs carry a read-only token, so the comment API 403s there — skip rather than fail the run.
+  preview:
+    name: 🔖 Release preview
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0 # tags, so the preview can compare against the latest one
+          persist-credentials: false
+
+      - name: Compare PR version against the latest tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          CLAUDE_VERSION="$(jq -r .version .claude-plugin/plugin.json)"
+          CURSOR_VERSION="$(jq -r .version .cursor-plugin/plugin.json)"
+          MARKER="<!-- release-preview -->"
+
+          if [ "$CLAUDE_VERSION" != "$CURSOR_VERSION" ]; then
+            BODY="$MARKER"$'\n'"⚠️ Manifest versions disagree: \`.claude-plugin/plugin.json\` is \`$CLAUDE_VERSION\`, \`.cursor-plugin/plugin.json\` is \`$CURSOR_VERSION\`. Fix before merge — the release job fails loudly on this."
+          else
+            LATEST_TAG="$(git tag -l 'v*' --sort=-v:refname | head -1)"
+            if [ -n "$LATEST_TAG" ] && [ "v$CLAUDE_VERSION" = "$LATEST_TAG" ]; then
+              BODY="$MARKER"$'\n'"No version bump — merge ships no release (still \`$LATEST_TAG\`)."
+            elif git rev-parse -q --verify "refs/tags/v$CLAUDE_VERSION" >/dev/null; then
+              # Mirrors the release job's existence check: an older, already-tagged version no-ops.
+              BODY="$MARKER"$'\n'"⚠️ \`v$CLAUDE_VERSION\` is already tagged (latest is \`$LATEST_TAG\`) — merge ships no release; bump past \`$LATEST_TAG\` to cut one."
+            else
+              BODY="$MARKER"$'\n'"🏷️ Merging cuts release \`v$CLAUDE_VERSION\`."
+            fi
+          fi
+
+          CID="$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty")"
+          if [ -n "$CID" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$CID" -f body="$BODY" >/dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$BODY" >/dev/null
+          fi
+
+  # ── Tag + release on merge ──
+  release:
+    name: 🚀 Release
+    # The ref guard covers workflow_dispatch, which can be pointed at any branch — a dispatch off a
+    # topic branch must not tag that branch's manifest version. (push is already filtered to main.)
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # push the tag + create the release
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # Keeps the checkout token: the tag-push step below needs it.
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3 # zizmor: ignore[artipacked] -- this job pushes the release tag
+        with:
+          fetch-depth: 0 # full history + tags, for the latest-tag lookup and generated notes
+
+      - name: Resolve version and compare to the latest tag
+        id: version
+        run: |
+          set -euo pipefail
+          CLAUDE_VERSION="$(jq -r .version .claude-plugin/plugin.json)"
+          CURSOR_VERSION="$(jq -r .version .cursor-plugin/plugin.json)"
+          if [ "$CLAUDE_VERSION" != "$CURSOR_VERSION" ]; then
+            echo "::error::manifest version mismatch: .claude-plugin/plugin.json=$CLAUDE_VERSION vs .cursor-plugin/plugin.json=$CURSOR_VERSION"
+            exit 1
+          fi
+
+          TAG="v$CLAUDE_VERSION"
+          LATEST_TAG="$(git tag -l 'v*' --sort=-v:refname | head -1)"
+          # Existence check, not equality-with-latest: also catches a version reverted to an OLDER
+          # tag (recreating it must be a no-op, not a confusing tag-push failure) and makes
+          # dispatch re-runs idempotent.
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "$TAG already exists — no version bump, nothing to release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "skip=false"
+              echo "tag=$TAG"
+              echo "previous_tag=$LATEST_TAG"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag
+        if: steps.version.outputs.skip == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          # A GITHUB_TOKEN-created tag fires no workflow of its own (recursion guard) — the release
+          # below is created inline in this same job, not chained off an `on: push: tags` trigger.
+          git push origin "$TAG"
+
+      # Notes generated and the release published in one call: nothing is attached or edited after
+      # the release goes public (immutable-friendly — skills/cicd/references/releases.md).
+      - name: Publish release
+        if: steps.version.outputs.skip == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+        run: |
+          set -euo pipefail
+          args=(--title "$TAG" --generate-notes --latest)
+          [ -n "$PREVIOUS_TAG" ] && args+=(--notes-start-tag "$PREVIOUS_TAG")
+          gh release create "$TAG" "${args[@]}"

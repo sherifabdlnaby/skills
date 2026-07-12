@@ -1,0 +1,19 @@
+# GitHub's native generated-release-notes config (this exact path is required). `gh release create
+# --generate-notes` (release.yml) groups PRs into these categories; the labels are applied by
+# label.yml (config: labeler.yml) as PRs are opened. Without this file the notes are a flat list.
+changelog:
+  categories:
+    - title: 🎁 Skills
+      labels: [skill]
+    - title: 🪝 Hooks
+      labels: [hooks]
+    - title: 🐛 Fixes
+      labels: [fix]
+    - title: 📝 Documentation
+      labels: [docs]
+    - title: ⚙️ CI/CD
+      labels: [ci]
+    - title: ⬆️ Dependencies
+      labels: [deps]
+    - title: Other Changes
+      labels: ["*"]

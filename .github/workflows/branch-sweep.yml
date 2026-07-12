@@ -1,0 +1,57 @@
+# DRY RUN — logs candidate branches only; the delete line stays commented out. Auto-delete-on-merge
+# already handles the common case, this only catches abandoned branches (no PR, or a closed unmerged
+# one). Hand-rolled: no first-party action deletes branches, and a third-party dep with delete rights
+# is a poor place to grant that.
+name: 🌿 Branch sweep
+
+on:
+  schedule:
+    - cron: "0 5 * * 0" # weekly
+  workflow_dispatch: {}
+
+# Top-level read-only; stays read-only for the job too while dry — see the arm note below.
+permissions:
+  contents: read
+
+concurrency:
+  group: branch-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: find abandoned branches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # DRY RUN — this only needs `contents: read` to list and log. Deleting a branch needs
+    # `contents: write`; widen this when the delete line below is uncommented.
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0 # full history so branch commit dates are real, not shallow-clone truncated
+          persist-credentials: false
+
+      - name: Log branches with no open PR and no commits in 90+ days
+        run: |
+          set -euo pipefail
+          CUTOFF="$(date -u -d '90 days ago' +%s)"
+          OPEN_PR_BRANCHES="$(gh pr list --state open --limit 500 --json headRefName --jq '.[].headRefName' | sort -u)"
+
+          git for-each-ref --format='%(refname:short)' refs/remotes/origin | sed 's#^origin/##' |
+            while read -r ref; do
+              case "$ref" in
+                HEAD | main | bot/ci/*) continue ;;
+              esac
+              if printf '%s\n' "$OPEN_PR_BRANCHES" | grep -qx "$ref"; then continue; fi
+
+              last_commit="$(git log -1 --format=%ct "origin/$ref")"
+              if [ "$last_commit" -lt "$CUTOFF" ]; then
+                age_days=$(( ($(date -u +%s) - last_commit) / 86400 ))
+                echo "abandoned: origin/$ref — last commit ${age_days}d ago, no open PR"
+                # ARM SWITCH — uncomment once ready (needs `contents: write` on the job above):
+                # git push origin --delete "$ref"
+              fi
+            done

@@ -1,0 +1,17 @@
+# Dependabot version updates. Keeps SHA-pinned actions current (the pin's `# vX.Y.Z` comment
+# drifts otherwise — see skills/cicd/references/hygiene.md). Cooldown mirrors mise's own
+# minimum_release_age (mise.toml [settings]) so both toolchains wait out the same
+# compromised-fresh-release window before adopting a version.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+    labels:
+      - "deps"
