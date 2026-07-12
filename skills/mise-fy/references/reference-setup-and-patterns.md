@@ -59,14 +59,21 @@ Check the reference [mise.toml](../assets/mise.toml)
 
 ### Deps
 
-Runtime/project dependencies (`node_modules`, a Python `.venv`, `vendor/`, …) belong in their **own `deps` task**, never inlined into `setup`. This keeps them runnable on their own after a lockfile change (`mise run deps`) and lets each side cache independently. Setup wires `deps` to run **after** `mise install` (the runtime must exist before its package manager runs) via `depends_post`; gate the `setup:stamp` on it with `wait_for = ["deps"]` so a successful stamp implies deps were installed.
+Runtime/project dependencies (`node_modules`, a Python `.venv`, `vendor/`, …) belong in their **own `deps` task**,
+never inlined into `setup`. This keeps them runnable on their own after a lockfile change (`mise run deps`) and lets
+each side cache independently. Setup wires `deps` to run **after** `mise install` (the runtime must exist before its
+package manager runs) via `depends_post`; gate the `setup:stamp` on it with `wait_for = ["deps"]` so a successful
+stamp implies deps were installed.
 
 Make it a no-op when nothing changed with `sources` + `outputs` (explicit `outputs` so the cache tracks the install dir itself; see [`tasks.md`](tasks.md)):
 
 - `sources` = the manifest + lockfile(s), e.g. `package.json` + `package-lock.json`/`pnpm-lock.yaml`, `requirements.txt`/`uv.lock`, `go.mod` + `go.sum`.
 - `outputs` = the install dir, e.g. `node_modules`, `.venv`, `vendor`.
 
-`deps` stays runtime-agnostic in shape (one task, cached the same way); only the install command differs per runtime (`npm ci`, `pnpm install --frozen-lockfile`, `uv sync`, `go mod download`, …). For the Node-specific package-manager **version** pinning (Corepack vs mise), see [`runtimes/node.md`](runtimes/node.md). That is orthogonal to *who runs* the install.
+`deps` stays runtime-agnostic in shape (one task, cached the same way); only the install command differs per
+runtime (`npm ci`, `pnpm install --frozen-lockfile`, `uv sync`, `go mod download`, …). For the Node-specific
+package-manager **version** pinning (Corepack vs mise), see [`runtimes/node.md`](runtimes/node.md). That is
+orthogonal to *who runs* the install.
 
 ### Check (Lint)
 
@@ -76,7 +83,10 @@ The canonical CI wiring for this task lives at [.github/workflows/check.yml](../
 
 If using hk for pre-commit linters then delegate the actual steps to **hk** (one source of truth; see [`hk.md`](hk.md)) and have the task just forward flags. See the `check` task in the reference [mise.toml](../assets/mise.toml). Key points:
 
-- **Stay on `hk check` and forward flags**: `hk check`/`hk fix` command semantics and the scope flags (staged default, `--all`, `--pr`, mutually exclusive) are in [`hk.md`](hk.md); the task exposes an opt-in `--fix` plus `--all`/`--pr`, with no branching on the subcommand.
+- **Stay on `hk check` and forward flags**: `hk check`/`hk fix` command semantics and
+  the scope flags (staged default, `--all`, `--pr`, mutually exclusive) are in
+  [`hk.md`](hk.md); the task exposes an opt-in `--fix` plus `--all`/`--pr`, with no
+  branching on the subcommand.
 - **Forward variadic `--step`/`--skip-step`** to target or skip steps, and wire `complete "step"` off `hk check --plan --json` so completion lists real step names.
 
 ### Test

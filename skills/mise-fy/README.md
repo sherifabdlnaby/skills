@@ -23,17 +23,27 @@ The skill **does not enumerate** all of Mise's features. It relies on Agents wor
 
 ## Is this a `Mise` skill ? or a good local dev setup skill ?
 
-Kinda both; `Mise` is THE tool to use to have a great UX in your dev setups, so there is a lot of overlap. However, the skill is primarily focused on Mise itself, and only encode tips/gotchas **when Mise is involved.** It'll be a good skill to pair with "local-setup" Skill that is runtime specific (maybe soon!).
+Kinda both; `Mise` is THE tool to use to have a great UX in your dev setups, so there is a lot of overlap.
+However, the skill is primarily focused on Mise itself, and only encode tips/gotchas **when Mise is involved.**
+It'll be a good skill to pair with "local-setup" Skill that is runtime specific (maybe soon!).
 
 ## So What does the skill encode exactly ?
 
 The skill encodes what needs for dev setup to just work, stay discoverable, and guide you to be set up correctly.
 
-**It just works.** Clone the repo, run `mise trust && mise run setup`, and you're done. Tools install pinned and locked, so your versions match everyone else's and CI's. Setup is idempotent and cached, so re-running it is cheap (and for worktrees too!), and the git hooks install themselves on `mise install`, and will nag you if you didn't (so u trust every one and their agent get all local linters/tests/validations)!
+**It just works.** Clone the repo, run `mise trust && mise run setup`, and you're done.
+Tools install pinned and locked, so your versions match everyone else's and CI's.
+Setup is idempotent and cached, so re-running it is cheap (and for worktrees too!),
+and the git hooks install themselves on `mise install`, and will nag you if you didn't
+(so u trust every one and their agent get all local linters/tests/validations)!
 
-**It's discoverable.** Tasks follow the same names in every repo (`setup`, `check`, `test`, `build`, etc), tasks have good descriptions, flags, and auto-completion. The README and AGENTS.md teach that same discovery path, and Agents can explore and extend the setup too!.
+**It's discoverable.** Tasks follow the same names in every repo (`setup`, `check`, `test`, `build`, etc), tasks have good descriptions, flags, and auto-completion.
+The README and AGENTS.md teach that same discovery path, and Agents can explore and extend the setup too!.
 
-**It's friendly.** The setup nudges instead of failing silently. Try to handle all annoying stuff declaratively (e.g Handle GH Rate limits). And try to fail in obvious way with explanation on how to update things (adding a `min_version`). Security comes along for the ride: a verified, locked supply chain and security linters on every commit.
+**It's friendly.** The setup nudges instead of failing silently.
+Try to handle all annoying stuff declaratively (e.g Handle GH Rate limits).
+And try to fail in obvious way with explanation on how to update things (adding a `min_version`).
+Security comes along for the ride: a verified, locked supply chain and security linters on every commit.
 
 ## Shout out!
 

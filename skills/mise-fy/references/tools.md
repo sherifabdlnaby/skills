@@ -4,7 +4,11 @@ Guidance on Installing Tools and Runtimes via Mise.
 
 ## Rules and Best Practices:
 
-1. **Default to pure mise**: add tools to `mise.toml` `[tools]` via `mise use` (core/aqua). Don't author `.tool-versions`, idiomatic files (`.nvmrc`/`.python-version`), or asdf/vfox plugins; those are last-resort and should only be used if pre-existing and you're not already moving away from them.
+1. **Default to pure mise**: add tools to `mise.toml` `[tools]` via `mise use`
+   (core/aqua). Don't author `.tool-versions`, idiomatic files
+   (`.nvmrc`/`.python-version`), or asdf/vfox plugins; those are last-resort and
+   should only be used if pre-existing and you're not already moving away from
+   them.
 2. **Pin by version policy**, never floating:
    - Tool is **`>=1.0`** → pin at **major** (e.g. `node = "24"`); tracks patches/minors within that major.
    - Tool is **`<1.0`** (0.x) → pin at **minor** (e.g. `ruff = "0.15"`); 0.x ships breaking changes on minor bumps, so a bare major (`"0"`) is meaningless.
@@ -41,7 +45,12 @@ Safety, high -> low:
 - **`github`/`gitlab`**; release binaries with provenance when not in aqua. (`ubi` is deprecated, use `github`.)
 - **`http`**; a direct URL plus a checksum you record yourself (what tool stubs use). Only as safe as the checksum you pin.
 - **`cargo`/`npm`/`pipx`/`go`/`gem`**; language ecosystems. ⚠️ **No checksums/provenance** and need the runtime installed. Use only when the tool ships nowhere else.
-- **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter). ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts in** (verified at install, recorded to the lockfile); backend plugins get none. Above asdf (maintained, optional attestation), below aqua. Use when a tool ships only as a plugin.
+- **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter).
+  ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise
+  *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts
+  in** (verified at install, recorded to the lockfile); backend plugins get none.
+  Above asdf (maintained, optional attestation), below aqua. Use when a tool ships
+  only as a plugin.
 - **`asdf`**; ⚠️ legacy plugins: arbitrary code, no checksums, often broken on Windows. Last resort.
 
 ## Blocked Backends
@@ -66,11 +75,23 @@ Key shared fact: **mise installs the runtime and can create/activate a venv, but
 
 mise owns **user-space client binaries**, not **system daemons/services**. The line:
 
-- **Client binaries → mise.** Static CLIs install + pin cleanly via a verified backend: `docker compose` (`aqua:docker/compose`), `buildx`, `kubectl`, `helm`, `psql`, plus Docker-adjacent lint/inspect tools (`hadolint`, `dive`, `lazydocker`). These go in `[tools]` per the version policy.
-- **Daemons/services/engines → NOT mise.** The Docker **engine** (`dockerd`, needs root + a VM on macOS), a running Postgres server, a k8s cluster — these need privilege, a system service, or kernel features. mise can't pin or verify them, and they're machine/infra-level, not per-project. Leave them out of `[tools]`.
-- **The bundled CLI is a gray zone.** The bare `docker` CLI ships with whatever engine you installed (Desktop/Colima/OrbStack); a mise-installed one can shadow it and drift from the daemon's API. Let the engine provide `docker`; let mise own only the *plugins* (`compose`, `buildx`).
+- **Client binaries → mise.** Static CLIs install + pin cleanly via a verified
+  backend: `docker compose` (`aqua:docker/compose`), `buildx`, `kubectl`,
+  `helm`, `psql`, plus Docker-adjacent lint/inspect tools (`hadolint`, `dive`,
+  `lazydocker`). These go in `[tools]` per the version policy.
+- **Daemons/services/engines → NOT mise.** The Docker **engine** (`dockerd`, needs
+  root + a VM on macOS), a running Postgres server, a k8s cluster — these need
+  privilege, a system service, or kernel features. mise can't pin or verify them,
+  and they're machine/infra-level, not per-project. Leave them out of `[tools]`.
+- **The bundled CLI is a gray zone.** The bare `docker` CLI ships with whatever
+  engine you installed (Desktop/Colima/OrbStack); a mise-installed one can shadow
+  it and drift from the daemon's API. Let the engine provide `docker`; let mise
+  own only the *plugins* (`compose`, `buildx`).
 
-**If the project depends on an out-of-scope service, the docs must declare it as a prerequisite** (see [`docs.md`](docs.md)) — README/AGENTS, not `[tools]`. Optionally add a task that fails fast with a helpful message when the service is unreachable (e.g. `docker info` before `docker compose up`).
+**If the project depends on an out-of-scope service, the docs must declare it as
+a prerequisite** (see [`docs.md`](docs.md)) — README/AGENTS, not `[tools]`.
+Optionally add a task that fails fast with a helpful message when the service is
+unreachable (e.g. `docker info` before `docker compose up`).
 
 ## Syntax Reminder
 
@@ -113,9 +134,16 @@ minimum_release_age = "7d"               # skip releases newer than 7 days (rule
 Not every tool belongs in the shared `[tools]` block that installs it for **everyone** on `mise install` (e.g devs with weak internet connection).
 A tool only _some_ workflows touch should be installed **lazily** (only when first used) and **not** for everyone. Two mechanisms; pick in this order:
 
-1. **Task-scoped tool: _prefer this_ when a single task needs the tool.** `[tasks.x] tools.foo = "…"` (rule 10). Installed only when that task runs, never on `mise install`, and not seen by `depends`. The tool stays declared in `mise.toml`, version-pinned like any other.
+1. **Task-scoped tool: _prefer this_ when a single task needs the tool.**
+   `[tasks.x] tools.foo = "…"` (rule 10). Installed only when that task runs,
+   never on `mise install`, and not seen by `depends`. The tool stays declared
+   in `mise.toml`, version-pinned like any other.
    - **Don't use it when several tasks need the same tool** as you'd repeat the pin per task and they drift. That's the case for option 2.
-2. **Tool stub: use when (1) doesn't fit:** the tool is shared across multiple tasks/`./bin/` scripts or run by path (not from a task), but still shouldn't be in everyone's `mise install`; or it's an off-registry binary with no good `[tools]` home. A committed `./bin/x` that installs-and-runs **one** pinned tool on first run.
+2. **Tool stub: use when (1) doesn't fit:** the tool is shared across multiple
+   tasks/`./bin/` scripts or run by path (not from a task), but still shouldn't be
+   in everyone's `mise install`; or it's an off-registry binary with no good
+   `[tools]` home. A committed `./bin/x` that installs-and-runs **one** pinned
+   tool on first run.
    - Append ./bin/ to PATH using [env] _.path = ["./bin"] (ref: [env.md](env.md))
 
 (If the tool _is_ part of the shared toolchain everyone installs and is expected to use then it's neither of these it's a plain `[tools]` entry.
@@ -126,8 +154,15 @@ A tool only _some_ workflows touch should be installed **lazily** (only when fir
 
 **Lockfile / reproducibility:**
 
-- **Task-scoped tools are NOT written to `mise.lock`** (as of v2026.6.11) even after the task runs. They're pinned by their `mise.toml` version string but get **no locked exact-version/checksum**. If a lazy tool must be lockfile-reproducible, that's a reason to lift it to top-level `[tools]` (and accept it's then in `mise install`) or make it a `--lock`'d stub instead.
-- **Tool stubs don't participate in `mise.lock` at all.** Each stub carries its **own** embedded lock via `mise generate tool-stub … --lock` (exact version + per-platform URLs/checksums baked into the file). So "the repo is locked" via `mise.lock` says nothing about stubs.
+- **Task-scoped tools are NOT written to `mise.lock`** (as of v2026.6.11) even after
+  the task runs. They're pinned by their `mise.toml` version string but get **no
+  locked exact-version/checksum**. If a lazy tool must be lockfile-reproducible,
+  that's a reason to lift it to top-level `[tools]` (and accept it's then in `mise
+  install`) or make it a `--lock`'d stub instead.
+- **Tool stubs don't participate in `mise.lock` at all.** Each stub carries its
+  **own** embedded lock via `mise generate tool-stub … --lock` (exact version +
+  per-platform URLs/checksums baked into the file). So "the repo is locked" via
+  `mise.lock` says nothing about stubs.
 
 **Stub mechanics:**
 

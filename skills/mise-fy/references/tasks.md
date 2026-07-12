@@ -6,7 +6,10 @@ How to build or improve mise Tasks.
 
 1. **Tasks are the single source of truth** for lint/test/build. The same names drive local dev, hk pre-commit, and CI. Expose the consistent contract every repo shares: `setup`, `check` (alias `lint`), `test`, `build`, `dev`.
 2. **Namespace with colons** (`test:unit`, `gen:docs`). The bare group name runs the common case (`test` = fast tests); a **quoted** glob runs the group (`mise run 'test:*'`; quote it or the shell expands it).
-3. **`depends` for ordering; `sources`/`outputs` for caching**. `sources` alone already skips-if-unchanged (mise auto-tracks an internal marker); add explicit `outputs` when the artifact's existence is itself a correctness condition (a deleted output must re-run). `--force` bypasses for a clean run.
+3. **`depends` for ordering; `sources`/`outputs` for caching**. `sources` alone already
+   skips-if-unchanged (mise auto-tracks an internal marker); add explicit `outputs` when the
+   artifact's existence is itself a correctness condition (a deleted output must re-run).
+   `--force` bypasses for a clean run.
 4. **TOML for <= 5-line tasks; longer logic use an executable file task** with a shebang + `set -euo pipefail` (unless the repo already has a scripts dir).
 5. **File tasks must be executable** in a discovered dir. Prefer to use `.mise/tasks`. Subdirs become `colon:names` ( .mise/tasks/test/one `test:one` ).
 6. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
@@ -14,8 +17,15 @@ How to build or improve mise Tasks.
 8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2027.5.0). Built-in; `help=` + `choices` make `--help` and completion free. See Task Arguments below.
 9. **Give every task a `description`**;
 10. add `choices`/simple `complete` when useful and it's a short one-liner command.
-11. Handwritten completion scripts only on request; keep them under **`.mise/completion/`** and reference by path from `complete … run="./.mise/completion/x.sh"`. (Convention only; mise does **not** auto-load that dir; it's just where we standardize these scripts.)
-12. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal helpers. In CI pass `-y`/`--yes` **before** the task name (`mise run -y deploy prod`); after it, a task with a `usage` spec parses it as a task arg and errors (`unexpected word: -y`). Otherwise the prompt aborts the task (`ERROR aborted by user`). Beware: `depends` run **before** the prompt, so keep side effects out of a gated task's deps.
+11. Handwritten completion scripts only on request; keep them under **`.mise/completion/`**
+    and reference by path from `complete … run="./.mise/completion/x.sh"`. (Convention only;
+    mise does **not** auto-load that dir; it's just where we standardize these scripts.)
+12. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal
+    helpers. In CI pass `-y`/`--yes` **before** the task name (`mise run -y deploy
+    prod`); after it, a task with a `usage` spec parses it as a task arg and errors
+    (`unexpected word: -y`). Otherwise the prompt aborts the task (`ERROR aborted by
+    user`). Beware: `depends` run **before** the prompt, so keep side effects out of
+    a gated task's deps.
 13. **Prefer config to runtime flags**. Put reused settings in `mise.toml`, not ad-hoc `--flags`.
 14. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
 15. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks).
@@ -24,13 +34,38 @@ How to build or improve mise Tasks.
 ## Notes & Gotchas:
 
 - **Tasks run from the config root, not your cwd.** Override per-task with `dir` (default `"{{config_root}}"`; set `dir = "{{cwd}}"` to follow the caller). Only reach for `{{config_root}}` when the task sets a non-default `dir`.
-- **`run` as an array = serial commands, each its own shell**; `cd` and unexported vars don't carry between entries. Use one multi-line `run` (or a file task) for stateful sequences. Stops on first failure (`set -e`); `mise run -c`/`--continue-on-error` keeps going.
-- **`sources` alone already gives skip-if-unchanged** you don't need `outputs` just to cache. When `outputs` is omitted, mise auto-promotes it to `{ auto = true }`: it hashes the sources (content or path+size metadata) plus the task definition, and after each successful run **touches an internal marker** (`~/.local/state/mise/task-auto-outputs/<hash>`). Next run it compares source mtimes + that hash against the marker; unchanged -> `sources up-to-date, skipping`. So `sources` alone feeds both the cache **and** `mise watch`. `--force` (or a `depends` that actually ran) bypasses the cache. However, ALWAYS use `outputs` whenever possible.
-- **Auto outputs are blind to your real artifacts** — the marker only tracks _inputs_; mise never stat's the files your task wrote. `rm -rf dist/` and mise still says `skipping` — it won't regenerate a deleted output. Declare **explicit `outputs`** whenever "the artifact must exist" is a correctness condition: a missing/deleted explicit output resolves to no mtime -> task re-runs. Rule of thumb: `sources` alone for "re-run when inputs change"; explicit `outputs` for artifact tasks.
+- **`run` as an array = serial commands, each its own shell**; `cd` and unexported vars
+  don't carry between entries. Use one multi-line `run` (or a file task) for stateful
+  sequences. Stops on first failure (`set -e`); `mise run -c`/`--continue-on-error` keeps going.
+- **`sources` alone already gives skip-if-unchanged** you don't need `outputs` just
+  to cache. When `outputs` is omitted, mise auto-promotes it to `{ auto = true }`:
+  it hashes the sources (content or path+size metadata) plus the task definition, and
+  after each successful run **touches an internal marker**
+  (`~/.local/state/mise/task-auto-outputs/<hash>`). Next run it compares source
+  mtimes + that hash against the marker; unchanged -> `sources up-to-date, skipping`.
+  So `sources` alone feeds both the cache **and** `mise watch`. `--force` (or a
+  `depends` that actually ran) bypasses the cache. However, ALWAYS use `outputs`
+  whenever possible.
+- **Auto outputs are blind to your real artifacts** — the marker only tracks
+  _inputs_; mise never stat's the files your task wrote. `rm -rf dist/` and mise
+  still says `skipping` — it won't regenerate a deleted output. Declare **explicit
+  `outputs`** whenever "the artifact must exist" is a correctness condition: a
+  missing/deleted explicit output resolves to no mtime -> task re-runs. Rule of
+  thumb: `sources` alone for "re-run when inputs change"; explicit `outputs` for
+  artifact tasks.
 - **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits _if_ that task is already in the run. A task's `env` is **not** seen by its `depends`.
 - **No-spec args go to the _last_ `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
-- **Output is line-buffered + label-prefixed.** Change with `--output interleave|keep-order|quiet|silent` (or `MISE_TASK_OUTPUT`). `raw = true` / `--raw` reads-writes the terminal directly (forces `--jobs=1`) and **bypasses secret redaction**; never in env-bearing tasks (see [`env.md`](env.md)). When a task just needs stdio, prefer `interactive = true` (targeted stdio lock, no global side effects).
-- **`run` entries can be task refs**, not just shell scripts composed inline in list order: `run = ["echo start", { task = "build", args = ["--release"] }, { tasks = ["lint", "test"] }]`. `{ task = }` runs one (accepts `args`/`env` overrides); `{ tasks = [...] }` runs them in parallel. Unlike `depends`, these run _as_ steps, in position.
+- **Output is line-buffered + label-prefixed.** Change with `--output
+  interleave|keep-order|quiet|silent` (or `MISE_TASK_OUTPUT`). `raw = true` / `--raw`
+  reads-writes the terminal directly (forces `--jobs=1`) and **bypasses secret
+  redaction**; never in env-bearing tasks (see [`env.md`](env.md)). When a task just
+  needs stdio, prefer `interactive = true` (targeted stdio lock, no global side
+  effects).
+- **`run` entries can be task refs**, not just shell scripts composed inline in list
+  order: `run = ["echo start", { task = "build", args = ["--release"] }, {
+  tasks = ["lint", "test"] }]`. `{ task = }` runs one (accepts `args`/`env`
+  overrides); `{ tasks = [...] }` runs them in parallel. Unlike `depends`, these run
+  _as_ steps, in position.
 - Mise has Tera function "task_source_files" read at [`additional mise functions`](https://mise.jdx.dev/templates.html#additional-mise-functions)
 
 Still stuck? Check the docs below.
@@ -86,7 +121,10 @@ complete "env" run="ls deploy/envs" descriptions=#true                          
 run = './deploy.sh "$usage_env" --tag "$usage_tag" ${usage_force:+--force} ${usage_verbose:+-v}'
 ```
 
-Same spec as a **file task** (`.mise/tasks/deploy`, executable). Spec lives in `#USAGE`/`#MISE` comments; the body is a plain script, so read **only `$usage_X` env vars**. The body isn't Tera-rendered, so `{{usage.X}}` prints literally. Every line of a multi-line `{ choices … }` block needs its own `#USAGE`.
+Same spec as a **file task** (`.mise/tasks/deploy`, executable). Spec lives in
+`#USAGE`/`#MISE` comments; the body is a plain script, so read **only `$usage_X` env
+vars**. The body isn't Tera-rendered, so `{{usage.X}}` prints literally. Every line
+of a multi-line `{ choices … }` block needs its own `#USAGE`.
 
 ```bash
 #!/usr/bin/env bash
@@ -122,7 +160,11 @@ No `#USAGE` spec? Extra CLI args arrive as plain `$@`. Everything else (args, fl
 | Completion                | static `{ choices "a" "b" }`; dynamic `complete "name" run="…" descriptions=#true`                                 | needs `mise completion <shell>` installed   |
 
 Gotchas: required `<arg>` is satisfied by its `env="VAR"` (no CLI value needed) · `hide=#true` drops an item from help/completions · `complete` Tera vars: `words`, `CURRENT`, `PREV`.
-**`{{usage.X}}` works in a TOML `run`, in `confirm`, and in `depends`/`wait_for` args — but NOT in `description`** (or other config-load-time fields): there it throws `Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not just that one. In all file-task bodies use plain `$usage_X` (the body isn't Tera-rendered).
+**`{{usage.X}}` works in a TOML `run`, in `confirm`, and in `depends`/`wait_for` args
+— but NOT in `description`** (or other config-load-time fields): there it throws
+`Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not
+just that one. In all file-task bodies use plain `$usage_X` (the body isn't
+Tera-rendered).
 
 ## Watch
 
@@ -133,11 +175,19 @@ mise watch test                # run + re-run on source change
 mise watch -r serve            # -r/--restart: kill & restart the process (dev servers)
 ```
 
-Most-used flags (passed through to watchexec): **`-r/--restart`** kill & restart a still-running process (dev servers); **`-o/--on-busy-update <queue|do-nothing|restart|signal>`** what to do if a change lands mid-run (`-r` = `restart`); **`-d/--debounce <time>`** coalesce event bursts (default 50ms); **`-p/--postpone`** don't run at startup, wait for the first change; **`--poll [interval]`** for network shares/containers where native FS events don't fire.
+Most-used flags (passed through to watchexec): **`-r/--restart`** kill & restart a
+still-running process (dev servers); **`-o/--on-busy-update
+<queue|do-nothing|restart|signal>`** what to do if a change lands mid-run (`-r` =
+`restart`); **`-d/--debounce <time>`** coalesce event bursts (default 50ms);
+**`-p/--postpone`** don't run at startup, wait for the first change;
+**`--poll [interval]`** for network shares/containers where native FS events
+don't fire.
 
 Worth wiring watch for: tight edit -> rebuild/retest loops, dev servers, doc/asset rebuilds.
 
-**`mise watch` is a command you run, not a task**; it's a long-lived foreground process (Ctrl-C to stop) that takes a task as its argument; mise never starts it on its own. Wrap it in a task so it has a standard name and `mise run <task>` starts the watcher:
+**`mise watch` is a command you run, not a task**; it's a long-lived foreground process
+(Ctrl-C to stop) that takes a task as its argument; mise never starts it on its own. Wrap
+it in a task so it has a standard name and `mise run <task>` starts the watcher:
 
 ```toml
 [tasks.dev]

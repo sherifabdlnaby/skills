@@ -33,13 +33,20 @@ The skill **does not enumerate** all of Mise's features. It relies on Agents wor
 
 ## Is this a `Mise` skill ? or a good local dev setup skill ?
 
-Kinda both; `Mise` is THE tool to use to have a great UX in your dev setups, so there is a lot of overlap. However, the skill is primarily focused on Mise itself, and only encode tips/gotchas **when Mise is involved.** It'll be a good skill to pair with "local-setup" Skill that is runtime specific (maybe soon!).
+Kinda both; `Mise` is THE tool to use to have a great UX in your dev setups, so there is a
+lot of overlap. However, the skill is primarily focused on Mise itself, and only encode
+tips/gotchas **when Mise is involved.** It'll be a good skill to pair with "local-setup" Skill
+that is runtime specific (maybe soon!).
 
 ## So What does the skill encode exactly ?
 
 The skill encodes what needs for dev setup to just work, stay discoverable, and guide you to be set up correctly.
 
-**It just works.** Clone the repo, run `mise trust && mise run setup`, and you're done. Tools install pinned and locked, so your versions match everyone else's and CI's. Setup is idempotent and cached, so re-running it is cheap (and for worktrees too!), and the git hooks install themselves on `mise install`, and will nag you if you didn't (so u trust every one and their agent get all local linters/tests/validations)!
+**It just works.** Clone the repo, run `mise trust && mise run setup`, and you're done. Tools
+install pinned and locked, so your versions match everyone else's and CI's. Setup is
+idempotent and cached, so re-running it is cheap (and for worktrees too!), and the git hooks
+install themselves on `mise install`, and will nag you if you didn't (so u trust every one and
+their agent get all local linters/tests/validations)!
 
 **It's discoverable.** Tasks follow the same names in every repo
 
@@ -95,11 +102,20 @@ Annotated example file tree + `mise.toml` to copy from.
 
 ## Always applies (regardless of task)
 
-These hold no matter which reference you loaded; check them even when fixated on one task. Unlike the opinionated best practices (scope those to your goal; see top), these are the safety/correctness floor: apply them even on a one-tool change, not polish you'd defer.
+These hold no matter which reference you loaded; check them even when fixated on one task.
+Unlike the opinionated best practices (scope those to your goal; see top), these are the
+safety/correctness floor: apply them even on a one-tool change, not polish you'd defer.
 
-1. **Untrusted config errors out.** A `mise.toml` containing `[env]`, hooks, templates, or task logic hard-errors as a *whole file* until `mise trust` (interactive shells prompt to trust; non-interactive ones error). Only a bare `min_version` + plain-string `[tools]`/`[tasks]` file loads untrusted (since 2026.6.6). A fresh clone needs `mise trust` (or a `trusted_config_paths` entry).
+1. **Untrusted config errors out.** A `mise.toml` containing `[env]`, hooks, templates, or
+   task logic hard-errors as a *whole file* until `mise trust` (interactive shells prompt to
+   trust; non-interactive ones error). Only a bare `min_version` + plain-string
+   `[tools]`/`[tasks]` file loads untrusted (since 2026.6.6). A fresh clone needs `mise trust`
+   (or a `trusted_config_paths` entry).
 2. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
 3. **Set `min_version`** (root level, not under `[settings]`) when you rely on a newer feature, so old clients are guided to update. It also floors users past known-vulnerable releases, e.g. `>=2026.6.5`.
-4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`. mise tries the gh CLI token first, falls back to git credentials, fails open. In CI a `GITHUB_TOKEN` env var works too (see [`ci.md`](references/ci.md)).
+4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set
+   `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`.
+   mise tries the gh CLI token first, falls back to git credentials, fails open.
+   In CI a `GITHUB_TOKEN` env var works too (see [`ci.md`](references/ci.md)).
 5. **Mise moves fast.** When you hit a wall, check the recent changelog alongside the docs.
 6. **Shims don't expose every `mise activate` feature** (e.g. some env-on-`cd`); local-vs-CI mismatches often trace here. See [`install.md`](references/install.md) / [`ci.md`](references/ci.md).

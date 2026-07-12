@@ -75,7 +75,11 @@ PR Body anatomy.
 - PR Body and Description needs to be concise, but not miss a spot. Focus on what behavior changed, what breaking changes introduced but do not narrate the diff yourself.
 - Use Emojis to help scanning/glancing, but not as decorations.
 - Use GitHub alerts/callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) to surface information the reviewer must not miss.
-- The skeleton's hidden `<!-- pr:x -->` markers are structure receipts, invisible on GitHub. Keep every marker in every PR body. When a block does not apply, retain its marker and replace its content with one short, specific `Not applicable: <reason>.` sentence. A post-create hook nudges about missing markers; the nudge is informational.
+- The skeleton's hidden `<!-- pr:x -->` markers are structure receipts, invisible on GitHub.
+  Keep every marker in every PR body.
+  When a block does not apply, retain its marker and replace its content with one short,
+  specific `Not applicable: <reason>.` sentence.
+  A post-create hook nudges about missing markers; the nudge is informational.
 
 Skeleton (keep every marker; explain inapplicable blocks instead of dropping them):
 

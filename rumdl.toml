@@ -1,11 +1,20 @@
 # rumdl — Markdown linter/formatter. Auto-loaded from repo root. See skills/mise-fy/references/hk.md.
-# Scoped to TABLE rules only: this is a prose-heavy docs repo, and the full
-# markdownlint set (esp. MD013 line-length) is ~400 issues of noise here.
-# `enable` REPLACES the default rule set — only these rules run.
+# Scoped to a hand-picked rule set: this is a prose-heavy docs repo, so the full
+# markdownlint set is too noisy. `enable` REPLACES the default set — only these run.
 
 [global]
-enable = ["MD055", "MD056", "MD058", "MD060"]
+enable = ["MD013", "MD055", "MD056", "MD058", "MD060"]
 cache  = false # don't litter a .rumdl_cache/ dir; runs are over staged files only
+
+# MD013 — line-length. NOT the conventional 80-col reflow rule; a high limit that
+# only catches pathologically long prose lines. code_blocks/tables OFF so it can't
+# fight MD060 (which pads table cells) or flag intentionally wide code samples.
+# rumdl can't auto-fix this (no safe prose reflow) — offenders are a manual fix.
+[MD013]
+line_length = 250
+code_blocks = false
+tables      = false
+headings    = false
 
 # MD060 — table-cell-alignment (alias table-format). Off by default; the rule
 # above turns it on. `aligned` pads every cell so columns line up visually

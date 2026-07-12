@@ -59,12 +59,22 @@ The migration isn't done until the docs onboard a **human** and an **agent**: ho
 
 ### 6. Retrospective lint (existing repos only)
 
-Hooks only gate _future_ commits; the existing tree was never linted, so the first contributor to touch an old file gets ambushed by unrelated failures. Do a one-time whole-tree pass now with `--all`. **This can be large and noisy** (especially `typos`/`betterleaks` false positives, and big auto-format diffs), so don't just run `--fix` blindly. Surface it to the user and let them choose:
+Hooks only gate _future_ commits; the existing tree was never linted, so the first
+contributor to touch an old file gets ambushed by unrelated failures. Do a one-time
+whole-tree pass now with `--all`. **This can be large and noisy** (especially
+`typos`/`betterleaks` false positives, and big auto-format diffs), so don't just run
+`--fix` blindly. Surface it to the user and let them choose:
 
 - **Let the user know** the scope first: `mise run check --all` (report-only) shows how much is outstanding before anything changes.
-- **Offer a subagent** to do it properly: triage the report, apply safe auto-fixes (`mise run check --all --fix`) as a separate "retrospective lint" commit kept off the feature work, populate ignore scaffolds (`typos.toml`, `.betterleaks.toml`) for confirmed false positives, and flag anything needing a human call.
+- **Offer a subagent** to do it properly: triage the report, apply safe auto-fixes
+  (`mise run check --all --fix`) as a separate "retrospective lint" commit kept off the
+  feature work, populate ignore scaffolds (`typos.toml`, `.betterleaks.toml`) for confirmed
+  false positives, and flag anything needing a human call.
 - **Or hand the user a prompt** to run themselves / paste to a fresh agent, e.g.:
-  > "Run `mise run check --all` on this repo. Triage the failures: apply mechanical auto-fixes via `mise run check --all --fix` in a standalone commit, add confirmed false positives to `typos.toml` / `.betterleaks.toml` rather than disabling steps, and list anything that needs my decision. Don't mix these fixes into unrelated changes."
+  > "Run `mise run check --all` on this repo. Triage the failures: apply mechanical auto-fixes
+  > via `mise run check --all --fix` in a standalone commit, add confirmed false positives to
+  > `typos.toml` / `.betterleaks.toml` rather than disabling steps, and list anything that
+  > needs my decision. Don't mix these fixes into unrelated changes."
 
 Keep this off `pre-push`/CI gates until the tree is clean, otherwise the first CI run fails on legacy debt.
 

@@ -12,9 +12,15 @@ Guidance on managing project environment and variables via Mise `[env]`.
 4. Share values between tasks with `[vars]` + `{{vars.x}}`, not `[env]`, when the value is only for task config and shouldn't leak into the process environment. (why: vars DRY task config without polluting env.)
    - **Naming convention:** Prefer `[env]` keys to be `UPPER_SNAKE_CASE` and `[vars]` keys are `lower_snake_case`.
 5. Keep real secrets in sops/age-encrypted `_.file`, never plaintext-committed. Mark sensitive values `redact = true` (or top-level `redactions = ["*_TOKEN"]`).
-6. Mark must-be-set vars with `{ required = true }` so a missing value fails loud, not silent; `{ required = "how to set it" }` prints that hint in the error. For optional vars, give a soft fallback with `{ default = "..." }`: it keeps any value already set (shell or earlier config) and applies only when the var is unset **or empty**.
+6. Mark must-be-set vars with `{ required = true }` so a missing value fails loud, not silent;
+   `{ required = "how to set it" }` prints that hint in the error.
+   For optional vars, give a soft fallback with `{ default = "..." }`:
+   it keeps any value already set (shell or earlier config) and applies only when the var is unset **or empty**.
 7. Multiple directives of the same kind: use array-of-tables `[[env]]` to avoid duplicate keys.
-8. Inspect what loads with `mise env`, knowing secrets print in plaintext there: redaction scrubs **task output only**. `mise env --redacted` does NOT hide values; it *filters to* the redacted vars and prints their plaintext (its purpose is feeding CI masking, e.g. `::add-mask::`). Don't paste either into logs.
+8. Inspect what loads with `mise env`, knowing secrets print in plaintext there: redaction scrubs **task output only**.
+   `mise env --redacted` does NOT hide values;
+   it *filters to* the redacted vars and prints their plaintext (its purpose is feeding CI masking, e.g. `::add-mask::`).
+   Don't paste either into logs.
 9. If a value depends on an installed tool, defer it with `tools = true` (lazy eval). (why: `[env]` resolves _before_ tools by default, so `{{tools.node.version}}` is empty otherwise.)
 10. mise supports shell expansion in env values (e.g. "prefix/${VAR:-default}/suffix"); the bare `$VAR` form works too.
 
@@ -25,9 +31,16 @@ Guidance on managing project environment and variables via Mise `[env]`.
 - **`_.path` relatives resolve against `config_root`**, not cwd.
 - **Redaction is line-based.** `redact`/`redactions` scrub task output line-by-line; tasks with `raw = true` bypass it entirely and will leak secrets.
 - **`_.file` vs the `env_file` setting.** `_.file` paths resolve against the config that declares them; the global `[settings] env_file` (or `MISE_ENV_FILE`) is **deprecated (removal 2027.4.0)**. use `_.file`.
-- **Vars are not env.** `[vars]`/`{{vars.x}}` are shared across tasks but never exported to the process; use them for task config, `[env]` for the actual environment. `[vars]` entries accept `required`/`redact` too, but redaction of `{{vars.x}}` substitution only takes effect on mise 2026.7.0+ (older versions parse it and print plaintext).
-- **`default` empty == unset.** `{ default = ... }` applies when the var is unset *or* an empty string, and only accepts a string/integer. Combining it with `value`, `required`, or `age` is a parse-time error. `default` also works in `[vars]`, but there it reads the **process env only**, not `[env]` values.
-- **`default` needs mise `2026.6.10`.** On an older client it errors. Preferred path: have the user upgrade and bump `min_version = "2026.6.10"` so the feature is guaranteed. If you can't require that version, fall back to the self-referencing `${VAR:-default}` shell form (rule 10) instead.
+- **Vars are not env.** `[vars]`/`{{vars.x}}` are shared across tasks but never exported to the process; use them for task config, `[env]` for the actual environment.
+  `[vars]` entries accept `required`/`redact` too, but redaction of `{{vars.x}}` substitution only takes effect on mise 2026.7.0+
+  (older versions parse it and print plaintext).
+- **`default` empty == unset.** `{ default = ... }` applies when the var is unset *or* an empty string, and only accepts a string/integer.
+  Combining it with `value`, `required`, or `age` is a parse-time error.
+  `default` also works in `[vars]`, but there it reads the **process env only**, not `[env]` values.
+- **`default` needs mise `2026.6.10`.** On an older client it errors. Preferred path: have
+  the user upgrade and bump `min_version = "2026.6.10"` so the feature is guaranteed. If
+  you can't require that version, fall back to the self-referencing `${VAR:-default}` shell
+  form (rule 10) instead.
 
 ## Syntax
 

@@ -16,9 +16,16 @@ Route first: each action's actual rules live in a `references/` file. Open the m
 
 ## Always
 
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**. The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md); the post templates, chosen by who made the specific decision (Agent Decided vs Human Guided), live in [AI Disclosure](#ai-disclosure) below. Use them as verbatim as possible, do not write from memory.
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**.
+The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md);
+the post templates, chosen by who made the specific decision (Agent Decided vs Human Guided),
+live in [AI Disclosure](#ai-disclosure) below.
+Use them as verbatim as possible, do not write from memory.
 
-**Parallelize read-only calls.** Batch independent read-only `git`/`gh` calls (`status`, `diff`, `log`, `gh pr view/diff/checks`) into a single tool call; each sequential read is a roundtrip for nothing. Mutating commands (`commit`, `push`, `rebase`, `gh pr create/edit/merge`) stay sequential.
+**Parallelize read-only calls.** Batch independent read-only `git`/`gh` calls
+(`status`, `diff`, `log`, `gh pr view/diff/checks`) into a single tool call; each
+sequential read is a roundtrip for nothing. Mutating commands (`commit`, `push`,
+`rebase`, `gh pr create/edit/merge`) stay sequential.
 
 **Voice** for everything public (commit messages, PR titles and bodies, comments, issues):
 

@@ -24,14 +24,28 @@ metadata:
 
 Guiding Principles:
 
-1. **Write for the stranger who understands the purpose of the project**: a comment must hold for a reader with only the file (and its project); with no access to this conversation, no contextual awareness of how the project evolved, no memory of the task that produced it. A comment that echoes this session's instructions fails (e.g. `// Doing X (no Y)` where Y is something only this conversation knows).
-2. **Describe the steady state, not the delta**: `// reads users_v2`, not `// migrated from users_v1`. Git records the transition, and delta comments become lies the moment it completes. A transition that must live in the code is a TODO with an end condition, never loose prose. Same for deletions and moves: git history is the record; leave no `moved to X` breadcrumb behind.
+1. **Write for the stranger who understands the purpose of the project**: a comment must hold
+   for a reader with only the file (and its project); with no access to this conversation, no
+   contextual awareness of how the project evolved, no memory of the task that produced it. A
+   comment that echoes this session's instructions fails (e.g. `// Doing X (no Y)` where Y is
+   something only this conversation knows).
+2. **Describe the steady state, not the delta**: `// reads users_v2`, not `// migrated from
+   users_v1`. Git records the transition, and delta comments become lies the moment it
+   completes. A transition that must live in the code is a TODO with an end condition, never
+   loose prose. Same for deletions and moves: git history is the record; leave no `moved to X`
+   breadcrumb behind.
 3. **WHY only as protection**: explain how we got here only when it stops the stranger from a wrong move, like "fixing" a deliberate choice, removing a needed workaround, or mistaking a cut corner for naivety. The next three principles are its instances.
 4. **Mention a rejected alternative only as a warning**: keep `// not cached: results are user-specific` because it stops a stranger from "fixing" it; drop `// using native Map (no lodash)` because that avoidance only answers this session's instruction.
 5. **Workarounds cite their cause**: `// workaround: SDK drops keepalive on h2, see github.com/x/y#456`. The link is the stranger's only way to check it's still needed.
-6. **A cut corner names its ceiling**: `// good enough: O(n²) scan; revisit past ~1k rules` states the limit and the upgrade trigger, so the stranger can tell deliberate simplicity from naivety. Only for real corners with a known ceiling; trivial simplifications need no plaque.
+6. **A cut corner names its ceiling**: `// good enough: O(n²) scan; revisit past
+   ~1k rules` states the limit and the upgrade trigger, so the stranger can tell
+   deliberate simplicity from naivety. Only for real corners with a known ceiling;
+   trivial simplifications need no plaque.
 7. **A TODO names what ends it**: a ticket, date, or event, as in `// TODO(PROJ-123): drop fallback after v2 ships`. Same for any "temporary"/"for now" claim; without an end condition it's permanent. Bare `// TODO: clean up` is a wish that sediments.
-8. **Avoid enumeration; name the set, not its members**: `// sanitize PII fields`, not `// sanitize email, phone, SSN, address`. The criterion stays true as the set grows; the list reads as complete and rots. When examples aid clarity, mark them illustrative: `(e.g. email, SSN)`.
+8. **Avoid enumeration; name the set, not its members**: `// sanitize PII
+   fields`, not `// sanitize email, phone, SSN, address`. The criterion stays true
+   as the set grows; the list reads as complete and rots. When examples aid
+   clarity, mark them illustrative: `(e.g. email, SSN)`.
 
 ## Docs
 

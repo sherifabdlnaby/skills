@@ -8,7 +8,11 @@ Platform-specific setup lives under [`ci/`](ci/):
 
 ## Rules and Best Practices:
 
-1. **Drive work through `mise run <task>` or `mise x` for consistent results**, even when the tools are already on `PATH` via shims. It guarantees the pinned versions and mise's `[env]`, which bare-command shims don't fully carry, and avoids the prompt-hook activation that's spotty in CI (see [Getting tools on PATH](#getting-tools-on-path)).
+1. **Drive work through `mise run <task>` or `mise x` for consistent results**,
+   even when the tools are already on `PATH` via shims. It guarantees the
+   pinned versions and mise's `[env]`, which bare-command shims don't fully
+   carry, and avoids the prompt-hook activation that's spotty in CI (see
+   [Getting tools on PATH](#getting-tools-on-path)).
 2. **Run the same tasks as locally** (`mise run check`, `mise run test`), don't re-encode commands in YAML (see [`tasks.md`](tasks.md)). When local, the pre-commit hook, and CI all call one task, behavior can't drift.
 3. Pin tool versions and commit `mise.lock`; install with `--locked` so CI can't silently drift off the lockfile (see [`tools.md`](tools.md)).
 4. Set a CI token (e.g. `GITHUB_TOKEN`) so tool installs don't hit provider API rate limits. Locally the same is achieved via `[settings] github.gh_cli_tokens`/`github.use_git_credentials` (see SKILL.md "Always applies").
@@ -17,7 +21,13 @@ Platform-specific setup lives under [`ci/`](ci/):
 
 - **Color is off in CI by default.** Set `CLICOLOR_FORCE: "1"` / `FORCE_COLOR: "1"` to keep linter output readable in the logs.
 - **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise install the binary, pin the version, and verify it. See [Installing mise in CI](#installing-mise-in-ci).
-- **`mise.lock` is per-platform.** `mise install` records only the platform it ran on, so a lockfile grown that way plus `--locked` fails CI on `linux-x64` with `No lockfile URL found for <tool>@<ver> on platform linux-x64`, even though it works on your Mac. Run `mise lock` (resolves all 7 default platforms without installing; scope with `--platform linux-x64,macos-arm64`, or persist the set via the `lockfile_platforms` setting), commit the lockfile, and re-run it whenever you add or bump a tool.
+- **`mise.lock` is per-platform.** `mise install` records only the platform it
+  ran on, so a lockfile grown that way plus `--locked` fails CI on `linux-x64`
+  with `No lockfile URL found for <tool>@<ver> on platform linux-x64`, even
+  though it works on your Mac. Run `mise lock` (resolves all 7 default platforms
+  without installing; scope with `--platform linux-x64,macos-arm64`, or persist
+  the set via the `lockfile_platforms` setting), commit the lockfile, and
+  re-run it whenever you add or bump a tool.
 
 ## Installing mise in CI
 
@@ -27,21 +37,37 @@ Platform-specific setup lives under [`ci/`](ci/):
 
 1. **Verify the download** using **GitHub attestation and/or GPG**, whichever is easier in the image you have (attestation needs the `gh` CLI; GPG needs `gpg`). See [Verifying the mise install](#verifying-the-mise-install) for the exact commands.
 2. **Pin the version** via `MISE_VERSION`; never install "latest". An unpinned `curl … | sh` makes the build non-reproducible.
-3. **Pinning the binary SHA256 is optional, so ask the user.** It's the strongest guarantee (you trust an exact byte-for-byte build, not just the version tag + signature), but you must bump the hash on every mise upgrade, so it adds maintenance. Default to version-pin + verify; add the SHA pin only when the user wants maximum supply-chain assurance.
+3. **Pinning the binary SHA256 is optional, so ask the user.** It's the
+   strongest guarantee (you trust an exact byte-for-byte build, not just the
+   version tag + signature), but you must bump the hash on every mise upgrade,
+   so it adds maintenance. Default to version-pin + verify; add the SHA pin only
+   when the user wants maximum supply-chain assurance.
 
 ## Getting tools on PATH
 
 The mise binary on `PATH` only gives you the `mise` command; the *managed* tools (node, linters) still need one of:
 
 - **`mise x` / `mise run` is the correct path.** Resolve tools at call time; no shims or activation, nothing to break, and you get pinned versions + mise's `[env]`. See rule 1.
-- **Shims on `PATH` are a fallback safety net, not the primary mechanism.** Add `~/.local/share/mise/shims` (`echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"`, or `eval "$(mise activate bash --shims)"`) so that **any step or sub-script that forgot (or hasn't yet been updated) to use `mise x`/a task still finds the right tool version** instead of failing or silently grabbing a system one. It's belt-and-suspenders: keep driving real work through `mise run`, and let shims catch the bare `node`/`npm` calls you missed. Caveat: shims expose tools but **not** mise's `[env]` vars to them, and the `cd`/`enter`/`watch_files` hooks don't fire, which is exactly why shims are the backstop and `mise run` is the rule.
+- **Shims on `PATH` are a fallback safety net, not the primary mechanism.** Add
+  `~/.local/share/mise/shims` (`echo "$HOME/.local/share/mise/shims" >>
+  "$GITHUB_PATH"`, or `eval "$(mise activate bash --shims)"`) so that **any
+  step or sub-script that forgot (or hasn't yet been updated) to use `mise x`/a
+  task still finds the right tool version** instead of failing or silently
+  grabbing a system one. It's belt-and-suspenders: keep driving real work
+  through `mise run`, and let shims catch the bare `node`/`npm` calls you
+  missed. Caveat: shims expose tools but **not** mise's `[env]` vars to them,
+  and the `cd`/`enter`/`watch_files` hooks don't fire, which is exactly why
+  shims are the backstop and `mise run` is the rule.
 - **`mise activate` (avoid in CI).** Prompt-hook activation (`eval "$(mise activate bash)"`) rebuilds `PATH`/env before each prompt; CI steps are fresh non-interactive shells with no prompt loop, so it fires unreliably.
 
 ## Verifying the mise install
 
 Two independent layers
 
-**1. The mise binary itself** is only your concern when CI installs mise *manually* (no `mise-action`/package image). Each release publishes per-platform checksums and signatures: `SHASUMS256.txt` (+ GPG-signed `SHASUMS256.asc`, minisign `.minisig`) and `install.sh.sig`/`.minisig`. Pick the level you need:
+**1. The mise binary itself** is only your concern when CI installs mise
+*manually* (no `mise-action`/package image). Each release publishes per-platform
+checksums and signatures: `SHASUMS256.txt` (+ GPG-signed `SHASUMS256.asc`,
+minisign `.minisig`) and `install.sh.sig`/`.minisig`. Pick the level you need:
 
 Use the following script as reference, and pick what you want from it. (you don't have to copy all steps)
 ```bash
@@ -83,7 +109,14 @@ sh ./install.sh   # honors MISE_VERSION for a pinned, reproducible install
 gh attestation verify "$asset" --repo jdx/mise
 ```
 
-**2. The tools mise installs** are handled by the lockfile, not the steps above. With `lockfile = true` + `mise install --locked`, mise re-verifies each tool's checksum **and** provenance (cosign / SLSA / minisign / GitHub attestations, all on by default; toggle via `MISE_AQUA_COSIGN`, `MISE_AQUA_SLSA`, `MISE_AQUA_GITHUB_ATTESTATIONS`, `MISE_AQUA_MINISIGN`) on every CI run, aborting on mismatch. This is the main reason to commit `mise.lock` and pass `--locked` (see [`tools.md`](tools.md)). Pre-populate every CI platform with `mise lock --platform linux-x64,…` (see the per-platform gotcha above).
+**2. The tools mise installs** are handled by the lockfile, not the steps above.
+With `lockfile = true` + `mise install --locked`, mise re-verifies each tool's
+checksum **and** provenance (cosign / SLSA / minisign / GitHub attestations, all
+on by default; toggle via `MISE_AQUA_COSIGN`, `MISE_AQUA_SLSA`,
+`MISE_AQUA_GITHUB_ATTESTATIONS`, `MISE_AQUA_MINISIGN`) on every CI run, aborting
+on mismatch. This is the main reason to commit `mise.lock` and pass `--locked`
+(see [`tools.md`](tools.md)). Pre-populate every CI platform with `mise lock
+--platform linux-x64,…` (see the per-platform gotcha above).
 
 ## Caching
 

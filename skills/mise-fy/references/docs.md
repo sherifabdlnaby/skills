@@ -12,7 +12,11 @@ mise-fy-ing or auditing a project isn't finished until the docs teach a **human*
 - **Concise and dense.** One short section should make a contributor productive. No tour.
 - **Examples should be the examples expected to be run the most**.
 - **Only mention hk if the repo uses it.**
-- **Declare external prerequisites mise can't install.** If the project needs a daemon/service outside mise's scope (a running Docker engine, a database server, a k8s cluster — see [`tools.md`](tools.md)), say so up front: what to install and how to confirm it's running. mise sets up the toolchain; these are the things `mise run setup` can't.
+- **Declare external prerequisites mise can't install.** If the project
+  needs a daemon/service outside mise's scope (a running Docker engine, a
+  database server, a k8s cluster — see [`tools.md`](tools.md)), say so up
+  front: what to install and how to confirm it's running. mise sets up the
+  toolchain; these are the things `mise run setup` can't.
 
 ## Notes & Gotchas:
 
