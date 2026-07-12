@@ -11,7 +11,14 @@
 #   push to main, version unchanged  clean no-op
 #   manifests disagree ............. fail loudly — a split version is a broken contract, not a
 #                                    release decision
-#   workflow_dispatch .............. re-run the same push-to-main logic on demand
+#   dispatch, empty version ........ re-run the same push-to-main logic on demand
+#   dispatch, explicit `version` ... tag it verbatim (v-prefixed if missing); a `-` marks a
+#                                    pre-release (`--prerelease`, never `--latest`). A stable
+#                                    version that disagrees with the manifests warns loudly:
+#                                    marketplaces keep reading the manifests, the tag is for humans.
+#
+# Anyone with write access can dispatch this workflow; gate the release job behind a protected
+# environment if that ever needs an approval step.
 name: 🏷️ Release
 
 on:
@@ -20,7 +27,12 @@ on:
       - main
   pull_request:
     types: [opened, reopened, synchronize]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Explicit version to tag (e.g. 0.4.0 or v0.4.0-rc.1). Empty = read from the manifests."
+        required: false
+        type: string
 
 # Top-level read-only; each job widens only what it needs.
 permissions:
@@ -106,6 +118,8 @@ jobs:
 
       - name: Resolve version and compare to the latest tag
         id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }} # user-controllable; via env, never interpolated (zizmor: template-injection)
         run: |
           set -euo pipefail
           CLAUDE_VERSION="$(jq -r .version .claude-plugin/plugin.json)"
@@ -115,8 +129,25 @@ jobs:
             exit 1
           fi
 
-          TAG="v$CLAUDE_VERSION"
-          LATEST_TAG="$(git tag -l 'v*' --sort=-v:refname | head -1)"
+          if [ -n "$INPUT_VERSION" ]; then
+            # Explicit dispatch version wins, used verbatim.
+            TAG="$INPUT_VERSION"; [ "${TAG#v}" = "$TAG" ] && TAG="v$TAG"
+            case "$TAG" in
+              *-*) PRE=true ;; # a '-' marks a pre-release (e.g. v0.4.0-rc.1)
+              *)   PRE=false
+                   [ "$TAG" != "v$CLAUDE_VERSION" ] && echo "::warning::dispatch version $TAG disagrees with the manifests (v$CLAUDE_VERSION) — marketplaces keep reading the manifests" ;;
+            esac
+          else
+            TAG="v$CLAUDE_VERSION"
+            PRE=false
+          fi
+
+          # Stable notes start from the last stable tag so an rc line is covered whole; an rc lets
+          # gh pick its own previous tag. Empty on the first release.
+          LATEST_STABLE="$(git tag -l 'v*' --sort=-v:refname | grep -v -- - | head -1 || true)"
+          PREVIOUS_TAG=""
+          [ "$PRE" = false ] && PREVIOUS_TAG="$LATEST_STABLE"
+
           # Existence check, not equality-with-latest: also catches a version reverted to an OLDER
           # tag (recreating it must be a no-op, not a confusing tag-push failure) and makes
           # dispatch re-runs idempotent.
@@ -127,7 +158,8 @@ jobs:
             {
               echo "skip=false"
               echo "tag=$TAG"
-              echo "previous_tag=$LATEST_TAG"
+              echo "prerelease=$PRE"
+              echo "previous_tag=$PREVIOUS_TAG"
             } >> "$GITHUB_OUTPUT"
           fi
 
@@ -150,9 +182,12 @@ jobs:
         if: steps.version.outputs.skip == 'false'
         env:
           TAG: ${{ steps.version.outputs.tag }}
+          PRE: ${{ steps.version.outputs.prerelease }}
           PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
         run: |
           set -euo pipefail
-          args=(--title "$TAG" --generate-notes --latest)
+          args=(--title "$TAG" --generate-notes)
+          # An rc must never take `latest` from the last stable release.
+          if [ "$PRE" = true ]; then args+=(--prerelease); else args+=(--latest); fi
           [ -n "$PREVIOUS_TAG" ] && args+=(--notes-start-tag "$PREVIOUS_TAG")
           gh release create "$TAG" "${args[@]}"
