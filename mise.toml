@@ -20,6 +20,9 @@ rumdl = "0.2"       # markdown lint + format; table cell-alignment (MD060) — c
 yamllint = "1"      # YAML structure (duplicate keys, indentation); cosmetic rules off in .yamllint
 taplo = "0.10"      # TOML lint + format (mise.toml, *.toml) — 0.x, pin minor
 
+# tasks' own dependencies
+jq = "1" # JSON reads in tasks (version:check manifests, check completions)
+
 # pre-commit
 hk = "1.48.0" # keep in sync with the pin in hk.pkl
 
@@ -33,11 +36,11 @@ setup_version = "1" # increment when setup steps change / users must re-run setu
 
 # ── ▶️ tasks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tasks.check]
-description = "Run all linters, formatters & validators as ran by pre-commit and in PR's CI"
+description = "Run all checks the repo enforces on the working tree (uncommitted changes) — the same suite CI runs"
 alias = ["lint"]
 usage = '''
     flag "--fix"              help="apply fixes instead of only reporting"
-    flag "--all"              help="run on all files (default: staged only)"
+    flag "--all"              help="run on all files (default: uncommitted changes)"
     flag "--pr"               help="only files changed vs the default branch (conflicts with --all)"
     flag "--fail-fast"        help="stop at the first failing step (default: run all, report every failure)"
     flag "--step <step>"      var=#true help="run only these step(s)"
@@ -49,6 +52,35 @@ ff=${usage_fail_fast:+--fail-fast}; ff=${ff:---no-fail-fast}   # default to runn
 hk check $ff ${usage_fix:+--fix} ${usage_all:+--all} ${usage_pr:+--pr} \
   ${usage_step:+$(printf -- '--step %s ' $usage_step)} \
   ${usage_skip_step:+$(printf -- '--skip-step %s ' $usage_skip_step)}
+'''
+
+[tasks."version:check"]
+# Guard against a stale marketplace cache: Claude/Cursor key the installed plugin on the `version`
+# string in the manifests, so shipped changes with an unchanged version never re-vendor. A pushGates
+# step in hk.pkl routes here (pre-push + the `check` hook CI runs); also callable standalone.
+description = "Fail if shipped plugin content changed vs the base without a manifest version bump"
+usage = 'flag "--base <ref>" help="ref to compare against (default: $BASE_REF or origin/main)"'
+run = '''
+set -eu
+base="${usage_base:-${BASE_REF:-origin/main}}"            # default matches default_branch in hk.pkl
+content="skills hooks"                                    # + manifests below = the version-bump glob in hk.pkl; keep in sync
+manifests=".claude-plugin/plugin.json .cursor-plugin/plugin.json"
+
+git rev-parse --verify --quiet "$base" >/dev/null || { echo "⚠️  base ref '$base' not found — skipping"; exit 0; }
+if git diff --quiet "$base"...HEAD -- $content; then
+  echo "✅ no shipped plugin content changed vs $base — no version bump needed"; exit 0
+fi
+
+fail=0
+for m in $manifests; do
+  cur="$(jq -r .version "$m")"
+  was="$(git show "$base:$m" 2>/dev/null | jq -r .version 2>/dev/null || echo "")"  # empty ⇒ manifest is new, counts as bumped
+  if [ -n "$was" ] && [ "$cur" = "$was" ]; then
+    echo "❌ $m: still $cur but skills/hooks changed vs $base — bump the version" >&2; fail=1
+  fi
+done
+[ "$fail" -eq 0 ] && echo "✅ plugin manifests bumped past $base"
+exit "$fail"
 '''
 
 [tasks.test]

@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "description": "Opinionated git and mise skills, plus boilerplate commands, agents, and hooks.",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "author": {
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"

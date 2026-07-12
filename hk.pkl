@@ -1,7 +1,11 @@
-// hk.pkl — git hooks for hk. See skills/mise/references/hk.md.
+// hk.pkl — git hooks for hk. See skills/mise-fy/references/hk.md.
 // Pin matches `hk` in mise.toml; both URLs must match. `hk init` regenerates.
 amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+// Anchor for branch-scoped checks (--pr and the pushGates' base). Keep in sync with
+// the base default in mise.toml's version:check task.
+default_branch = "origin/main"
 
 // Repo-wide ignores — committed paths only (.gitignore is already honored). Per-step `exclude` stacks on top.
 local commonIgnores =
@@ -11,8 +15,11 @@ local commonIgnores =
     "**/*.min.*",
   )
 
-// Linters defined once, shared by the hooks below.
-local linters: Mapping<String, Step> = new Mapping<String, Step> {
+// Gates by moment; each step lives in exactly one tier, hooks below only compose tiers.
+// `check` mounts the union — the repo's full contract and the only hook CI runs.
+
+// Commit gates — run on every commit: file-scoped, fast, auto-fixable.
+local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   // formatting
   ["ruff-format"] = Builtins.ruff_format // python (skills/git/scripts/*.py)
   ["ruff"] = Builtins.ruff // python lint
@@ -57,26 +64,45 @@ local linters: Mapping<String, Step> = new Mapping<String, Step> {
   ["check-symlinks"] = Builtins.check_symlinks // catch broken symlinks
 }
 
+// Push gates — run before a push: slower or branch-scoped checks that would drag the commit loop.
+// Logic lives in mise tasks (runnable standalone, identical in CI); steps here only route to them.
+local pushGates: Mapping<String, Step> = new Mapping<String, Step> {
+  // Stale-marketplace guard: shipped plugin content must ride a manifest version bump.
+  // The glob decides when the question is worth asking; the task answers by diffing vs
+  // default_branch. Keep the glob in sync with the task's content/manifest lists.
+  ["version-bump"] {
+    glob = List("skills/**", "hooks/**", ".claude-plugin/*", ".cursor-plugin/*")
+    check = "mise run version:check"
+  }
+}
+
 exclude = commonIgnores
 
 hooks {
-  // `hk check` / `mise run check` — CI + manual lint (read-only; `--fix` applies).
+  // `hk check` / `mise run check` — the union: everything this repo enforces, and the only
+  // hook CI runs. Read-only; `--fix` applies. (No ["fix"] hook on purpose — `hk fix` errors,
+  // shunting to the one blessed entry point; a fix hook would be a second mapping to keep in sync.)
   ["check"] {
-    steps = linters
+    stage = false // `--fix` fixes the tree only; outside a commit, nothing touches the index
+    steps {
+      ...commitGates
+      ...pushGates
+    }
   }
 
-  // `git commit` (staged) — fix inline; stash guards unstaged hunks.
+  // `git commit` (staged) — commit gates only; fix inline. `stash` makes tools judge (and fix)
+  // the staged snapshot, not the working tree — without it, partially-staged files get fixes
+  // computed on (and re-staged with) unstaged hunks.
   ["pre-commit"] {
     fix = true
     stash = "git"
-    steps = linters
+    steps = commitGates
   }
 
-  // `git push` — no-op; add slower gates here.
+  // `git push` — push gates only (every commit already passed the commit gates). Best-effort
+  // locally (`--no-verify` skips); CI's union run is the authoritative gate.
   ["pre-push"] {
-    steps {
-    // ["test"] { check = "mise run test" }
-    }
+    steps = pushGates
   }
 
   // Commit message ({{commit_msg_file}}) — no-op.
