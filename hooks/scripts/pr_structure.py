@@ -9,6 +9,11 @@ points the agent back to the skill guide. A marker stays when its block does not
 apply; the block instead says why it is not applicable. Informational only, this
 hook never blocks or rewrites.
 
+Escape hatch: a body carrying a `<!-- pr:skeleton-off: <reason> -->` marker
+silences the nudge entirely. Use it when the body deliberately follows a
+different shape, a repo PULL_REQUEST_TEMPLATE or any imposed template, so the
+skeleton doesn't apply. The reason keeps it a conscious choice, not a reflex.
+
 Body extraction is shared with gh_disclosure (same dir, launcher puts it on
 sys.path). stdlib only. Exit 0 always; "no nudge" is emitting nothing.
 """
@@ -31,6 +36,12 @@ MARKERS = {
 
 # Only bodies of the PR itself carry the skeleton; comments and reviews don't.
 BODY_ACTIONS = {("pr", "create"), ("pr", "edit")}
+
+# Deliberate escape hatch. A body carrying this marker opted out of the skeleton
+# (repo PR template, or any imposed shape); the nudge stays silent. Matches with
+# or without a trailing reason so a bare marker still bypasses; the skill asks
+# for a reason to keep the opt-out conscious.
+BYPASS_RE = re.compile(r"<!--\s*pr:skeleton-off\b.*?-->", re.DOTALL)
 
 
 def marker_re(name):
@@ -55,6 +66,8 @@ def missing_markers(command):
             continue
         body = extract_body(tokens[i + 3 :])
         if body is None:
+            return []
+        if BYPASS_RE.search(body):
             return []
         return [name for name in MARKERS if not marker_re(name).search(body)]
     return []

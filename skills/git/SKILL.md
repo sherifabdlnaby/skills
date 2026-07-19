@@ -1,8 +1,8 @@
 ---
 name: git
 description: >
-  Load when git or GitHub work is anywhere in the conversation's future, as early as possible: commit, branch, push, rebase, resolve a merge conflict, open or stack a Pull Request (PR / stacked diff), respond to review comments, review a PR, watch a PR CI (babysitting).
-  Carries the user's git conventions for commits, branches, PRs, rebasing, and reviews.
+  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open PR, stack PR, or write/update the description of a Pull Request (PR / stacked diff), respond to review comments, review a PR, or watch/babysit a PR's CI.
+  Carries the user's git conventions and style you are expected to match. Load as early as possible, the moment git or GitHub work is anywhere in the chat's future.
 license: MIT
 argument-hint: "[commit|branch|pr|rebase|review|watch]"
 metadata:

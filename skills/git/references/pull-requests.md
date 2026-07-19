@@ -80,6 +80,12 @@ PR Body anatomy.
   When a block does not apply, retain its marker and replace its content with one short,
   specific `Not applicable: <reason>.` sentence.
   A post-create hook nudges about missing markers; the nudge is informational.
+- **Escape hatch (`<!-- pr:skeleton-off: <reason> -->`):** when the body must follow a
+  different shape, a repo `PULL_REQUEST_TEMPLATE` or any template imposed on the PR, drop
+  this one hidden marker anywhere in the body and skip the skeleton entirely. It silences the
+  missing-marker nudge. Use it consciously, only when a real template governs the body, and
+  always fill in the `<reason>` (e.g. `following the repo PR template`). Absent that, use the
+  skeleton. This is invisible on GitHub, like the other markers.
 
 Skeleton (keep every marker; explain inapplicable blocks instead of dropping them):
 
