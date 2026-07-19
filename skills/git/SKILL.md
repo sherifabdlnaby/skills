@@ -7,7 +7,7 @@ license: MIT
 argument-hint: "[commit|branch|pr|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Git
