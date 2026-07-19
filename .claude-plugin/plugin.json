@@ -2,7 +2,7 @@
   "name": "skills",
   "displayName": "Sherif's Skills",
   "description": "Opinionated git and mise skills, plus boilerplate commands, agents, and hooks.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": {
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"

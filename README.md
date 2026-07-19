@@ -24,8 +24,10 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
    - [afk-yolo](skills/variants/afk-yolo/) | Max non-destructive autonomy.
    - [afk-soon](skills/variants/afk-soon/) | Ask clarifying questions first, then go afk.
 6. [review](skills/review/) | Gate work behind a reviewer panel — fork-session + independent reviewers, cross-model when available.
+7. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
+8. [grill](skills/grill/) | A relentless, one-question-at-a-time interview to sharpen a plan before you build it. Vendored from [Matt Pocock](https://github.com/mattpocock/skills), extended to ask through the `AskUserQuestion` tool.
 
-The `afk`, `review`, and `watch-pr` skills are manual-only (`disable-model-invocation: true`) — they exist to make me type less, not to auto-fire.
+The `afk`, `review`, `watch-pr`, and `grill` skills are manual-only (`disable-model-invocation: true`) — they exist to make me type less, not to auto-fire.
 
 ## Models
 
