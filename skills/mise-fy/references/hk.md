@@ -53,7 +53,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
   `exclude`/`skip_steps`/`skip_hooks` **union** across sources rather than overriding.
 - **`hk check --plan --json`** prints the resolved plan without running it; feed it to tooling (e.g. completions: `… --json --no-progress | jq -r '.steps[].name'`).
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
-- **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.48"` resolves to the git tag `v1.48`, which doesn't exist → `404 Not Found` on install. Use `1.48.0`.
+- **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.48"` resolves to the git tag `v1.48`, which doesn't exist →
+  `404 Not Found` on install. Use `1.48.0`.
 - **The `actionlint` builtin needs `shellcheck` pinned.** actionlint shells out to shellcheck to lint workflow `run:` blocks; in not defined, or unpinned, it fails. Add both to `[tools]`.
 
 ## Setup & Templates.
@@ -65,8 +66,8 @@ Check the hk.pkl to baseline scaffold.
 
 ### Defining Linters
 
-hk ships [builtins](https://hk.jdx.dev/builtins.html), ready-made configs for popular linters. Always prefer a builtin over hand-rolled config (they're maintained and pre-tuned), so check the builtins list first.
-run `hk builtins` to list all linters builtins (or grep for the one you're looking for).
+hk ships [builtins](https://hk.jdx.dev/builtins.html), ready-made configs for popular linters. Always prefer a builtin over hand-rolled config (they're maintained and pre-tuned), so check the builtins
+list first. run `hk builtins` to list all linters builtins (or grep for the one you're looking for).
 
 ### Recommended Linters
 
@@ -91,7 +92,8 @@ Beyond Popular Runtime Linters (check that yourself, and take a look at builtins
 - betterleaks (see note below; confirm + scaffold an ignore file)
 - typos ( must confirm with user, can generate a ton of false positives, see note below; confirm + scaffold an ignore file)
 - lychee: Lint Broken Links. (Important for Agents.md files and to ensure progressive disclsure doesn't break)
-- rumdl ( must confirm with user; full ruleset is noisy on prose/docs repos; ask whether they want table formatting, see note below; confirm + scaffold a config): Markdown lint + format (markdownlint-compatible, Rust).
+- rumdl ( must confirm with user; full ruleset is noisy on prose/docs repos; ask whether they want table formatting, see note below; confirm + scaffold a config): Markdown lint + format
+  (markdownlint-compatible, Rust).
 - yamlfmt ( must confirm with user since it usually generate a lot of noise).
 
 You can recommend to the user other linters based on the project. Use Builtins list of inspiration.
@@ -100,8 +102,24 @@ You can recommend to the user other linters based on the project. Use Builtins l
 
 ##### lychee (https://github.com/lycheeverse/lychee)
 
-By default, make lychee check for local .md files, only check for online links after confirming with user.
-Configure this in a `lychee.toml` at the repo root (auto-loaded): `offline = true` resolves local/relative links and skips http(s), which then show as `👻 Excluded` rather than checked. See this repo's `lychee.toml`.
+By default, make lychee check for local .md files, only check for online links after confirming with user. Configure this in a `lychee.toml` at the repo root (auto-loaded): `offline = true` resolves
+local/relative links and skips http(s), which then show as `👻 Excluded` rather than checked. See this repo's `lychee.toml`.
+
+- **Set `include_fragments = "anchor-only"`.** Without it lychee only checks that a link's
+  target *file* exists and ignores the `#anchor`, so a link to a renamed or deleted
+  heading passes green. Anchored cross-file links are how progressive disclosure
+  points into a section (`references/publish.md#the-publish-gate`); when one rots
+  silently the agent lands at the top of the page and reads the wrong material.
+  No Markdown linter covers this: rumdl's `MD051` resolves anchors only within the
+  document it's linting, and `MD057` checks file existence while ignoring the
+  fragment — nothing joins the two. Cheap to enable, and it's the check that makes
+  lychee worth having over a Markdown linter's link rules.
+  **The value is an enum, not a bool.** `include_fragments = true` fails to parse
+  and takes the *entire* config file down with it — lychee reports only
+  `Error while loading config: Cannot load configuration file`, naming no key, and
+  every other setting (`offline`, ...) is lost with it. Use `anchor-only` for
+  `#section` links; `full` adds text fragments (`#:~:text=`) that docs repos don't
+  use. After enabling, confirm a known-bad anchor actually fails.
 
 - **`exclude_path` entries are regexes matched against the whole path**, not globs or
   literals. So `.mise` also matches `/mise`, and one bad entry can silently drop a whole
@@ -129,7 +147,10 @@ rules. See this repo's `rumdl.toml`.
   Other values: `aligned-no-space` (no pad inside the delimiter row), `compact`
   (single-space, normalized), `tight` (no padding at all), `any` (don't enforce). The
   fixer respects `:--`/`--:` alignment markers.
-- **Scope it on prose-heavy/docs repos.** If the user only wants table formatting, set `[global] enable = ["MD055", "MD056", "MD058", "MD060"]` (this **replaces** the default set, so only these run; use `extend-enable` to *add* to defaults instead).
+- **Line-length (`MD013`) auto-fix is opt-in.** The rule is report-only until `[MD013] reflow = true`; then `--fix` wraps offenders. The default `reflow-mode` is the safe one most of the times.
+  Enable the auto-fix after aligning with user; this can cause a lot of retrospective fixes that user might want to avoid. `200` is a good start.
+- **Scope it on prose-heavy/docs repos.** If the user only wants table formatting, set `[global] enable = ["MD055", "MD056", "MD058", "MD060"]` (this **replaces** the default set, so only these run;
+  use `extend-enable` to *add* to defaults instead).
 - **Drop a stray cache dir** with `[global] cache = false`; otherwise rumdl writes a `.rumdl_cache/` next to the files (hk only lints staged files, so the cache buys little).
 
 ##### typos (https://github.com/crate-ci/typos)

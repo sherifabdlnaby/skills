@@ -4,17 +4,20 @@
 
 [global]
 enable = ["MD013", "MD055", "MD056", "MD058", "MD060"]
-cache  = false # don't litter a .rumdl_cache/ dir; runs are over staged files only
+cache = false                                          # don't litter a .rumdl_cache/ dir; runs are over staged files only
 
 # MD013 — line-length. NOT the conventional 80-col reflow rule; a high limit that
 # only catches pathologically long prose lines. code_blocks/tables OFF so it can't
 # fight MD060 (which pads table cells) or flag intentionally wide code samples.
-# rumdl can't auto-fix this (no safe prose reflow) — offenders are a manual fix.
+# reflow makes --fix wrap offenders; default mode rewraps only paragraphs that
+# contain an over-limit line (inline code/links stay atomic, hard breaks survive,
+# unbreakable tokens like long URLs are left over-limit rather than mangled).
 [MD013]
-line_length = 250
+line_length = 200
+reflow = true
 code_blocks = false
-tables      = false
-headings    = false
+tables = false
+headings = false
 
 # MD060 — table-cell-alignment (alias table-format). Off by default; the rule
 # above turns it on. `aligned` pads every cell so columns line up visually
