@@ -14,6 +14,9 @@ Guidance on mise's directory & lifecycle hooks (`enter`/`cd`/`leave`, `watch_fil
 ## Notes & Gotchas:
 
 - **Adding any hook makes the whole `mise.toml` untrusted** until `mise trust` (see SKILL.md "Always applies"). Fresh clones and CI need the trust step or a `trusted_config_paths` entry.
+- **`MISE_OFFLINE` does not suppress `[deps]` auto-providers.**
+  If the project uses the experimental `[deps]` engine with `auto = true`, any `mise run` inside a hook installs stale deps first — on every `cd` for `enter`.Use `mise run --no-deps …` in the hook command;
+  the flag is the only kill switch (no env var). See [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#deps).
 - **Hooks are no longer experimental**: You don't need to enable experiments for hooks.
 
 ## Docs:

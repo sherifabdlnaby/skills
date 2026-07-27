@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # mise-fy

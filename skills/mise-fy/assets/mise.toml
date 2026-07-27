@@ -61,6 +61,7 @@ depends_post = ["deps", "setup:stamp"]               # deps after `mise install`
 run = "mise install"                                 # installs tools; runtime deps live in the deps task
 
 [tasks.deps] # install runtime/project dependencies; runnable on its own after a lockfile change
+# alt engine: experimental [deps] providers auto-install before every `mise run` — see reference-setup-and-patterns.md §Deps
 description = "Install runtime dependencies (cached; skipped when the lockfile is unchanged)"
 sources = ["package.json", "package-lock.json"]      # manifest + lockfile(s) (e.g. pnpm-lock.yaml, uv.lock, go.sum)
 outputs = ["node_modules"]                           # install dir (e.g. .venv, vendor); explicit outputs so the cache tracks it

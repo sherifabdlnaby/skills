@@ -69,7 +69,8 @@ Runtimes have extra integration features (package managers, virtualenvs, idiomat
 
 - **Node** (corepack vs pinned PM, deps task) -> [`runtimes/node.md`](runtimes/node.md)
 
-Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps** (`npm install`/`uv sync`). Use a `setup` task or a hook; see the runtime file.
+Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps out of the box** (`npm ci`/`uv sync`).
+That's the cached `deps` task or the experimental `[deps]` providers, which can auto-install before every `mise run`. Both engines: [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#deps).
 
 ## External Services & Daemons (Docker, DBs, clusters)
 

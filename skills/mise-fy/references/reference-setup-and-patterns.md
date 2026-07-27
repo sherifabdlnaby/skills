@@ -75,6 +75,20 @@ runtime (`npm ci`, `pnpm install --frozen-lockfile`, `uv sync`, `go mod download
 package-manager **version** pinning (Corepack vs mise), see [`runtimes/node.md`](runtimes/node.md). That is
 orthogonal to *who runs* the install.
 
+#### Native engine: `[deps]` providers (experimental)
+
+mise's [`[deps]` providers](https://mise.jdx.dev/dev-tools/deps.html) do the same job natively; it has built-in providers
+per package manager (npm/pnpm/yarn/bun/uv/poetry/pip/go/bundler/composer/…) plus custom ones, with blake3
+content-hash. With `auto = true`, stale deps install automatically before **every** `mise run`/`mise x`.
+
+Offer it when the team accepts `experimental = true`; keep classic as the default until the feature graduates.
+
+- Prefer `auto = true` when adopting
+- **No lockfile init; provider counts as *fresh*** and silently does nothing. The lockfile must exist (commit it)
+  before the provider ever runs.
+- **Custom providers are the extension point** the classic task has no equivalent for — project-specific steps
+  with their own staleness engine, and `depends` between providers:
+
 ### Check (Lint)
 
 A command that runs all Linters, Formatters, and Static Validators. This is every check we expect to run pre-commit and in CI, NOT unit/integration tests.
