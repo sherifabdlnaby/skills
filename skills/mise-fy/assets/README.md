@@ -4,7 +4,8 @@
 
 ## Getting started
 
-This project uses [**mise**](https://mise.jdx.dev) to pin its tools (languages, CLIs), expose common tasks, and wire up git hooks — so everyone works with the same versions and commands. You only deal with mise once; after that it's a couple of `mise run` commands.
+This project uses [**mise**](https://mise.jdx.dev) to pin its tools (languages, CLIs), expose common tasks, and wire up git hooks — so everyone works with the same versions and commands. You only deal
+with mise once; after that it's a couple of `mise run` commands.
 
 ### 1. Install mise (first time on this machine)
 

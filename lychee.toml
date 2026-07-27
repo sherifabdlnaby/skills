@@ -9,3 +9,16 @@
 # the whole path, so e.g. ".mise" would also match "/mise" and silently drop
 # every file under skills/mise-fy/. hk already scopes the file list it passes in.
 offline = true
+
+# Also verify `#anchor` fragments resolve to a real heading, not just that the
+# target file exists. Progressive disclosure leans on cross-file anchored links
+# (`references/publish.md#the-publish-gate`); without this a rotted anchor is
+# silent and drops the agent at the top of the page instead of the section.
+# rumdl can't cover this case — MD051 is same-document only, MD057 ignores the
+# fragment — so lychee owns it.
+#
+# Value is an enum, NOT a bool: `include_fragments = true` fails to parse and takes
+# the whole config file down with an opaque "Cannot load configuration file" (so
+# offline/etc. are silently lost too). `anchor-only` checks `#section`; `full` also
+# checks text fragments (`#:~:text=`), which docs repos don't use.
+include_fragments = "anchor-only"

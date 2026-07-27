@@ -18,7 +18,8 @@ metadata:
 
 # Introduction to Humans
 
-Best-practices, tips, and gotchas to maximize the use of [mise](https://mise.jdx.dev) (along-side [hk](http://hk.jdx.dev/)) distilled from experience building dev (& CI) setups that ✨just works ✨ for diverse teams at different levels that you and your agents would love to use!
+Best-practices, tips, and gotchas to maximize the use of [mise](https://mise.jdx.dev) (along-side [hk](http://hk.jdx.dev/)) distilled from experience building dev (& CI) setups that ✨just works ✨
+for diverse teams at different levels that you and your agents would love to use!
 
 **The skill has two modes to trigger for:**
 1. Provide tips & gotchas to agents when working with Mise. (duhh!)
@@ -29,7 +30,8 @@ Read each topic's reference in [./references](references) to learn more about wh
 > [!TIP]
 > The skill is written and optimized to be used by models with coherence level similar to `Opus 4.8` or `GPT 5.5`, especially when mise-fying.
 
-The skill **does not enumerate** all of Mise's features. It relies on Agents world knowledge, and ability to read docs (and it ask agents to!) but **guide the agent to best practices**. I may cover more use-cases later!
+The skill **does not enumerate** all of Mise's features. It relies on Agents world knowledge, and ability to read docs (and it ask agents to!) but **guide the agent to best practices**. I may cover
+more use-cases later!
 
 ## Is this a `Mise` skill ? or a good local dev setup skill ?
 
@@ -112,7 +114,8 @@ safety/correctness floor: apply them even on a one-tool change, not polish you'd
    `[tools]`/`[tasks]` file loads untrusted (since 2026.6.6). A fresh clone needs `mise trust`
    (or a `trusted_config_paths` entry).
 2. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
-3. **Set `min_version`** (root level, not under `[settings]`) when you rely on a newer feature, so old clients are guided to update. It also floors users past known-vulnerable releases, e.g. `>=2026.6.5`.
+3. **Set `min_version`** (root level, not under `[settings]`) when you rely on a newer feature, so old clients are guided to update. It also floors users past known-vulnerable releases, e.g.
+   `>=2026.6.5`.
 4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set
    `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`.
    mise tries the gh CLI token first, falls back to git credentials, fails open.

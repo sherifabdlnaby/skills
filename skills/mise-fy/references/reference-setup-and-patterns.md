@@ -38,9 +38,10 @@ Below are guidance on each command.
 
 ### Setup
 
-Setup is expected to include all the (one time) setups, including mise own `mise install`. Runtime/project dependencies are **not** inlined here; they live in their own [`deps`](#deps) task that setup runs after `mise install` (see below).
-Pre-commit (hk) hooks are **not** installed by an explicit step in setup; they self-install canonically via `[hooks] postinstall = "hk install --mise"`, which fires on the `mise install` that setup runs (and on any future `mise install`). See [`hk.md`](hk.md).
-It's okay for setup to consist of other mise tasks (rely on depends and depends_post to use parallelism). Setup should be:
+Setup is expected to include all the (one time) setups, including mise own `mise install`. Runtime/project dependencies are **not** inlined here; they live in their own [`deps`](#deps) task that setup
+runs after `mise install` (see below). Pre-commit (hk) hooks are **not** installed by an explicit step in setup; they self-install canonically via `[hooks] postinstall = "hk install --mise"`, which
+fires on the `mise install` that setup runs (and on any future `mise install`). See [`hk.md`](hk.md). It's okay for setup to consist of other mise tasks (rely on depends and depends_post to use
+parallelism). Setup should be:
 
 1. Idempotent.
 2. Fast.
@@ -51,7 +52,8 @@ It's okay for setup to consist of other mise tasks (rely on depends and depends_
 Setup should include a `setup:check` and `setup:stamp` internal hidden commands that we use to check if the user ran the latest version of a setup or not. It's expected to run as a mise enter hook.
 This allows us to version the setup, so we can notify users to re-run `mise run setup` again if expected version is not equal to saved version.
 
-The stamp is written to `.mise/setup`. Add a committed `.mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see [.mise/.gitignore](../assets/.mise/.gitignore)) that ignores just the generated `setup` file.
+The stamp is written to `.mise/setup`. Add a committed `.mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see
+[.mise/.gitignore](../assets/.mise/.gitignore)) that ignores just the generated `setup` file.
 
 Wrap this enter hook in `MISE_OFFLINE=1` (`enter = "MISE_OFFLINE=1 mise run setup:check"`) so it never resolves tools online and can't hang the shell offline — see [`hooks.md`](hooks.md).
 
@@ -95,7 +97,8 @@ A command that runs all Linters, Formatters, and Static Validators. This is ever
 It must be the **same command CI runs** and that the pre-commit hook runs, so behaviour can't drift between local, hook, and CI. Alias it `lint`.
 The canonical CI wiring for this task lives at [.github/workflows/check.yml](../assets/.github/workflows/check.yml) (see [`ci.md`](ci.md)).
 
-If using hk for pre-commit linters then delegate the actual steps to **hk** (one source of truth; see [`hk.md`](hk.md)) and have the task just forward flags. See the `check` task in the reference [mise.toml](../assets/mise.toml). Key points:
+If using hk for pre-commit linters then delegate the actual steps to **hk** (one source of truth; see [`hk.md`](hk.md)) and have the task just forward flags. See the `check` task in the reference
+[mise.toml](../assets/mise.toml). Key points:
 
 - **Stay on `hk check` and forward flags**: `hk check`/`hk fix` command semantics and
   the scope flags (staged default, `--all`, `--pr`, mutually exclusive) are in

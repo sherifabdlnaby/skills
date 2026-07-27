@@ -4,7 +4,8 @@ Guidance on converting an existing project to be Mise-managed, or auditing one t
 
 ## Rules and Best Practices:
 
-1. **Know the target.** The ideal end-state layout (file tree + every supporting file) is in [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md); the canonical config is [`assets/mise.toml`](../assets/mise.toml). Convert _toward_ that picture.
+1. **Know the target.** The ideal end-state layout (file tree + every supporting file) is in [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md); the canonical config is
+   [`assets/mise.toml`](../assets/mise.toml). Convert _toward_ that picture.
 2. **Inventory before editing.** Discover what already manages tools/env/tasks/hooks/CI, don't assume (list below).
 3. **Plan, then convert.** Map each piece to its mise equivalent and note conflicts before touching files.
 4. **Lay down the structure**: Some project might have no need for specific sections but we include them so the path of least resistance is extending the patterns we embedded.
@@ -24,14 +25,17 @@ Guidance on converting an existing project to be Mise-managed, or auditing one t
 Explore Development and or Contribution section in README.md, AGENTS.md, or CLAUDE.md and trace references to understand how running the project locally, in the CI, in testing, or in Production.
 
 #### Tools & Runtimes
-1. Explore how the repo local dependencies are installed. Read its README.md or AGENTS/CLAUDE.md look for installation instructions, and or (`.tool-versions` (asdf), `.nvmrc`/`.node-version`, `.python-version`, `.ruby-version`, `Brewfile`).
+1. Explore how the repo local dependencies are installed. Read its README.md or AGENTS/CLAUDE.md look for installation instructions, and or (`.tool-versions` (asdf), `.nvmrc`/`.node-version`,
+   `.python-version`, `.ruby-version`, `Brewfile`).
 2. Explore existing tools versions (node version, npm version, mise version)
 3. Explore if Repository relies on Docker (or Podman), check if it's installed.
-4. Flag lazy / uncommon tools. For each tool, ask "does *everyone* need this on `mise install`, or only some workflows?" then place it by the decision order (and lockfile gotchas) in [`tools.md`](tools.md#lazy-install-for-uncommon-tools).
+4. Flag lazy / uncommon tools. For each tool, ask "does *everyone* need this on `mise install`, or only some workflows?" then place it by the decision order (and lockfile gotchas) in
+   [`tools.md`](tools.md#lazy-install-for-uncommon-tools).
 
 #### Tasks
-Explore how the repo manage repetitive tasks. Look for Makefile, package.json (or similar) scripts. Check tasks run by the CI or references in README.md or AGENTS.md.
-**Flag watch candidates** while you're here: any existing watch/rerun loop (`nodemon`, `webpack --watch`, `cargo watch`, etc) maps to `mise watch <task>` + accurate `sources` drop the bespoke watcher and pin `watchexec` in `[tools]`. (See [`tasks.md`](tasks.md#watch).)
+Explore how the repo manage repetitive tasks. Look for Makefile, package.json (or similar) scripts. Check tasks run by the CI or references in README.md or AGENTS.md. **Flag watch candidates** while
+you're here: any existing watch/rerun loop (`nodemon`, `webpack --watch`, `cargo watch`, etc) maps to `mise watch <task>` + accurate `sources` drop the bespoke watcher and pin `watchexec` in
+`[tools]`. (See [`tasks.md`](tasks.md#watch).)
 
 #### CI & Hooks
 
@@ -55,7 +59,8 @@ Run `mise install` then `mise doctor` (clean?); `mise run <task>` for each; fres
 
 ### 5. Document it (README + AGENTS.md)
 
-The migration isn't done until the docs onboard a **human** and an **agent**: how to install mise, set up, run tasks, and (for agents) extend the setup, including hk if added. Follow [`docs.md`](docs.md); copy from [assets/README.md](../assets/README.md) and [assets/AGENTS.md](../assets/AGENTS.md).
+The migration isn't done until the docs onboard a **human** and an **agent**: how to install mise, set up, run tasks, and (for agents) extend the setup, including hk if added. Follow
+[`docs.md`](docs.md); copy from [assets/README.md](../assets/README.md) and [assets/AGENTS.md](../assets/AGENTS.md).
 
 ### 6. Retrospective lint (existing repos only)
 
@@ -93,7 +98,8 @@ The mise-fy isn't done until every box is accounted for:
 - [ ] Pre-commit hooks configured, and have a CI counterpart.
 - [ ] Retrospective lint run (`mise run check --all`) and existing debt triaged/cleared before gating CI
 - [ ] CI uses `jdx/mise-action` and runs the same tasks
-- [ ] CI auto-fix variant decided: report-only by default; opt-in write-access variant raised interactively or suggested without blocking when autonomous ([`ci/github.md`](ci/github.md#optional-auto-fix-prs))
+- [ ] CI auto-fix variant decided: report-only by default; opt-in write-access variant raised interactively or suggested without blocking when autonomous
+      ([`ci/github.md`](ci/github.md#optional-auto-fix-prs))
 - [ ] `mise.local.toml` git-ignored; `mise trust` works for a fresh clone
 - [ ] `mise doctor` clean; fresh-clone smoke test passes
 - [ ] README + AGENTS.md/CLAUDE.md onboard a human and an agent per [`docs.md`](docs.md) (install, setup, run-via-mise + discovery, hk if used, how to extend).

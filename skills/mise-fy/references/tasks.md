@@ -4,8 +4,10 @@ How to build or improve mise Tasks.
 
 ## Rules and Best Practices:
 
-1. **Tasks are the single source of truth** for lint/test/build. The same names drive local dev, hk pre-commit, and CI. Expose the consistent contract every repo shares: `setup`, `check` (alias `lint`), `test`, `build`, `dev`.
-2. **Namespace with colons** (`test:unit`, `gen:docs`). The bare group name runs the common case (`test` = fast tests); a **quoted** glob runs the group (`mise run 'test:*'`; quote it or the shell expands it).
+1. **Tasks are the single source of truth** for lint/test/build. The same names drive local dev, hk pre-commit, and CI. Expose the consistent contract every repo shares: `setup`, `check` (alias
+   `lint`), `test`, `build`, `dev`.
+2. **Namespace with colons** (`test:unit`, `gen:docs`). The bare group name runs the common case (`test` = fast tests); a **quoted** glob runs the group (`mise run 'test:*'`; quote it or the shell
+   expands it).
 3. **`depends` for ordering; `sources`/`outputs` for caching**. `sources` alone already
    skips-if-unchanged (mise auto-tracks an internal marker); add explicit `outputs` when the
    artifact's existence is itself a correctness condition (a deleted output must re-run).
@@ -14,7 +16,8 @@ How to build or improve mise Tasks.
 5. **File tasks must be executable** in a discovered dir. Prefer to use `.mise/tasks`. Subdirs become `colon:names` ( .mise/tasks/test/one `test:one` ).
 6. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
 7. **Invoke `mise run <task>` (alias `mise r`)**, never bare `mise <task>` (avoids command/tool conflicts).
-8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2027.5.0). Built-in; `help=` + `choices` make `--help` and completion free. See Task Arguments below.
+8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2027.5.0). Built-in; `help=` + `choices` make
+   `--help` and completion free. See Task Arguments below.
 9. **Give every task a `description`**;
 10. add `choices`/simple `complete` when useful and it's a short one-liner command.
 11. Handwritten completion scripts only on request; keep them under **`.mise/completion/`**
@@ -28,12 +31,13 @@ How to build or improve mise Tasks.
     a gated task's deps.
 13. **Prefer config to runtime flags**. Put reused settings in `mise.toml`, not ad-hoc `--flags`.
 14. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
-15. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks).
-    If user ask for a `check`/`lint`, check if **hk** is set up and use it (refer to -> [`hk.md`](hk.md)).
+15. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to
+    [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks). If user ask for a `check`/`lint`, check if **hk** is set up and use it (refer to -> [`hk.md`](hk.md)).
 
 ## Notes & Gotchas:
 
-- **Tasks run from the config root, not your cwd.** Override per-task with `dir` (default `"{{config_root}}"`; set `dir = "{{cwd}}"` to follow the caller). Only reach for `{{config_root}}` when the task sets a non-default `dir`.
+- **Tasks run from the config root, not your cwd.** Override per-task with `dir` (default `"{{config_root}}"`; set `dir = "{{cwd}}"` to follow the caller). Only reach for `{{config_root}}` when the
+  task sets a non-default `dir`.
 - **`run` as an array = serial commands, each its own shell**; `cd` and unexported vars
   don't carry between entries. Use one multi-line `run` (or a file task) for stateful
   sequences. Stops on first failure (`set -e`); `mise run -c`/`--continue-on-error` keeps going.
@@ -53,7 +57,8 @@ How to build or improve mise Tasks.
   missing/deleted explicit output resolves to no mtime -> task re-runs. Rule of
   thumb: `sources` alone for "re-run when inputs change"; explicit `outputs` for
   artifact tasks.
-- **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits _if_ that task is already in the run. A task's `env` is **not** seen by its `depends`.
+- **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits _if_ that task is already in the run. A task's `env` is **not** seen by its
+  `depends`.
 - **No-spec args go to the _last_ `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
 - **Output is line-buffered + label-prefixed.** Change with `--output
   interleave|keep-order|quiet|silent` (or `MISE_TASK_OUTPUT`). `raw = true` / `--raw`
@@ -102,8 +107,9 @@ cargo build ${usage_release:+--release}
 
 ## Task Arguments
 
-Take input via the [`usage`](https://usage.jdx.dev) spec: `usage = '''…'''` (TOML) or `#USAGE` lines (file task). Parser is **built-in**; don't add `usage` to `[tools]`.
-Values arrive as **`$usage_<name>`** env vars (dashes->underscores: `--dry-run` -> `$usage_dry_run`), and **only inside a TOML `run`** as Tera **`{{usage.<name>}}`** (variadics are arrays). Precedence: **CLI > `env="VAR"` > `default`**.
+Take input via the [`usage`](https://usage.jdx.dev) spec: `usage = '''…'''` (TOML) or `#USAGE` lines (file task). Parser is **built-in**; don't add `usage` to `[tools]`. Values arrive as
+**`$usage_<name>`** env vars (dashes->underscores: `--dry-run` -> `$usage_dry_run`), and **only inside a TOML `run`** as Tera **`{{usage.<name>}}`** (variadics are arrays). Precedence:
+**CLI > `env="VAR"` > `default`**.
 
 ```toml
 [tasks.deploy]

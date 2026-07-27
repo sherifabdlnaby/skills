@@ -35,7 +35,8 @@ When the total becomes known, edit prior titles (`gh pr edit --title`) to replac
 
 ## Body: Human Note
 
-Ask on the first PR of the conversation, when the user requests one, or when you judge the PR needs a human voice. Ask before drafting the body, with the Ask User tool, default `No`, and an option for the user to enter their note verbatim:
+Ask on the first PR of the conversation, when the user requests one, or when you judge the PR needs a human voice. Ask before drafting the body, with the Ask User tool, default `No`, and an option for
+the user to enter their note verbatim:
 
 > Want to add a Human Note?
 
@@ -135,7 +136,7 @@ _<sub>🤝 Human Guided: Created with <Claude|Cursor|OpenCode> (<MODEL>) on beha
 
 ## Body: linking
 
-- Tickets and parent/epic: see [`## Tickets`](#tickets).
+- Tickets and parent/epic: the body's `### Relevant Links` block, see [`## Body and Description`](#body-and-description).
 - Related PR, same repo: `#<num>` (GitHub auto-links). Another repo: `org/repo#<num>`.
 - Docs (Notion, Confluence, RFC, README): clickable Markdown links, avoid raw URLs.
 - Stacked PRs: link the previous and next PRs in the body footer; return to edit once the next PR's URL exists.
@@ -202,7 +203,8 @@ Output the PR link first, then:
 
 ## Updating an open PR
 
-**New commits during review:** address feedback with new commits, not amends or history-rewriting force-pushes; reviewers read incremental changes more easily. The scoping rule from [`references/commits.md`](./commits.md) still applies.
+**New commits during review:** address feedback with new commits, not amends or history-rewriting force-pushes; reviewers read incremental changes more easily. The scoping rule from
+[`references/commits.md`](./commits.md) still applies.
 
 **`gh pr edit --body` is destructive:** the flag replaces the whole body, so anything missing from your payload (Human Note, AI footer, links, collapsibles) is erased. Always:
 
@@ -212,4 +214,5 @@ Output the PR link first, then:
 
 ## Responding to review comments
 
-Full flow lives in [`review-responses.md`](./review-responses.md): classify the reviewer (automated bot/AI tool, an AI-disclosed agent behind a human account, or a human), then fix / push back / escalate, replying to every comment with the AI footer.
+Full flow lives in [`review-responses.md`](./review-responses.md): classify the reviewer (automated bot/AI tool, an AI-disclosed agent behind a human account, or a human), then fix / push back /
+escalate, replying to every comment with the AI footer.

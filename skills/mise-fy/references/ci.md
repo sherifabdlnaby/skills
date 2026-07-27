@@ -13,9 +13,11 @@ Platform-specific setup lives under [`ci/`](ci/):
    pinned versions and mise's `[env]`, which bare-command shims don't fully
    carry, and avoids the prompt-hook activation that's spotty in CI (see
    [Getting tools on PATH](#getting-tools-on-path)).
-2. **Run the same tasks as locally** (`mise run check`, `mise run test`), don't re-encode commands in YAML (see [`tasks.md`](tasks.md)). When local, the pre-commit hook, and CI all call one task, behavior can't drift.
+2. **Run the same tasks as locally** (`mise run check`, `mise run test`), don't re-encode commands in YAML (see [`tasks.md`](tasks.md)). When local, the pre-commit hook, and CI all call one task,
+   behavior can't drift.
 3. Pin tool versions and commit `mise.lock`; install with `--locked` so CI can't silently drift off the lockfile (see [`tools.md`](tools.md)).
-4. Set a CI token (e.g. `GITHUB_TOKEN`) so tool installs don't hit provider API rate limits. Locally the same is achieved via `[settings] github.gh_cli_tokens`/`github.use_git_credentials` (see SKILL.md "Always applies").
+4. Set a CI token (e.g. `GITHUB_TOKEN`) so tool installs don't hit provider API rate limits. Locally the same is achieved via `[settings] github.gh_cli_tokens`/`github.use_git_credentials` (see
+   SKILL.md "Always applies").
 
 ## Notes & Gotchas:
 
@@ -31,11 +33,14 @@ Platform-specific setup lives under [`ci/`](ci/):
 
 ## Installing mise in CI
 
-**Prefer the platform's official integration** (e.g. `jdx/mise-action` on GitHub). It installs mise, pins the version, caches, and puts tools on `PATH` for you, so the steps below are already handled. Pin the *action itself* to a commit SHA.
+**Prefer the platform's official integration** (e.g. `jdx/mise-action` on GitHub). It installs mise, pins the version, caches, and puts tools on `PATH` for you, so the steps below are already handled.
+Pin the *action itself* to a commit SHA.
 
-**No integration / custom image:** install the single static binary yourself, then add the shims dir to `PATH` as a fallback so anything not routed through `mise x`/a task still resolves (see [Getting tools on PATH](#getting-tools-on-path)). When you install manually:
+**No integration / custom image:** install the single static binary yourself, then add the shims dir to `PATH` as a fallback so anything not routed through `mise x`/a task still resolves (see
+[Getting tools on PATH](#getting-tools-on-path)). When you install manually:
 
-1. **Verify the download** using **GitHub attestation and/or GPG**, whichever is easier in the image you have (attestation needs the `gh` CLI; GPG needs `gpg`). See [Verifying the mise install](#verifying-the-mise-install) for the exact commands.
+1. **Verify the download** using **GitHub attestation and/or GPG**, whichever is easier in the image you have (attestation needs the `gh` CLI; GPG needs `gpg`). See
+   [Verifying the mise install](#verifying-the-mise-install) for the exact commands.
 2. **Pin the version** via `MISE_VERSION`; never install "latest". An unpinned `curl … | sh` makes the build non-reproducible.
 3. **Pinning the binary SHA256 is optional, so ask the user.** It's the
    strongest guarantee (you trust an exact byte-for-byte build, not just the
@@ -58,7 +63,8 @@ The mise binary on `PATH` only gives you the `mise` command; the *managed* tools
   missed. Caveat: shims expose tools but **not** mise's `[env]` vars to them,
   and the `cd`/`enter`/`watch_files` hooks don't fire, which is exactly why
   shims are the backstop and `mise run` is the rule.
-- **`mise activate` (avoid in CI).** Prompt-hook activation (`eval "$(mise activate bash)"`) rebuilds `PATH`/env before each prompt; CI steps are fresh non-interactive shells with no prompt loop, so it fires unreliably.
+- **`mise activate` (avoid in CI).** Prompt-hook activation (`eval "$(mise activate bash)"`) rebuilds `PATH`/env before each prompt; CI steps are fresh non-interactive shells with no prompt loop, so
+  it fires unreliably.
 
 ## Verifying the mise install
 

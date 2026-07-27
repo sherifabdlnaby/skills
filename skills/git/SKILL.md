@@ -12,7 +12,8 @@ metadata:
 
 # Git
 
-Route first: each action's actual rules live in a `references/` file. Open the matching one before planning or acting; rules like commit grouping and branch naming shape the plan, so reading them late means redoing it. Several actions, several references.
+Route first: each action's actual rules live in a `references/` file. Open the matching one before planning or acting; rules like commit grouping and branch naming shape the plan, so reading them late
+means redoing it. Several actions, several references.
 
 ## Router
 
@@ -29,13 +30,14 @@ Title format (including stacked PRs), body format, how to write descriptions, AI
 Classify the reviewer (automated bot/AI tool, an AI-disclosed agent behind a human account, or a human), then fix / push back / escalate; replies, thread resolution, re-requesting review.
 
 **Rebasing, squashing, resolving conflicts** -> [`references/rebase.md`](references/rebase.md)
-Backup-branch convention, force-with-lease, range-diff verification, conflict procedure, non-interactive squash recipes. Stacked-PR restack mechanics and `--onto` (drop intermediate commits) live in [`references/branches.md`](references/branches.md), read that too.
+Backup-branch convention, force-with-lease, range-diff verification, conflict procedure, non-interactive squash recipes.
+Stacked-PR restack mechanics and `--onto` (drop intermediate commits) live in [`references/branches.md`](references/branches.md), read that too.
 
 **Reviewing someone else's PR** -> [`references/reviewing.md`](references/reviewing.md)
 Procedure, review lenses, severity tiers, posting mechanics.
 
-**Watch a PR's CI and automated reviews** -> [`references/watch.md`](references/watch.md)
-Spawning the cheap background watcher sub-agent (and the background-task fallback), hot/cold polling, what to relay vs hold, auto-addressing bot reviews, the final digest. Uses `scripts/pr-watch.py`, never a sleep loop.
+**Watch a PR's CI and automated reviews** -> [`references/watch.md`](references/watch.md) Spawning the cheap background watcher sub-agent (and the background-task fallback), hot/cold polling, what to
+relay vs hold, auto-addressing bot reviews, the final digest. Uses `scripts/pr-watch.py`, never a sleep loop.
 
 ## Always
 

@@ -50,8 +50,10 @@ an early misread steers every subsequent command toward premise-confirming evide
 
 ### Reconciliation in progress (self-resolves -> but verify the resolver is progressing)
 
-- **`FailedScheduling` with an autoscaler installed**; the scheduler doesn't know capacity is coming. Discriminator: Karpenter NodeClaim / CA `TriggeredScaleUp` progressing. The event alone never means "out of capacity".
-- **`Multi-Attach error` / `FailedAttachVolume` after a *graceful* reschedule**; detach from the old node takes time (force-detach after ~6m). On a *dead* node it never self-resolves; that variant is in the next section.
+- **`FailedScheduling` with an autoscaler installed**; the scheduler doesn't know capacity is coming. Discriminator: Karpenter NodeClaim / CA `TriggeredScaleUp` progressing. The event alone never
+  means "out of capacity".
+- **`Multi-Attach error` / `FailedAttachVolume` after a *graceful* reschedule**; detach from the old node takes time (force-detach after ~6m). On a *dead* node it never self-resolves; that variant is
+  in the next section.
 
 ### Lookalikes that are genuinely stuck (the inverse trap)
 
@@ -73,6 +75,8 @@ WIP
 
 Diagnosis and remediation are one doctrine: act on desired state, through the owning controller.
 
-- Deleting a pod "to fix it" treats a symptom, destroys the evidence (`--previous` is now something else), and the ReplicaSet recreates the problem. Legitimate only when *chosen deliberately* — e.g. skipping a backoff timer after the actual fix shipped.
-- Force-deleting a Terminating pod removes it from the API without confirming the node stopped it; with StatefulSets that risks two writers. First find what's blocking: finalizer, dead node, long grace period.
+- Deleting a pod "to fix it" treats a symptom, destroys the evidence (`--previous` is now something else), and the ReplicaSet recreates the problem. Legitimate only when *chosen deliberately* — e.g.
+  skipping a backoff timer after the actual fix shipped.
+- Force-deleting a Terminating pod removes it from the API without confirming the node stopped it; with StatefulSets that risks two writers. First find what's blocking: finalizer, dead node, long
+  grace period.
 - Under GitOps, the fix goes in Git; under an operator, in the CR; under an HPA, in the HPA spec. A `kubectl edit` on any of these gets reverted on the next sync.

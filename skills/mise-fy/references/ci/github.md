@@ -2,13 +2,14 @@
 
 Running Mise-managed tools and tasks on GitHub Actions. General, platform-agnostic CI rules live in [`../ci.md`](../ci.md); this file is GitHub-specific.
 
-Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and caches.
-The canonical workflow lives at [.github/workflows/check.yml](../../assets/.github/workflows/check.yml) (report-only, `contents: read`). Copy and adapt it. A heavier opt-in variant that opens PRs with the fixes lives alongside it; see [Optional: auto-fix PRs](#optional-auto-fix-prs).
+Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and caches. The canonical workflow lives at [.github/workflows/check.yml](../../assets/.github/workflows/check.yml)
+(report-only, `contents: read`). Copy and adapt it. A heavier opt-in variant that opens PRs with the fixes lives alongside it; see [Optional: auto-fix PRs](#optional-auto-fix-prs).
 
 ## Rules and Best Practices:
 
 1. **Pin actions to a commit SHA**, with the version in a trailing comment (`uses: owner/action@<sha> # v1.2.3`). Tags are mutable; SHAs aren't.
-2. **Scope `permissions`** to the minimum. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint comment. The opt-in [auto-fix variant](#optional-auto-fix-prs) additionally needs `contents: write` to push the fix branch.
+2. **Scope `permissions`** to the minimum. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint comment. The opt-in [auto-fix variant](#optional-auto-fix-prs)
+   additionally needs `contents: write` to push the fix branch.
 3. **Cancel superseded runs** with a `concurrency` group keyed on the PR number or ref so a new push stops the old run.
 4. Set the GitHub token via `GITHUB_TOKEN` env / `github_token` input so tool installs don't hit API rate limits.
 
@@ -50,14 +51,16 @@ How it works (all `gh` CLI, no extra action):
   `github.ref_name`; fixes force-push to `bot/ci/<TARGET>` and a PR opens with
   `base: <TARGET>`, so PR fixes target the PR branch and `main`/schedule target
   `main`. The stable name updates the existing PR instead of opening a second.
-- **Self-closing.** A clean run closes the PR, deleting its branch and the sticky comment. A fixed commit identity and date hold unchanged fixes at the same SHA, so the push is a no-op that won't re-notify subscribers.
+- **Self-closing.** A clean run closes the PR, deleting its branch and the sticky comment. A fixed commit identity and date hold unchanged fixes at the same SHA, so the push is a no-op that won't
+  re-notify subscribers.
 - **Still fails CI.** A fix PR doesn't green the run; the job exits non-zero whenever anything was fixed or a step failed.
 
 Caveats (why it's opt-in):
 
 - Needs `contents: write` + `pull-requests: write`, exactly what some repos won't grant, hence the `contents: read` default.
 - **No fork support** (by design): a fork PR carries a read-only token and can't push, so it detects the fork and falls back to the `::error::` annotation, staying off `pull_request_target`.
-- **The fix PR runs no CI of its own** under `GITHUB_TOKEN` (token-made PRs don't trigger `on: pull_request`). That's fine since it's clean `--fix` output, and it also blocks recursion; a `bot/ci/*` guard backs that up for PAT users.
+- **The fix PR runs no CI of its own** under `GITHUB_TOKEN` (token-made PRs don't trigger `on: pull_request`). That's fine since it's clean `--fix` output, and it also blocks recursion; a `bot/ci/*`
+  guard backs that up for PAT users.
 
 ## Notes & Gotchas:
 
@@ -93,7 +96,8 @@ Caveats (why it's opt-in):
   The reference workflow does exactly this.
   zizmor's auto-fix for it is held back as "unsafe", so apply the env
   indirection by hand.
-- **Pin `shellcheck` next to `actionlint`.** actionlint shells out to shellcheck to lint `run:` blocks; unpinned, the mise shim errors (`No version is set`) and the scripts go unchecked. Add both to `[tools]`.
+- **Pin `shellcheck` next to `actionlint`.** actionlint shells out to shellcheck to lint `run:` blocks; unpinned, the mise shim errors (`No version is set`) and the scripts go unchecked. Add both to
+  `[tools]`.
 
 ## Minimal job
 
