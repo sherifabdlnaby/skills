@@ -78,7 +78,7 @@ minisign `.minisig`) and `install.sh.sig`/`.minisig`. Pick the level you need:
 Use the following script as reference, and pick what you want from it. (you don't have to copy all steps)
 ```bash
 # Mise version, if you update this you must update sha's below.
-ver=v2026.7.0
+ver=v2026.8.0
 
 # Resolve the right asset for THIS runner — ARM and x86 CI need different binaries.
 # uname -m → x64|arm64;  uname -s → linux|macos. (mise also ships *-musl variants.)

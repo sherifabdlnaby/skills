@@ -2,20 +2,21 @@
 
 Guidance on managing git hooks with hk, the mise-native pre-commit tool.
 
-Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pkl)
+Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../assets/.config/hk.pkl)
 
 ## Rules and Best Practices:
 
 1. All linters should be managed by mise.
-2. Do not install `pkl`; hk bundles a Pkl evaluator (`pklr`), so no separate install is needed. Pin the hk version to your installed one via `hk init`; these conventions target hk >= 1.48.
+2. Do not install `pkl`; hk bundles a Pkl evaluator (`pklr`), so no separate install is needed. Pin the hk version to your installed one via `hk init`; these conventions target hk >= 1.54.
 3. **For custom linters/tests, delegate to a mise task.** Avoid putting logic in `hk.pkl` where possible.
 4. Pin the `<VER>` in the `amends`/`import` URLs; regenerate with `hk init`, don't hardcode from memory.
 5. Always use a linter hk builtin settings.
-6. **Steps live in tier mappings named by moment** (`commitGates` / `pushGates`, see `assets/hk.pkl`); hooks only compose tiers. The scaffold
+6. **Steps live in tier mappings named by moment** (`commitGates` / `pushGates`, see `assets/.config/hk.pkl`); hooks only compose tiers. The scaffold
    stubs `pushGates` empty to be filled late if no gates defined.
 7. **`check` mounts the union of all tiers** (`steps { ...commitGates; ...pushGates }`) and is the one command CI runs; local hooks mount
    subsets by cost (`pre-commit` = commitGates, `pre-push` = pushGates). Anything outside the union — an inline hook step, an unmounted tier —
    is invisible to CI.
+8. Avoid adding linter files to root directory when they can live elsewhere (e.g .config/); to keep using Builtins prefer env var of the linter to set config file.
 
 ## Notes & Gotchas:
 
@@ -39,7 +40,7 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
 - **`hk check` needs its own `check` hook**; it does _not_ fall back to `pre-commit` (`Hook 'check' not found`). Deliberately define **no**
   `fix` hook — `hk check --fix` covers write mode.
 - **Manage ignores in one place**: define `local commonIgnores = List(...)` and assign
-  top-level `exclude = commonIgnores`, which applies to every step (see `assets/hk.pkl`).
+  top-level `exclude = commonIgnores`, which applies to every step (see `assets/.config/hk.pkl`).
   hk already honors `.gitignore` (`walk_ignore = true`), so this list is only for
   _committed_ paths you don't want linted (vendored/generated/snapshots/minified). A
   step's own `exclude` **stacks** (unions) on top of the global one; it does _not_
@@ -53,8 +54,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/hk.pkl](../assets/hk.pk
   `exclude`/`skip_steps`/`skip_hooks` **union** across sources rather than overriding.
 - **`hk check --plan --json`** prints the resolved plan without running it; feed it to tooling (e.g. completions: `… --json --no-progress | jq -r '.steps[].name'`).
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
-- **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.48"` resolves to the git tag `v1.48`, which doesn't exist →
-  `404 Not Found` on install. Use `1.48.0`.
+- **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.54"` resolves to the git tag `v1.54`, which doesn't exist →
+  `404 Not Found` on install. Use `1.54.0`.
 - **The `actionlint` builtin needs `shellcheck` pinned.** actionlint shells out to shellcheck to lint workflow `run:` blocks; in not defined, or unpinned, it fails. Add both to `[tools]`.
 
 ## Setup & Templates.
@@ -102,7 +103,8 @@ You can recommend to the user other linters based on the project. Use Builtins l
 
 ##### lychee (https://github.com/lycheeverse/lychee)
 
-By default, make lychee check for local .md files, only check for online links after confirming with user. Configure this in a `lychee.toml` at the repo root (auto-loaded): `offline = true` resolves
+By default, make lychee check for local .md files, only check for online links after confirming with user. Configure this in `.config/lychee.toml` (wired via the `--config` override — see the
+[`.config/` table below](#linter-config-lives-in-config-default); a root `lychee.toml` auto-loads without wiring if the repo keeps a root layout): `offline = true` resolves
 local/relative links and skips http(s), which then show as `👻 Excluded` rather than checked. See this repo's `lychee.toml`.
 
 - **Set `include_fragments = "anchor-only"`.** Without it lychee only checks that a link's
@@ -135,9 +137,9 @@ Fast markdownlint-compatible Markdown linter **and formatter**. **Confirm with t
 before enabling**: its default rule set turns on the whole markdownlint suite, which is
 noisy on prose/docs repos (`MD013` line-length alone flagged ~350 issues in this repo,
 pure noise). The builtin shells out to the `rumdl` CLI (add `rumdl` to `[tools]`) and
-auto-loads a `rumdl.toml` (or `.rumdl.toml`) at the repo root. `check` reports; the
+auto-discovers `.config/rumdl.toml` natively (a root `rumdl.toml`/`.rumdl.toml` also works). `check` reports; the
 `pre-commit`/`--fix` path runs `rumdl check --fix` and rewrites files. When enabled,
-**scaffold a `rumdl.toml`** at the repo root so the user has an obvious place to tune
+**scaffold a `.config/rumdl.toml`** so the user has an obvious place to tune
 rules. See this repo's `rumdl.toml`.
 
 - **Ask the user whether they want table formatting** (and cell padding); it's a stylistic
@@ -157,7 +159,7 @@ rules. See this repo's `rumdl.toml`.
 
 Spell-checks source. It produces project-specific false positives (jargon, identifiers,
 example tokens), so **confirm with the user before enabling**. When enabled, **scaffold
-a `typos.toml`** at the repo root with commented `extend-exclude`, `extend-words`,
+a `.config/typos.toml`** (wired via the `--config` override, see the table below) with commented `extend-exclude`, `extend-words`,
 `extend-identifiers`, and `extend-ignore-re` examples so the user has an obvious place
 to silence false positives. See this repo's `typos.toml`.
 
@@ -166,8 +168,8 @@ to silence false positives. See this repo's `typos.toml`.
 Runs `yamllint --strict`. Its **error-level** rules are the structural ones you want:
 syntax errors, **duplicate keys**, bad indentation/nesting. Its **warning-level**
 defaults are cosmetic and noisy (`line-length`, `truthy`, `comments`, `document-start`).
-If the user only wants structure/spec validation (not style), scaffold a `.yamllint`
-that disables the cosmetic rules:
+If the user only wants structure/spec validation (not style), scaffold a `.config/yamllint.yml`
+(wired via the `YAMLLINT_CONFIG_FILE` step env, see the table below) that disables the cosmetic rules:
 
 ```yaml
 extends: default
@@ -186,7 +188,7 @@ Note: none of the generic YAML builtins do **JSON-Schema** validation.
 
 Secret scanner (gitleaks-compatible). Real codebases hit false positives (example keys,
 test fixtures), so **confirm with the user before enabling**. When enabled, **scaffold
-a `.betterleaks.toml`** at the repo root with `[extend] useDefault = true` (keep the
+a `.config/betterleaks.toml`** (wired via the `BETTERLEAKS_CONFIG` step env, see the table below) with `[extend] useDefault = true` (keep the
 built-in rules) plus a commented `[allowlist]` (`paths`, `regexes`, `stopwords`). See
 this repo's `.betterleaks.toml`.
 
@@ -211,28 +213,23 @@ it stays in sync with the builtin (no restating flags):
 
 `gh` missing or not logged in yields an empty token, so pinact runs unauthenticated
 (rate-limited) rather than failing the commit; `${GITHUB_TOKEN:-…}` means `gh` is never called
-in CI. Needs `gh` on PATH (system or `[tools]`). See `assets/hk.pkl` + `assets/mise.toml`.
+in CI. Needs `gh` on PATH (system or `[tools]`). See `assets/.config/hk.pkl` + `assets/mise.toml`.
 
 **Alternative (no `gh`)**: pinact's OS keyring. Run `pinact token set` once and enable it
 with a static `env { ["PINACT_KEYRING_ENABLED"] = "true" }`. The keyring auto-disables
 when `GITHUB_TOKEN` is set, so CI still uses its token. This fits the env-route (builtin
 command untouched) but requires each dev to store a token in their keychain.
 
-### Keeping Config out of the Repo Root (Optional)
+### Linter Config Lives in `.config/` (default)
 
-Most builtins need **no config file** (all `check_*`, `newlines`, `trailing_whitespace`,
-`mixed_line_ending`, `detect_private_key`, `yamlfmt`, `actionlint`, `zizmor`, `pinact`, `mise`).
-Root dotfiles only appear for the tunable opt-ins (`rumdl`, `typos`, `lychee`, `betterleaks`,
-`yamllint`, `taplo`).
+**When the `.config/` layout applies:**
 
-`hk.pkl` itself can live at `.config/hk.pkl` (auto-discovered, along with `hk.local.pkl`/`.config/hk.local.pkl`).
+- **Mise-fy-ing a project**: the default — scaffold `hk.pkl` and every linter config under `.config/` from the start.
+- **Adding one linter to an existing repo**: follow the repo's existing layout; don't relocate anything as a side effect.
+- **Adding 3+ config-carrying linters at once**: offer the user to consolidate under `.config/` first, then add.
+- **Auditing**: 3+ relocatable config files at the root → raise migrating to `.config/` as a non-blocking suggestion.
 
-**Gate: only suggest this when the project will have 3+ linters that carry a config file.**
-Below that, default to the per-tool root scaffolds in the notes above. A `.config/` dir for one
-or two files is overkill, and don't mention it. At 3+, offer to consolidate them under a
-single `.config/` directory.
-
-When adopted, wire each tool to read from `.config/`: **prefer the env-var route (leaves the
+Wire each tool to read from `.config/`: **prefer the env-var route (leaves the
 builtin command untouched); use `--config` override only where no env var exists** (it forces
 you to reproduce the builtin's other flags, which can drift across hk versions):
 

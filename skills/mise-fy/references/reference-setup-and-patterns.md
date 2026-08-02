@@ -52,8 +52,8 @@ parallelism). Setup should be:
 Setup should include a `setup:check` and `setup:stamp` internal hidden commands that we use to check if the user ran the latest version of a setup or not. It's expected to run as a mise enter hook.
 This allows us to version the setup, so we can notify users to re-run `mise run setup` again if expected version is not equal to saved version.
 
-The stamp is written to `.mise/setup`. Add a committed `.mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see
-[.mise/.gitignore](../assets/.mise/.gitignore)) that ignores just the generated `setup` file.
+The stamp is written to `.config/mise/setup`. Add a committed `.config/mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see
+[.config/mise/.gitignore](../assets/.config/mise/.gitignore)) that ignores just the generated `setup` file.
 
 Wrap this enter hook in `MISE_OFFLINE=1` (`enter = "MISE_OFFLINE=1 mise run setup:check"`) so it never resolves tools online and can't hang the shell offline — see [`hooks.md`](hooks.md).
 

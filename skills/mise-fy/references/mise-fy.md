@@ -73,12 +73,12 @@ whole-tree pass now with `--all`. **This can be large and noisy** (especially
 - **Let the user know** the scope first: `mise run check --all` (report-only) shows how much is outstanding before anything changes.
 - **Offer a subagent** to do it properly: triage the report, apply safe auto-fixes
   (`mise run check --all --fix`) as a separate "retrospective lint" commit kept off the
-  feature work, populate ignore scaffolds (`typos.toml`, `.betterleaks.toml`) for confirmed
+  feature work, populate ignore scaffolds (`.config/typos.toml`, `.config/betterleaks.toml`) for confirmed
   false positives, and flag anything needing a human call.
 - **Or hand the user a prompt** to run themselves / paste to a fresh agent, e.g.:
   > "Run `mise run check --all` on this repo. Triage the failures: apply mechanical auto-fixes
   > via `mise run check --all --fix` in a standalone commit, add confirmed false positives to
-  > `typos.toml` / `.betterleaks.toml` rather than disabling steps, and list anything that
+  > the typos / betterleaks ignore configs rather than disabling steps, and list anything that
   > needs my decision. Don't mix these fixes into unrelated changes."
 
 Keep this off `pre-push`/CI gates until the tree is clean, otherwise the first CI run fails on legacy debt.
@@ -96,6 +96,8 @@ The mise-fy isn't done until every box is accounted for:
 - [ ] Tasks migrated; lint/test/build runnable via `mise run`
 - [ ] Bespoke file-watchers (nodemon/`--watch`/cargo-watch) replaced by `mise watch` + `sources`; `watchexec` pinned if used
 - [ ] Pre-commit hooks configured, and have a CI counterpart.
+- [ ] `.config/` layout applied: `hk.pkl`, linter configs, and the setup stamp live under `.config/`, not the repo root
+      ([`hk.md`](hk.md#linter-config-lives-in-config-default)). Auditing an existing repo: 3+ relocatable configs at root → suggest migrating (non-blocking).
 - [ ] Retrospective lint run (`mise run check --all`) and existing debt triaged/cleared before gating CI
 - [ ] CI uses `jdx/mise-action` and runs the same tasks
 - [ ] CI auto-fix variant decided: report-only by default; opt-in write-access variant raised interactively or suggested without blocking when autonomous

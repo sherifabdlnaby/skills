@@ -4,7 +4,7 @@
 
 # Minimum `mise` version. If not matched, will guide user to update.
 # -> Remember to update when relying on newly introduced setting.
-min_version = "2026.6.6" # (do not copy, use the appropriate version or what's installed at the user)
+min_version = "2026.8.0" # (do not copy, use the appropriate version or what's installed at the user)
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
@@ -18,7 +18,7 @@ pinact = "3"   # pin GitHub Actions to SHAs; needs a GitHub token for the API (s
 # rumdl = "0.2"  # markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Config in rumdl.toml. See hk.md.
 
 # pre-commit
-hk = "1.48.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs (see hk.md) (don't put this comment in generated file)
+hk = "1.54.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs (see hk.md) (don't put this comment in generated file)
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
@@ -67,16 +67,16 @@ sources = ["package.json", "package-lock.json"]      # manifest + lockfile(s) (e
 outputs = ["node_modules"]                           # install dir (e.g. .venv, vendor); explicit outputs so the cache tracks it
 run = "npm ci"                                        # per runtime: pnpm install --frozen-lockfile, uv sync, go mod download, …
 
-[tasks."setup:stamp"] # write the version of the last run setup to .mise/setup
+[tasks."setup:stamp"] # write the version of the last run setup to .config/mise/setup
 hide = true
 quiet = true
 wait_for = ["deps"]                                  # only stamp success once deps finished (waits iff deps is in the run)
-run = 'printf %s "{{vars.setup_version}}" > .mise/setup && echo "✅ Setup v{{vars.setup_version}} stamped"'
+run = 'printf %s "{{vars.setup_version}}" > .config/mise/setup && echo "✅ Setup v{{vars.setup_version}} stamped"'
 
 [tasks."setup:check"] # fast probe (runs on `enter`); warns if setup is stale, never fails
 hide = true
 quiet = true
-run = '[ "$(cat .mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] || echo "⚠️  Your setup is stale, run: mise run setup" >&2'
+run = '[ "$(cat .config/mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] || echo "⚠️  Your setup is stale, run: mise run setup" >&2'
 
 # ── 🪝 hooks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [hooks]

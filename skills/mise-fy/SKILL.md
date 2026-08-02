@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # mise-fy
@@ -86,7 +86,7 @@ TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running a
 Keeping `enter`/`cd` hooks offline-safe (`MISE_OFFLINE`, or they hang the shell), trust impact, the shim caveat. For git/pre-commit hooks specifically, see hk below.
 
 **hk Hooks** (pre-commit / git hooks) -> [`references/hk.md`](references/hk.md)
-`hk.pkl` (Pkl), `check` vs `fix`, builtins, mise integration, install, extending with custom steps.
+`hk.pkl` (Pkl, lives at `.config/hk.pkl`), `check` vs `fix`, builtins, mise integration, install, extending with custom steps, the `.config/` home for linter configs.
 
 **CI** (running mise tasks/tools in CI: shims, caching, pinning, tokens) -> [`references/ci.md`](references/ci.md)
 General platform-agnostic CI rules; platform specifics under [`references/ci/`](references/ci/):
@@ -101,6 +101,12 @@ What to put in README.md and AGENTS.md/CLAUDE.md so a human and an agent can ins
 
 **Reference setup** (canonical example layout) -> [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md)
 Annotated example file tree + `mise.toml` to copy from.
+
+### Complementary Skills
+
+**CI/CD-f** (checks/release/publish workflows, gating, signing, and community hygiene) -> load **cicd-fy** skill, if installed (from same author).
+This skill covers running mise *in* CI; the pipeline's shape is cicd-fy's domain.
+
 
 ## Always applies (regardless of task)
 

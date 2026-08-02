@@ -13,16 +13,15 @@ How to build or improve mise Tasks.
    artifact's existence is itself a correctness condition (a deleted output must re-run).
    `--force` bypasses for a clean run.
 4. **TOML for <= 5-line tasks; longer logic use an executable file task** with a shebang + `set -euo pipefail` (unless the repo already has a scripts dir).
-5. **File tasks must be executable** in a discovered dir. Prefer to use `.mise/tasks`. Subdirs become `colon:names` ( .mise/tasks/test/one `test:one` ).
+5. **File tasks must be executable** in a discovered dir. Prefer to use `.config/mise/tasks` over `.mise` to keep repo root directories few.
 6. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
 7. **Invoke `mise run <task>` (alias `mise r`)**, never bare `mise <task>` (avoids command/tool conflicts).
 8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2027.5.0). Built-in; `help=` + `choices` make
    `--help` and completion free. See Task Arguments below.
 9. **Give every task a `description`**;
-10. add `choices`/simple `complete` when useful and it's a short one-liner command.
-11. Handwritten completion scripts only on request; keep them under **`.mise/completion/`**
-    and reference by path from `complete … run="./.mise/completion/x.sh"`. (Convention only;
-    mise does **not** auto-load that dir; it's just where we standardize these scripts.)
+10. add `choices`/simple `complete` when useful and it's a short one-liner command. Avoid hardcoding/enumurating lists that are expected to extend in the future.
+11. Handwritten completion scripts only on request by user; keep them under **`.config/mise/completion/`** (Convention only;
+    mise does **not** auto-load that dir; it's just where we standardize these scripts.).
 12. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal
     helpers. In CI pass `-y`/`--yes` **before** the task name (`mise run -y deploy
     prod`); after it, a task with a `usage` spec parses it as a task arg and errors
@@ -92,7 +91,7 @@ run = "cargo build"
 
 (Args/flags via `usage` are covered in Task Arguments below; gate destructive ones with `confirm = "…"`.)
 
-File task (`.mise/tasks/build`, must be executable):
+File task (`.config/mise/tasks/build`, must be executable):
 
 ```bash
 #!/usr/bin/env bash
@@ -127,7 +126,7 @@ complete "env" run="ls deploy/envs" descriptions=#true                          
 run = './deploy.sh "$usage_env" --tag "$usage_tag" ${usage_force:+--force} ${usage_verbose:+-v}'
 ```
 
-Same spec as a **file task** (`.mise/tasks/deploy`, executable). Spec lives in
+Same spec as a **file task** (`.config/mise/tasks/deploy`, executable). Spec lives in
 `#USAGE`/`#MISE` comments; the body is a plain script, so read **only `$usage_X` env
 vars**. The body isn't Tera-rendered, so `{{usage.X}}` prints literally. Every line
 of a multi-line `{ choices … }` block needs its own `#USAGE`.
@@ -211,11 +210,12 @@ run = "mise watch test"        # `mise run dev` starts the watcher; someone stil
 Before considering a task done:
 
 - [ ] `description` set; standard names used where they fit (`setup`/`check`(=lint)/`test`/`build`/`dev`); colon-namespaced if part of a group.
-- [ ] Right form: TOML for <=5 lines, executable file task for longer logic; file task lives in a discovered dir (`.mise/tasks`).
+- [ ] Right form: TOML for <=5 lines, executable file task for longer logic; file task lives in a discovered dir (`.config/mise/tasks`).
 - [ ] Ordering via `depends`; skip-if-unchanged via `sources` (explicit `outputs` on artifact tasks).
 - [ ] `env`/`tools` scoped to the task, not global, when only it needs them.
 - [ ] Args via `usage` spec (not deprecated `{{arg()}}` etc.); `{{usage.X}}` only inside a TOML `run`, `$usage_X` everywhere else.
-- [ ] Completion added where useful: `{ choices … }` for static sets, `complete "name" run="…"` for dynamic (if command is oneliner); handwritten scripts under `.mise/completion/` only on request.
+- [ ] Completion added where useful: `{ choices … }` for static sets that aren't expected to grow, `complete "name" run="…"` for dynamic (if command is oneliner); handwritten scripts under
+      `.config/mise/completion/` only on request.
 - [ ] Destructive tasks gated with `confirm`; internal helpers `hide = true`; CI passes `-y`.
 - [ ] Reused settings in config (`mise.toml`/`MISE_*`), static values in `[vars]` not `[env]`.
 - [ ] Runs green via `mise run <task>`; if it's `check`/`lint`, wired to hk when the repo uses it.
