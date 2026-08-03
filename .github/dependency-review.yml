@@ -1,0 +1,18 @@
+# Policy for actions/dependency-review-action (wired by .github/workflows/dependency-review.yml).
+# Declarative on purpose: the workflow stays a thin runner, the policy lives here.
+
+# Report-only. Every finding is surfaced (severity floor is the lowest), but nothing blocks a
+# merge — findings in existing deps must not brick unrelated work. Arm it by flipping
+# `warn-only` to false, and raise `fail-on-severity` to the level worth blocking on.
+fail-on-severity: low
+warn-only: true
+
+# Summary table posted on the PR only when the review reports something. The workflow downgrades
+# this to `never` on fork PRs, whose token is read-only and would 403 on the comment API.
+comment-summary-in-pr: on-failure
+
+# License policy is deliberately unset: `allow-licenses` and `deny-licenses` are mutually
+# exclusive and both must be derived from the repo's own LICENSE — which this repo doesn't have
+# yet (the manifests claim MIT, the file is missing). Add one list here once LICENSE lands.
+# The repo's only ecosystem in the dependency graph is `github-actions` (the SHA-pinned actions);
+# there is no package manifest to review.

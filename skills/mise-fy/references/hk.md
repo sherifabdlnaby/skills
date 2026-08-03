@@ -7,7 +7,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 ## Rules and Best Practices:
 
 1. All linters should be managed by mise.
-2. Do not install `pkl`; hk bundles a Pkl evaluator (`pklr`), so no separate install is needed. Pin the hk version to your installed one via `hk init`; these conventions target hk >= 1.54.
+2. Do not install `pkl`; hk bundles a Pkl evaluator (`pklr`), so no separate install is needed
+   (exception: the `pkl`/`pkl_format` lint builtins shell out to the `pkl` CLI).
 3. **For custom linters/tests, delegate to a mise task.** Avoid putting logic in `hk.pkl` where possible.
 4. Pin the `<VER>` in the `amends`/`import` URLs; regenerate with `hk init`, don't hardcode from memory.
 5. Always use a linter hk builtin settings.

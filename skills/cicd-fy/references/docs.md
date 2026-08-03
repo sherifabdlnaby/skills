@@ -29,16 +29,8 @@ PR flow it must follow, and an **outside contributor** how to land a change. Thr
 
 ## AGENTS.md / CLAUDE.md (agents)
 
-The distilled rules an agent needs to *work with* the pipeline, and to *edit* it:
-
-- **PR flow**: every PR needs one Impact label (`release:major|minor|patch|skip`) or the bump gate
-  fails; the 🔖 preview and lint sticky comments are automation, not reviewer feedback — react (add
-  the label, run the fix command), don't reply.
-- **Don'ts**: no hand-edited changelog (notes are generated from PRs); no version bumps in files (the
-  pipeline stamps the tag); never delete or skip a failing gate to get a merge through.
-- **Workflow-editing house rules**: distill the `## Mechanics` list of
-  [`platforms/github.md`](platforms/github.md) (SHA pins, env indirection, least privilege) to a few
-  lines, plus: `actionlint` + `zizmor` gate every workflow change.
+Don't mention the structure, or list files these are easily discoverable by humans and agents.
+Introduce the concept of labels, how releases are created, how bumps are determined.
 
 ## CONTRIBUTING.md (outside contributors)
 
@@ -59,7 +51,6 @@ placeholder links to the repo's source of truth over restating it. Sections
 ## Audit checklist
 
 - [ ] README: release paragraph + `release:*` label table + Verify/Install text + badges.
-- [ ] AGENTS.md / CLAUDE.md: PR flow (Impact label, sticky comments), don'ts, workflow-editing rules.
 - [ ] CONTRIBUTING.md present (or consciously declined); sections match what the repo actually has;
       links point at sources of truth, not copies of them.
 - [ ] Docs updated in place — no generated-from-scratch AGENTS.md/CLAUDE.md, repo structure respected.

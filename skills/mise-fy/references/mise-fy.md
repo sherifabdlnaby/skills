@@ -16,6 +16,7 @@ Guidance on converting an existing project to be Mise-managed, or auditing one t
 - **`~/.tool-versions` is not global** in mise (unlike asdf); global config is `~/.config/mise/config.toml`.
 - **Trust trips fresh clones**, `mise trust` (or `trusted_config_paths`) is needed before `[env]`/tasks load. If Repo has automated work-tree initiation, add the trust step.
 - **Remove old managers only after** the mise path is verified, parallel mechanisms drift.
+- **Copied assets don't reference the skill.** The skill won't always be available to future readers.
 
 ## Procedure
 

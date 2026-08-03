@@ -38,6 +38,3 @@ Shipping a change under `skills/` or `hooks/` needs both manifest versions bumpe
 value (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`) — `mise run version:check`
 enforces this pre-push and in CI. A release cuts itself: merging a version bump to `main` tags and
 publishes automatically; there's no separate release step to run by hand.
-
-CI workflows live in `.github/workflows/`. Changing one still has to pass `mise run check`
-(actionlint, zizmor included) and follow the `skills/cicd-fy` doctrine.

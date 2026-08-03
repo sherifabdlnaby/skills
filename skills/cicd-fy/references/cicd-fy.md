@@ -18,6 +18,7 @@ Guidance on converting a repo's CI/CD to the recommended shape, or auditing one 
 5. **Don't break the next release.** Keep the old release path working until the new one has cut a
    release (or a dry run proved it), then remove it.
 6. Always converse with the user and discuss pros and cons unless directed otherwise.
+7. **Copied assets don't reference the skill.** The skill won't always be available to future readers.
 
 ## Procedure
 
@@ -55,6 +56,9 @@ Every project has its shape and requirements. Converse with the user on what to 
 ### 3. Convert
 
 Per area, follow the matching reference; copy from [`assets/`](../assets/.github/workflows/) and adapt.
+Asset headers that address *you* ("Copy and adapt", `See references/…`, `SKILL.md` pointers) are
+skill-facing — strip them from the landed file; keep the contract comments meant for the repo's
+future readers.
 Converse with the user where a reference says to (unlabeled-PR policy, autolabeler taxonomy, draft vs
 auto-tag model).
 
@@ -67,8 +71,8 @@ before trusting it with a stable version.
 ### 5. Document it
 
 Follow [`docs.md`](docs.md): the README release paragraph + label table + Verify/Install text, the
-AGENTS.md/CLAUDE.md PR-flow and workflow-editing rules (updated in place, never generated from
-scratch), and the CONTRIBUTING.md scaffold (opt-out — skip only if the user declines).
+minimal AGENTS.md/CLAUDE.md pointers (updated in place, never generated from scratch), and the
+CONTRIBUTING.md scaffold (opt-out — skip only if the user declines).
 
 ## Checklist
 

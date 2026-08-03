@@ -33,6 +33,9 @@ An example of ambiguity: a label that just says `major` can be ambiguous; does i
 or did dependabot bump major version of dependency (that doesn't necessarily mean it causes a major version).
 
 Below is a recommended label taxonomy; use if the repo doesn't have an established pattern already.
+If the repo has one that's coherent and already consumed by CI and past PRs, keep it (deleting the
+unused duplicates it shadows); if it's obviously broken, fix it; anything in between, escalate to
+the user.
 
 | Axis                                          | Label               | Color    | Example description                         | Consumers                                                       |
 | :-------------------------------------------- | :------------------ | :------- | :------------------------------------------ | :-------------------------------------------------------------- |
@@ -72,15 +75,15 @@ description). Create the rest.
 Badges answer a visitor's first questions: does it build, do tests pass, how covered, is it safe to
 depend on.
 - Avoid adding badges that say nothing (e.g. `PRs welcome`, a hand-flipped `maintained`)
-- Avoid stating the obvious... GitHub's UI already shows it next to the README (language, stars, license).
+- Avoid stating the obvious... GitHub's UI already shows it next to the README (language, stars, license, latest release).
 
 Recommended set for **public** repos:
 
 - **CI / checks** — the check workflow's `badge.svg`; keyed to the workflow *filename*, a rename breaks it.
 - **Tests** — the test workflow's `badge.svg` (skip when checks + tests are one workflow).
 - **Coverage** — Codecov / Coveralls; ships together with the upload step, never before.
-- **Version** — registry-native where the artifact lives (npm, pkg.go.dev, image tag); else latest
-  GitHub release.
+- **Version** — registry-native only (npm, pkg.go.dev, image tag): what's on the registry isn't
+  visible from the repo page. A latest-GitHub-release isn't it.
 - **Supported runtimes** — the manifest via the registry (`pypi/pyversions`, `engines`, `go.mod`).
 - **Vulns / scan** — the scheduled security-scan workflow's `badge.svg`; or the user's scanner if
   they run one.

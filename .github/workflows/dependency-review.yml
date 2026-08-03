@@ -1,0 +1,38 @@
+# Reviews the dependency delta a PR introduces against GitHub's dependency graph and reports known
+# vulnerabilities before they land. This repo's only graphed ecosystem is `github-actions`, so in
+# practice it reviews action bumps (Dependabot's or a hand-edited pin). Report-only — the policy,
+# including the arm switch, lives in .github/dependency-review.yml.
+name: 🔍 Dependency review
+
+on:
+  pull_request: {}
+
+# Top-level read-only; the job below widens to what it needs.
+permissions:
+  contents: read
+
+# One run per PR — newer pushes cancel stale runs.
+concurrency:
+  group: dependency-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: dependency review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write # the summary comment
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          config-file: ./.github/dependency-review.yml
+          # Fork PRs carry a read-only token, so the comment API 403s — review still runs, it just
+          # reports to the job summary instead. Inputs win over the config file.
+          comment-summary-in-pr: ${{ github.event.pull_request.head.repo.fork && 'never' || 'on-failure' }}

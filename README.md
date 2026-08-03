@@ -8,24 +8,26 @@
 
 <p align="center">
   <a href="https://skills.sh/sherifabdlnaby/skills"><img src="https://skills.sh/b/sherifabdlnaby/skills" alt="skills.sh" /></a>
+  <a href="https://github.com/sherifabdlnaby/skills/actions/workflows/check.yml"><img src="https://github.com/sherifabdlnaby/skills/actions/workflows/check.yml/badge.svg" alt="Checks" /></a>
 </p>
 
 Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 
 ## Skills
 
-1. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
-2. [cicd-fy](skills/cicd-fy/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
-3. [git](skills/git/) | My git conventions and PR workflow.
+1. [coding](skills/coding/) | My coding and docs conventions and taste. Loaded first on anything that touches code or docs.
+2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
+3. [cicd-fy](skills/cicd-fy/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
+4. [git](skills/git/) | My git conventions and PR workflow.
    - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: respond to reviews and fix CI, until green (or `forever`).
-4. [kubernetes-debug](skills/kubernetes-debug/) | WIP: Failure mode when debugging k8s
-5. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
+5. [kubernetes-debug](skills/kubernetes-debug/) | WIP: Failure mode when debugging k8s
+6. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
    - [afk-careful](skills/variants/afk-careful/) | Conservative with its autonomy.
    - [afk-yolo](skills/variants/afk-yolo/) | Max non-destructive autonomy.
    - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
-6. [review](skills/review/) | WIP: Review patterns.
-7. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
-8. [grill](skills/grill/) | [Matt Pocock](https://github.com/mattpocock/skills) skill extended to ask through the `AskUserQuestion` tool.
+7. [review](skills/review/) | WIP: Review patterns.
+8. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
+9. [grill](skills/grill/) | [Matt Pocock](https://github.com/mattpocock/skills) skill extended to ask through the `AskUserQuestion` tool.
 
 ## Models
 
@@ -67,7 +69,27 @@ Manage from `/plugin`. Same repo, same skills — Cursor reads `.cursor-plugin/`
 
 ## Development
 
-This repo is managed by [mise](https://mise.jdx.dev). One-time setup:
+This repo is managed by [mise](https://mise.jdx.dev): it pins every tool, exposes the tasks, and
+wires the git hooks, so you only deal with mise once.
+
+<details>
+<summary><b>First time on this machine — install and activate mise</b></summary>
+
+```bash
+brew install mise                                  # or: apt/dnf/pacman install mise, winget install jdx.mise
+echo 'eval "$(mise activate zsh)"' >> ~/.zshrc     # bash: mise activate bash >> ~/.bashrc
+mise doctor                                        # confirm the install is healthy
+```
+
+Other install methods: [installation docs](https://mise.jdx.dev/installing-mise.html).
+
+</details>
+
+You also need the [`gh` CLI](https://cli.github.com) logged in (`gh auth status`) — mise doesn't
+install it, and the `pinact` check step borrows its token to resolve action tags to SHAs. Without
+it that step runs unauthenticated and gets rate-limited.
+
+One-time setup, from the repo root:
 
 ```bash
 mise trust && mise run setup   # trust config, install tools, self-install the pre-commit hook
@@ -97,3 +119,9 @@ Cutting a release:
    `fix`, `docs`, `ci`, `deps`.
 3. No version bump ships no release. A PR's sticky comment previews which outcome a merge would
    produce.
+
+There's nothing to verify or download: the marketplaces install the repo at the tag.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).

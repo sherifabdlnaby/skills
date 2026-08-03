@@ -1,8 +1,8 @@
-# Auto-fix variant of check.yml. Runs the SAME `mise run check` but with --fix: if it changes
-# anything it pushes the fixes to a `bot/ci/<target>` branch, opens (or updates) a PR targeting
-# the branch that was checked, and fails CI. A later clean run closes that PR again. Needs write
-# access — see references/ci/github.md ("Optional: auto-fix PRs"). The report-only check.yml
-# (contents: read) stays the default for repos that don't want this. Copy and adapt.
+# The repo's only check workflow: the auto-fix shape. Runs the SAME `mise run check` local and the
+# pre-commit hook run, but with --fix: if it changes anything it pushes the fixes to a
+# `bot/ci/<target>` branch, opens (or updates) a PR targeting the branch that was checked, and
+# fails CI. A later clean run closes that PR again. Needs write access — chosen deliberately over
+# the report-only shape.
 name: 🎨 Linters, Validators, and Formatters
 
 on:

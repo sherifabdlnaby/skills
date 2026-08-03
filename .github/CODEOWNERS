@@ -1,0 +1,18 @@
+# Routes review on the paths that can change what CI runs or what ships. Inert until the `main`
+# ruleset requires code-owner review (required_approving_review_count is 0 today) — it's here so
+# the moment a second maintainer appears, workflow and toolchain edits already get a second pair
+# of eyes.
+
+# Everything, by default.
+*                       @sherifabdlnaby
+
+# The pipeline and the toolchain that CI reuses.
+/.github/               @sherifabdlnaby
+/mise.toml              @sherifabdlnaby
+/mise.lock              @sherifabdlnaby
+/hk.pkl                 @sherifabdlnaby
+/hooks/                 @sherifabdlnaby
+
+# The release contract: these files decide what version ships.
+/.claude-plugin/        @sherifabdlnaby
+/.cursor-plugin/        @sherifabdlnaby

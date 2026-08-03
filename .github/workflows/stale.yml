@@ -43,7 +43,9 @@ jobs:
           close-pr-message: >
             Closing for inactivity. If this is still wanted, rebase against current `main` and
             reopen (or open a fresh PR) — a rebased PR is easier to review than reopening a stale one.
-          exempt-pr-labels: "pinned,security"
+          # `deps` too: Dependabot rebases and supersedes its own PRs, and a stale-close makes it
+          # stop recreating that update.
+          exempt-pr-labels: "pinned,security,deps"
 
           # Issues: only the awaiting-reply states go stale; everything else is exempt by omission.
           only-issue-labels: "needs-more-info,cannot-reproduce"

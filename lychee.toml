@@ -1,5 +1,4 @@
 # lychee dead-link checker config. Auto-loaded from repo root.
-# See skills/mise-fy/references/hk.md.
 
 # Offline: only verify local/relative file links resolve. External http(s) URLs
 # are skipped (no network) — flip to false (or run `lychee` without it) to also
