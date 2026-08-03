@@ -1,11 +1,12 @@
-# lychee dead-link checker config. Auto-loaded from repo root.
+# lychee dead-link checker config. lychee has no config env var and doesn't look in
+# .config/, so hk splices `--config .config/lychee.toml` into the builtin's command.
 
 # Offline: only verify local/relative file links resolve. External http(s) URLs
 # are skipped (no network) — flip to false (or run `lychee` without it) to also
 # validate external URLs.
 #
 # NOTE: do not add `exclude_path` here — its entries are regexes matched against
-# the whole path, so e.g. ".mise" would also match "/mise" and silently drop
+# the whole path, so e.g. ".config" would also match "/config" and silently drop
 # every file under skills/mise-fy/. hk already scopes the file list it passes in.
 offline = true
 

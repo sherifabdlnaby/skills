@@ -21,7 +21,8 @@ Prefer `mise run <task>` over calling the tool directly, so local, hooks, and CI
 ## Git hooks (hk)
 
 Commits run [hk](https://hk.jdx.dev), the same `check` CI runs, to format and lint staged files. Fix failures with `mise run check --fix`. Don't disable steps to push a commit through;
-`git commit --no-verify` skips hooks for a WIP commit.
+`git commit --no-verify` skips hooks for a WIP commit. `mise run setup` installs the hooks into
+git *config* (`hook.<name>.command`) — `.git/hooks/` stays empty, that doesn't mean they're absent.
 
 ## Extending the setup
 
@@ -29,8 +30,16 @@ Changing tools, tasks, env, or hooks? Edit the config, don't bolt on scripts, th
 
 - **`mise.toml`**: the source of truth for `[tools]`, `[tasks]`, `[env]`/`[vars]`, `[settings]`, and `[hooks]`.
 - **`mise.lock`**: resolved versions plus checksums. Commit it; regenerate with `mise install` after a `[tools]` change.
-- **`.mise/`**: project-local state (the setup stamp is gitignored). File tasks can live in `.mise/tasks/`.
-- **`hk.pkl`**: the pre-commit and `check` pipeline (linters and formatters, in Pkl). Add or edit a lint step here.
+- **`.config/`**: everything that would otherwise clutter the root — `hk.pkl` plus each linter's config (`typos.toml`, `lychee.toml`, `rumdl.toml`, `yamllint.yml`, `betterleaks.toml`). Tools that
+  can't find a config there are pointed at it from `.config/hk.pkl`.
+- **`.config/hk.pkl`**: the pre-commit and `check` pipeline (linters and formatters, in Pkl). Add or edit a lint step here.
+- **`.config/mise/`**: project-local mise state (the setup stamp is gitignored). File tasks can live in `.config/mise/tasks/`.
+
+## CI not visible in the tree
+
+Beyond `.github/workflows/`: CodeQL default setup, Dependabot alerts + security updates, secret
+scanning with push protection, and a `main` ruleset requiring the `check` job are configured in
+repo settings. Don't scaffold replacements for them.
 
 ## Releases
 

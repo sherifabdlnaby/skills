@@ -1,0 +1,34 @@
+# betterleaks secret-scanner config (gitleaks-compatible). Pointed at by the
+# BETTERLEAKS_CONFIG env on the hk step — betterleaks does NOT auto-discover a
+# .betterleaks.toml, so without that env this file is decorative and the scan
+# silently runs on defaults.
+# Docs: https://github.com/betterleaks/betterleaks
+#       https://github.com/gitleaks/gitleaks#configuration
+
+# Keep the built-in rule set; your config extends it instead of replacing it.
+[extend]
+useDefault = true
+
+# Allowlist scaffold — add entries only for confirmed false positives (example keys,
+# test fixtures), never real secrets. Kept fully commented out on purpose: an
+# `[allowlist]` block whose paths/regexes/stopwords are all empty is a hard config
+# error ("must contain at least one check for: commits, paths, regexes, or stopwords"),
+# so uncomment the block *and* at least one entry together.
+#
+# [allowlist]
+# description = "Repo-wide allowlist for known-safe matches."
+#
+# # Files/paths to skip entirely (regex, matched against the file path).
+# paths = [
+#     '''skills/.*/references/.*\.md''',
+# ]
+#
+# # Specific values or patterns that are not real secrets (regex).
+# regexes = [
+#     '''AKIAEXAMPLE[0-9A-Z]+''',
+# ]
+#
+# # Literal tokens to ignore wherever they appear.
+# stopwords = [
+#     "example",
+# ]

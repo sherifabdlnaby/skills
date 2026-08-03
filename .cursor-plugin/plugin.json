@@ -10,7 +10,7 @@
   "repository": "https://github.com/sherifabdlnaby/skills",
   "license": "MIT",
   "keywords": ["skills", "git", "mise", "commands", "hooks", "agents"],
-  "logo": "assets/logo.svg",
+  "logo": ".github/assets/logo.svg",
   "skills": ["skills", "skills/variants"],
   "commands": "commands",
   "hooks": "hooks/cursor-hooks.json"

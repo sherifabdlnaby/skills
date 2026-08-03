@@ -11,7 +11,9 @@ hooks:
 
 docs:
   - changed-files:
-      - any-glob-to-any-file: "*.md"
+      - any-glob-to-any-file:
+          - "*.md"
+          - ".github/CONTRIBUTING.md"
 
 ci:
   - changed-files:
@@ -19,6 +21,5 @@ ci:
           - ".github/**"
           - "mise.toml"
           - "mise.lock"
-          - "hk.pkl"
+          - ".config/**" # hk.pkl + every linter's config
           - "*.toml"
-          - ".yamllint"

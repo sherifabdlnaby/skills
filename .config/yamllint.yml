@@ -1,4 +1,5 @@
-# yamllint — structural YAML only. Cosmetic defaults (line-length, truthy,
+# yamllint — structural YAML only. Pointed at by YAMLLINT_CONFIG_FILE on the hk step.
+# Cosmetic defaults (line-length, truthy,
 # comments, document-start) are noisy on workflow/docs YAML; keep the
 # structural rules (syntax, key-duplicates, indentation, anchors).
 extends: default

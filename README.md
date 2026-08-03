@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="Hand-rolled sushi" width="240" />
+  <img src=".github/assets/logo.svg" alt="Hand-rolled sushi" width="240" />
 </p>
 
 <h1 align="center">Skills</h1>
@@ -104,7 +104,7 @@ mise run check --all    # whole repo
 mise tasks              # discover every task
 ```
 
-The same `check` task runs in the pre-commit hook and in CI. lychee checks local/relative links only by default (see `lychee.toml`).
+The same `check` task runs in the pre-commit hook and in CI. lychee checks local/relative links only by default (see `.config/lychee.toml`).
 
 ## Releases
 
@@ -124,4 +124,4 @@ There's nothing to verify or download: the marketplaces install the repo at the 
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md).

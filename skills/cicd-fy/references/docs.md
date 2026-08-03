@@ -4,7 +4,7 @@ A cicd-fy or audit isn't finished until the docs teach a **human** how releases 
 PR flow it must follow, and an **outside contributor** how to land a change. Three surfaces:
 
 - **README.md** -> the human: how a release is cut, how to trust the artifact.
-- **AGENTS.md / CLAUDE.md** -> the agent: PR flow, don'ts, workflow-editing house rules.
+- **AGENTS.md / CLAUDE.md** -> the agent: the release/label concept, and CI it can't discover, the mise -> hk -> ci linkage.
 - **CONTRIBUTING.md** -> the outside contributor. Refer to [assets/CONTRIBUTING.md](../assets/CONTRIBUTING.md) for inspiration.
 - **Github Releases** -> How to install/download/pull and how to Attest/Verify.
 

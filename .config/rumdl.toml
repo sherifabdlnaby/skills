@@ -1,4 +1,5 @@
-# rumdl — Markdown linter/formatter. Auto-loaded from repo root. See skills/mise-fy/references/hk.md.
+# rumdl — Markdown linter/formatter. Discovered natively at .config/rumdl.toml (no wiring).
+# See skills/mise-fy/references/hk.md.
 # Scoped to a hand-picked rule set: this is a prose-heavy docs repo, so the full
 # markdownlint set is too noisy. `enable` REPLACES the default set — only these run.
 

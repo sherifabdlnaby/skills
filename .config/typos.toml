@@ -1,4 +1,5 @@
-# typos spell-checker config. Auto-discovered from the repo root by `typos`.
+# typos spell-checker config. typos only auto-discovers a root typos.toml, so hk
+# splices `--config .config/typos.toml` into the builtin's command.
 # Scaffold: everything below is commented — uncomment/extend as real false
 # positives appear. Docs: https://github.com/crate-ci/typos
 #

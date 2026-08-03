@@ -17,7 +17,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 7. **`check` mounts the union of all tiers** (`steps { ...commitGates; ...pushGates }`) and is the one command CI runs; local hooks mount
    subsets by cost (`pre-commit` = commitGates, `pre-push` = pushGates). Anything outside the union — an inline hook step, an unmounted tier —
    is invisible to CI.
-8. Avoid adding linter files to root directory when they can live elsewhere (e.g .config/); to keep using Builtins prefer env var of the linter to set config file.
+8. Avoid adding linter files to root directory when they can live elsewhere (e.g .config/); to keep using Builtins prefer the linter's config env var, and splice `--config` into the builtin's own
+   command where it has none. Then verify the config is actually being read: a config the tool can't find degrades to defaults silently, not loudly.
 
 ## Notes & Gotchas:
 
@@ -104,9 +105,9 @@ You can recommend to the user other linters based on the project. Use Builtins l
 
 ##### lychee (https://github.com/lycheeverse/lychee)
 
-By default, make lychee check for local .md files, only check for online links after confirming with user. Configure this in `.config/lychee.toml` (wired via the `--config` override — see the
-[`.config/` table below](#linter-config-lives-in-config-default); a root `lychee.toml` auto-loads without wiring if the repo keeps a root layout): `offline = true` resolves
-local/relative links and skips http(s), which then show as `👻 Excluded` rather than checked. See this repo's `lychee.toml`.
+By default, make lychee check for local .md files, only check for online links after confirming with user. Configure this in `.config/lychee.toml` (wired by splicing `--config` into the builtin —
+see the [`.config/` table below](#linter-config-lives-in-config-default); a root `lychee.toml` auto-loads without wiring if the repo keeps a root layout): `offline = true` resolves
+local/relative links and skips http(s), which then show as `👻 Excluded` rather than checked. See this repo's `.config/lychee.toml`.
 
 - **Set `include_fragments = "anchor-only"`.** Without it lychee only checks that a link's
   target *file* exists and ignores the `#anchor`, so a link to a renamed or deleted
@@ -141,7 +142,7 @@ pure noise). The builtin shells out to the `rumdl` CLI (add `rumdl` to `[tools]`
 auto-discovers `.config/rumdl.toml` natively (a root `rumdl.toml`/`.rumdl.toml` also works). `check` reports; the
 `pre-commit`/`--fix` path runs `rumdl check --fix` and rewrites files. When enabled,
 **scaffold a `.config/rumdl.toml`** so the user has an obvious place to tune
-rules. See this repo's `rumdl.toml`.
+rules. See this repo's `.config/rumdl.toml`.
 
 - **Ask the user whether they want table formatting** (and cell padding); it's a stylistic
   opt-in. That's `MD060` (`table-cell-alignment`, alias `table-format`), and it's **OFF
@@ -156,13 +157,22 @@ rules. See this repo's `rumdl.toml`.
   use `extend-enable` to *add* to defaults instead).
 - **Drop a stray cache dir** with `[global] cache = false`; otherwise rumdl writes a `.rumdl_cache/` next to the files (hk only lints staged files, so the cache buys little).
 
+##### ruff (https://github.com/astral-sh/ruff)
+
+Python lint (`ruff`) + format (`ruff_format`), native binary, no Python runtime needed.
+
+- **It drops a `.ruff_cache/` in the repo root.** hk hands it a few staged files per run, so the
+  cache buys ~nothing and costs a root dir. Turn it off with a step `env { ["RUFF_NO_CACHE"] = "true" }`.
+  **The value must be `true`/`false`**: `"1"` is rejected outright (`invalid value '1' for
+  '--no-cache'`), and every ruff step then fails.
+
 ##### typos (https://github.com/crate-ci/typos)
 
 Spell-checks source. It produces project-specific false positives (jargon, identifiers,
 example tokens), so **confirm with the user before enabling**. When enabled, **scaffold
-a `.config/typos.toml`** (wired via the `--config` override, see the table below) with commented `extend-exclude`, `extend-words`,
+a `.config/typos.toml`** (wired by splicing `--config` into the builtin, see the table below) with commented `extend-exclude`, `extend-words`,
 `extend-identifiers`, and `extend-ignore-re` examples so the user has an obvious place
-to silence false positives. See this repo's `typos.toml`.
+to silence false positives. See this repo's `.config/typos.toml`.
 
 ##### yamllint (https://github.com/adrienverge/yamllint)
 
@@ -189,9 +199,21 @@ Note: none of the generic YAML builtins do **JSON-Schema** validation.
 
 Secret scanner (gitleaks-compatible). Real codebases hit false positives (example keys,
 test fixtures), so **confirm with the user before enabling**. When enabled, **scaffold
-a `.config/betterleaks.toml`** (wired via the `BETTERLEAKS_CONFIG` step env, see the table below) with `[extend] useDefault = true` (keep the
-built-in rules) plus a commented `[allowlist]` (`paths`, `regexes`, `stopwords`). See
-this repo's `.betterleaks.toml`.
+a `.config/betterleaks.toml`** with `[extend] useDefault = true` (keep the built-in
+rules) plus a fully commented-out `[allowlist]`. See this repo's `.config/betterleaks.toml`.
+
+- **betterleaks never auto-discovers its config, at any path.** A `.betterleaks.toml`
+  sitting in the repo root is decorative: scanning with it present is byte-identical to
+  scanning with no config at all. Only `BETTERLEAKS_CONFIG` (see the table below) or
+  `--config` loads it, so a repo that "has a betterleaks config" has probably been
+  scanning on defaults for as long as it's had one. Wire the env var the moment you
+  scaffold the file, and prove it: an intentionally malformed config must make the step
+  fail loudly.
+- **Comment out the whole `[allowlist]` block, not just its entries.** A block whose
+  `paths`/`regexes`/`stopwords` are all empty is a hard config error (`[[allowlists]] must
+  contain at least one check for: commits, paths, regexes, or stopwords`), so the usual
+  "scaffold with everything commented" shape kills the step the first time the config is
+  actually read. Uncomment the block and at least one entry together.
 
 ##### pinact (https://github.com/suzuki-shunsuke/pinact)
 
@@ -230,29 +252,44 @@ command untouched) but requires each dev to store a token in their keychain.
 - **Adding 3+ config-carrying linters at once**: offer the user to consolidate under `.config/` first, then add.
 - **Auditing**: 3+ relocatable config files at the root → raise migrating to `.config/` as a non-blocking suggestion.
 
-Wire each tool to read from `.config/`: **prefer the env-var route (leaves the
-builtin command untouched); use `--config` override only where no env var exists** (it forces
-you to reproduce the builtin's other flags, which can drift across hk versions):
+Wire each tool to read from `.config/` by the cheapest route it supports: **native discovery >
+env var > splicing `--config` into the builtin's own command**. Never retype a builtin's command
+to add a flag; restating it pins today's flags into your `hk.pkl` and silently drops whatever the
+builtin gains on the next hk bump. Splice instead, with `String.replaceAll` on the builtin's own
+string (hk's bundled Pkl evaluator has **no `replaceFirst`**, only `replaceAll`):
 
 | Tool            | Route to `.config/`                                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `rumdl`         | **native**: auto-discovers `.config/rumdl.toml`, no wiring                                                                                       |
 | `yamllint`      | step `env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" }` (ignored if a root `.yamllint` exists)                                          |
-| `betterleaks`   | step `env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }`                                                                               |
+| `betterleaks`   | step `env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }` (**required** — nothing is auto-discovered, see above)                        |
 | `taplo`         | step `env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" }` (re-add `RUST_LOG`; re-declaring `env` replaces the whole mapping) |
-| `typos`         | override `fix`/`check_diff` cmd with `--config .config/typos.toml` (no env var)                                                                  |
-| `lychee`        | override `check` cmd with `--config .config/lychee.toml` (no env var)                                                                            |
-| `markdown_lint` | override `check`/`fix` cmd with `--config .config/markdownlint.yaml` (no env var)                                                                |
+| `typos`         | splice `--config .config/typos.toml` into `fix`/`check_diff` (no env var)                                                                        |
+| `lychee`        | splice `--config .config/lychee.toml` into `check` (no env var)                                                                                  |
+| `markdown_lint` | splice `--config .config/markdownlint.yaml` into `check`/`fix` (no env var)                                                                      |
 
 ```pkl
 local linters = new Mapping<String, Step> {
   ["yamllint"]    = (Builtins.yamllint)    { env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" } }
   ["betterleaks"] = (Builtins.betterleaks) { env { ["BETTERLEAKS_CONFIG"]   = ".config/betterleaks.toml" } }
   ["taplo"]       = (Builtins.taplo)       { env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" } }
-  ["lychee"]      = (Builtins.lychee)      { check = "lychee --no-progress --config .config/lychee.toml {{ files }}" }
+  ["lychee"]      = (Builtins.lychee) {
+    check = Builtins.lychee.check.replaceAll("lychee ", "lychee --config .config/lychee.toml ")
+  }
+  // typos' check_diff is a multi-line shell script, so append-at-the-end doesn't work; splice at
+  // the binary name and both commands keep whatever flags the builtin carries.
+  ["typos"] = (Builtins.typos) {
+    check_diff = Builtins.typos.check_diff.replaceAll("typos ", "typos --config .config/typos.toml ")
+    fix        = Builtins.typos.fix.replaceAll("typos ", "typos --config .config/typos.toml ")
+  }
   // rumdl: nothing — just place the file at .config/rumdl.toml
 }
 ```
+
+**Prove every route after wiring it.** A config that isn't found is almost never loud: the tool
+falls back to defaults and the step still passes. Check each one against a case only the config
+changes (an accepted word for `typos`, a cosmetic rule for `yamllint`, `👻 Excluded` counts plus a
+non-zero `OK` for `lychee`), or point it at a deliberately broken file and confirm the step fails.
 
 ## Docs:
 

@@ -1,7 +1,8 @@
-// hk.pkl — git hooks for hk.
+// hk.pkl — git hooks for hk. Lives in .config/ (hk discovers it there) so the repo root stays thin;
+// every linter config sits next to it, wired below.
 // Pin matches `hk` in mise.toml; both URLs must match. `hk init` regenerates.
-amends "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.54.0/hk@1.54.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.54.0/hk@1.54.0#/Builtins.pkl"
 
 // Anchor for branch-scoped checks (--pr and the pushGates' base). Keep in sync with
 // the base default in mise.toml's version:check task.
@@ -18,23 +19,36 @@ local commonIgnores =
 // Gates by moment; each step lives in exactly one tier, hooks below only compose tiers.
 // `check` mounts the union — the repo's full contract and the only hook CI runs.
 
+// Linter configs live in .config/, not the repo root. Each tool is routed there below by the
+// cheapest available means: native discovery > env var > splicing `--config` into the builtin's
+// own command (`replaceAll`, so the builtin's other flags stay in sync instead of being restated
+// here and silently drifting a release later).
+
 // Commit gates — run on every commit: file-scoped, fast, auto-fixable.
 local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   // formatting
-  ["ruff-format"] = Builtins.ruff_format // python (skills/git/scripts/*.py)
-  ["ruff"] = Builtins.ruff // python lint
-  ["pkl-format"] = Builtins.pkl_format // pkl formatter (hk.pkl)
+  // RUFF_NO_CACHE: hk feeds ruff a handful of staged files, so the cache buys ~nothing and
+  // costs a .ruff_cache/ dir in the repo root — exactly what this layout is getting rid of.
+  ["ruff-format"] = (Builtins.ruff_format) { env { ["RUFF_NO_CACHE"] = "true" } } // python (skills/git/scripts/*.py)
+  ["ruff"] = (Builtins.ruff) { env { ["RUFF_NO_CACHE"] = "true" } } // python lint
+  ["pkl-format"] = Builtins.pkl_format // pkl formatter (.config/hk.pkl)
   ["pkl"] = Builtins.pkl // pkl validate (`pkl eval`)
-  ["rumdl"] = Builtins.rumdl // markdown lint + format; table cell-alignment — config in rumdl.toml
-  ["taplo"] = Builtins.taplo // TOML lint + format
-  ["yamllint"] = Builtins.yamllint // YAML structure only — cosmetic rules off in .yamllint
+  ["rumdl"] = Builtins.rumdl // markdown lint + format; table cell-alignment — .config/rumdl.toml, discovered natively
+  ["taplo"] = Builtins.taplo // TOML lint + format (no config file; nothing to route)
+  ["yamllint"] = (Builtins.yamllint) { env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" } } // YAML structure only — cosmetic rules off there
   ["mise"] = Builtins.mise // validate mise.toml
 
-  // spelling — accepted words / excludes live in typos.toml
-  ["typos"] = Builtins.typos // source-code spell checker
+  // spelling — accepted words / excludes live in .config/typos.toml (no env var for it, so splice --config in)
+  ["typos"] = (Builtins.typos) {
+    check_diff =
+      Builtins.typos.check_diff.replaceAll("typos ", "typos --config .config/typos.toml ")
+    fix = Builtins.typos.fix.replaceAll("typos ", "typos --config .config/typos.toml ")
+  }
 
-  // dead links — offline (local/relative links only); see lychee.toml
-  ["lychee"] = Builtins.lychee
+  // dead links — offline (local/relative links only); see .config/lychee.toml (no env var either)
+  ["lychee"] = (Builtins.lychee) {
+    check = Builtins.lychee.check.replaceAll("lychee ", "lychee --config .config/lychee.toml ")
+  }
 
   // GitHub Actions
   ["actionlint"] = Builtins.actionlint // workflow syntax
@@ -51,7 +65,9 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   }
 
   // safety / hygiene
-  ["betterleaks"] = Builtins.betterleaks // secret scanning — allowlist in .betterleaks.toml
+  ["betterleaks"] = (Builtins.betterleaks) {
+    env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }
+  } // secret scanning — allowlist lives there
   ["detect-private-key"] = Builtins.detect_private_key // block committed private keys
   ["newlines"] = Builtins.newlines // trailing newline
   ["trailing-whitespace"] = Builtins.trailing_whitespace // strip trailing whitespace
