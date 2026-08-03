@@ -7,20 +7,21 @@ name: Release
 # Linting is a separate workflow (check.yml).
 #
 # The version contract (this file is the single source of truth for it):
-#   open PR ........................ bump gate: no bump label fails the job; a sticky comment previews
+#   open PR ........................ bump gate: no Impact label fails the job; a sticky comment previews
 #                                    the exact tag a merge would cut (refreshed after each stable release)
-#   merged PR, no bump label ....... default `minor` (the gate's fallback when merged anyway;
+#   merged PR, no Impact label ..... default `release:minor` (the gate's fallback when merged anyway;
 #                                    patch is too easy to ship by accident, major is costly under immutable releases)
-#   merged PR, multiple labels ..... precedence major > minor > patch
-#   `skip-release` label ........... abort, cut nothing
+#   merged PR, multiple labels ..... precedence release:major > release:minor > release:patch
+#   `release:skip` label ........... abort, cut nothing
 #   dispatch, explicit `version` ... use verbatim (via env, never interpolated); v-prefixed if missing
 #   dispatch, `prerelease: true` ... cut `-rc.N` of the computed bump; N increments vs existing rc tags
-#   release candidate .............. `--prerelease`, never `--latest`; does NOT consume the bump label
+#   release candidate .............. `--prerelease`, never `--latest`; does NOT consume the Impact label
 #   stable after an rc ............. `--notes-start-tag <last-stable>` so notes cover the whole line
 #
-# Label taxonomy: bump labels (major/minor/patch/skip-release) drive the version; category labels
-# (enhancement/bug/docs...) only group the generated notes — applied by the `autolabel` job below
-# (config: .github/release-drafter.yml), grouped via .github/release.yml. Keep the two sets separate.
+# Label taxonomy: Impact labels (release:major/minor/patch/skip) drive the version; Kind labels
+# (enhancement/bug/documentation/...) only group the generated notes — applied by the `autolabel` job
+# below (config: .github/release-drafter.yml), grouped via .github/release.yml. `release:*` is
+# prefixed on purpose: bare semver names get auto-applied by Dependabot with the dep's bump size.
 on:
   push:
     branches:
@@ -88,8 +89,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Bump gate + version preview: one sticky comment shows the exact tag a merge would cut,
-      # recomputed on every label change; no bump label fails the job (make it a required check to
-      # enforce — release runs still fall back to `minor` if an unlabeled PR merges anyway).
+      # recomputed on every label change; no Impact label fails the job (make it a required check to
+      # enforce — release runs still fall back to `release:minor` if an unlabeled PR merges anyway).
       - name: Bump gate & version preview
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -112,10 +113,10 @@ jobs:
           }
           bump_of() { # exact label match, precedence skip > major > minor > patch
             case ",$1," in
-              *,skip-release,*) echo skip ;;
-              *,major,*) echo major ;;
-              *,minor,*) echo minor ;;
-              *,patch,*) echo patch ;;
+              *,release:skip,*) echo skip ;;
+              *,release:major,*) echo major ;;
+              *,release:minor,*) echo minor ;;
+              *,release:patch,*) echo patch ;;
               *) echo "" ;;
             esac
           }
@@ -124,9 +125,9 @@ jobs:
           # Preview as a table; the marker stays first so the sticky-comment lookup still matches.
           NOTE=""
           case "$BUMP" in
-            skip) ROW="| \`$PREV\` | \`skip-release\` | — no release |" ;;
-            "")   ROW="| \`$PREV\` | ⚠️ none | \`minor\` fallback → **\`$(next_version minor)\`** |"
-                  NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`minor\`." ;;
+            skip) ROW="| \`$PREV\` | \`release:skip\` | — no release |" ;;
+            "")   ROW="| \`$PREV\` | ⚠️ none | \`release:minor\` fallback → **\`$(next_version minor)\`** |"
+                  NOTE="> ⚠️ No Impact label (\`release:major\`/\`release:minor\`/\`release:patch\`/\`release:skip\`) — the gate fails; an unlabeled merge falls back to \`release:minor\`." ;;
             *)    ROW="| \`$PREV\` | \`$BUMP\` | **\`$(next_version "$BUMP")\`** |" ;;
           esac
           BODY="$MARKER"$'\n'"### 🔖 Release preview"$'\n\n'"| Current | Bump | On merge |"$'\n'"|:--|:--|:--|"$'\n'"$ROW"
@@ -141,7 +142,7 @@ jobs:
               || echo "::warning::could not post the preview comment (fork PR?)"
           fi
           if [ -z "$BUMP" ]; then
-            echo "::error::No bump label (major/minor/patch/skip-release) on this PR — add one; an unlabeled merge falls back to minor."
+            echo "::error::No Impact label (release:major/release:minor/release:patch/release:skip) on this PR — add one; an unlabeled merge falls back to release:minor."
             exit 1
           fi
 
@@ -164,7 +165,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Find merged PR and read bump label
+      - name: Find merged PR and read Impact label
         if: github.event_name == 'push'
         id: pr
         env:
@@ -182,14 +183,14 @@ jobs:
           fi
           LABELS=$(echo "$PR_JSON" | jq -r '[.labels[].name] | join(",")')
           echo "number=$(echo "$PR_JSON" | jq -r '.number')" >> "$GITHUB_OUTPUT"
-          # Exact label match (grep -w would also hit e.g. `major-redesign`).
-          # Precedence skip-release > major > minor > patch; unlabeled default minor.
+          # Exact label match (a bare substring grep would also hit e.g. `release:major-redesign`).
+          # Precedence release:skip > release:major > release:minor > release:patch; unlabeled default minor.
           case ",${LABELS}," in
-            *,skip-release,*) echo "skip=true"   >> "$GITHUB_OUTPUT"; exit 0 ;;
-            *,major,*)        echo "bump=major"  >> "$GITHUB_OUTPUT" ;;
-            *,minor,*)        echo "bump=minor"  >> "$GITHUB_OUTPUT" ;;
-            *,patch,*)        echo "bump=patch"  >> "$GITHUB_OUTPUT" ;;
-            *)                echo "bump=minor"  >> "$GITHUB_OUTPUT" ;;
+            *,release:skip,*)  echo "skip=true"   >> "$GITHUB_OUTPUT"; exit 0 ;;
+            *,release:major,*) echo "bump=major"  >> "$GITHUB_OUTPUT" ;;
+            *,release:minor,*) echo "bump=minor"  >> "$GITHUB_OUTPUT" ;;
+            *,release:patch,*) echo "bump=patch"  >> "$GITHUB_OUTPUT" ;;
+            *)                 echo "bump=minor"  >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Compute next version
@@ -372,10 +373,10 @@ jobs:
           }
           bump_of() {
             case ",$1," in
-              *,skip-release,*) echo skip ;;
-              *,major,*) echo major ;;
-              *,minor,*) echo minor ;;
-              *,patch,*) echo patch ;;
+              *,release:skip,*) echo skip ;;
+              *,release:major,*) echo major ;;
+              *,release:minor,*) echo minor ;;
+              *,release:patch,*) echo patch ;;
               *) echo "" ;;
             esac
           }
@@ -388,9 +389,9 @@ jobs:
             BUMP="$(bump_of "$LABELS")"
             NOTE=""
             case "$BUMP" in
-              skip) ROW="| \`$PREV\` | \`skip-release\` | — no release |" ;;
-              "")   ROW="| \`$PREV\` | ⚠️ none | \`minor\` fallback → **\`$(next_version minor)\`** |"
-                    NOTE="> ⚠️ No bump label (\`major\`/\`minor\`/\`patch\`/\`skip-release\`) — the gate fails; an unlabeled merge falls back to \`minor\`." ;;
+              skip) ROW="| \`$PREV\` | \`release:skip\` | — no release |" ;;
+              "")   ROW="| \`$PREV\` | ⚠️ none | \`release:minor\` fallback → **\`$(next_version minor)\`** |"
+                    NOTE="> ⚠️ No Impact label (\`release:major\`/\`release:minor\`/\`release:patch\`/\`release:skip\`) — the gate fails; an unlabeled merge falls back to \`release:minor\`." ;;
               *)    ROW="| \`$PREV\` | \`$BUMP\` | **\`$(next_version "$BUMP")\`** |" ;;
             esac
             BODY="$MARKER"$'\n'"### 🔖 Release preview"$'\n\n'"| Current | Bump | On merge |"$'\n'"|:--|:--|:--|"$'\n'"$ROW"

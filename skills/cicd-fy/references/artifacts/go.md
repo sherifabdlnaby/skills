@@ -17,7 +17,7 @@ Two shapes, very different CD needs. CI checks are shared.
 nothing to build, upload, or sign.
 
 **Major bumps change the module path.** From v2 on, a tag only resolves if `go.mod`'s module path
-carries the matching `/vN` suffix (and imports update with it). A `major`-labeled PR must contain that
+carries the matching `/vN` suffix (and imports update with it). A `release:major`-labeled PR must contain that
 path change — the auto-cut `v2.0.0` tag alone leaves consumers unable to `go get` it.
 
 **Rollback is `retract`.** A bad published version can't be unpublished; add a `retract` directive to

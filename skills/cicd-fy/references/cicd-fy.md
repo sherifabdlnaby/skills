@@ -66,9 +66,9 @@ before trusting it with a stable version.
 
 ### 5. Document it
 
-The conversion isn't done until the README (or the repo's docs) says how a release is cut (label -> merge -> tag) and carries
-the same Verify + Install text as the release footer. Also Update AGENTS.md or CLAUDE.md to give distilled hints for Agents to know how to extend.
-([`publish.md`](publish.md#the-verify--install-footer)).
+Follow [`docs.md`](docs.md): the README release paragraph + label table + Verify/Install text, the
+AGENTS.md/CLAUDE.md PR-flow and workflow-editing rules (updated in place, never generated from
+scratch), and the CONTRIBUTING.md scaffold (opt-out — skip only if the user declines).
 
 ## Checklist
 
@@ -94,13 +94,13 @@ the user):
 
 ### Release
 
-- [ ] Version bump is label-driven (`major`/`minor`/`patch`/`skip-release`); unlabeled PRs gated (fail
-      + `minor` fallback on merge) with a sticky bump-preview comment, or another policy consciously chosen
+- [ ] Version bump is label-driven (`release:major`/`release:minor`/`release:patch`/`release:skip`); unlabeled PRs gated
+      (fail + `release:minor` fallback on merge) with a sticky bump-preview comment, or another policy consciously chosen
 - [ ] Tag + release cut automatically on merge; rapid-merge behavior understood
       ([`platforms/github.md`](platforms/github.md#gotchas))
 - [ ] Notes generated from PRs (no hand-kept `CHANGELOG.md`); category labels actually group the notes
       (`.github/release.yml` or drafter template)
-- [ ] release-drafter categories + autolabeler tailored to the repo's real change types (ci/docs/deps/…)
+- [ ] release-drafter categories + autolabeler tailored to the repo's real change types (ci/documentation/dependencies/…)
 - [ ] RC path exists: manual dispatch, `-rc.N`, `--prerelease`, never `--latest`; stable-after-rc uses
       `--notes-start-tag`
 - [ ] Releases immutable: artifacts uploaded/signed before the release goes public
@@ -118,10 +118,29 @@ the user):
 ### Hygiene
 
 - [ ] Default branch protected; check + test jobs required; job names stable (ruleset updated with any rename)
-- [ ] Bump + category labels seeded before the first gated PR
+- [ ] Impact + Kind labels seeded per the taxonomy ([`hygiene.md`](hygiene.md#label-taxonomy)) before the first gated PR
 - [ ] Action pins have an updater (Renovate / Dependabot / pinact in the sweep)
 - [ ] Publish jobs environment-gated where a human approves
-- [ ] `timeout-minutes` set on every job; dead workflows pruned; badges wired
+- [ ] `timeout-minutes` set on every job; dead workflows pruned
+- [ ] Badges checked. And match repo visibility and doesn't state the obvious. ([`hygiene.md`](hygiene.md#badges))
+- [ ] LICENSE audited ([`hygiene.md`](hygiene.md#license)): exists, no placeholders, manifests agree,
+      ships with the artifact; missing license surfaced to the user, never auto-picked
+
+### Labels
+
+([`hygiene.md`](hygiene.md#label-taxonomy))
+
+- [ ] Consumer rule holds both directions: every seeded label appears in ≥1 consumer config (gate,
+      autolabeler, notes config, dependabot.yml, stale config, contribute surfacing), and every
+      consumer references only labels that exist
+- [ ] Three-file agreement: release-drafter categories ≡ release.yml categories (titles + label sets);
+      autolabeler output labels ⊆ notes-category labels
+- [ ] No live synonym pairs (`feature`/`enhancement`, `fix`/`bug`, `docs`/`documentation`) unless
+      deliberately mapped during adoption
+- [ ] Bare `major`/`minor`/`patch` either absent or carrying the "NOT the release" Dep-bump
+      descriptions (Dependabot auto-applies them with the dep's bump size); dependabot.yml labels
+      both axes (`dependencies` + `release:patch`)
+- [ ] Orphan sweep: `gh label list` vs the roster.
 
 ### Security
 
@@ -130,14 +149,20 @@ the user):
 - [ ] Secret scanning on; push protection offered to the user
 - [ ] Code scanning wired (CodeQL default setup; other scanners via SARIF); gates report-only unless
       the user armed them.
+- [ ] Dependency review wired report-only ([`security.md`](security.md#dependency-review-action)); license
+      policy derived from the repo's own LICENSE; arming offered, not assumed
 
 ### Community
 
 - [ ] Stale policy set: PRs marked + closed on a cadence, issues scoped to awaiting-reply states or waived
 - [ ] Closed threads lock after months of inactivity
 - [ ] Abandoned-branch sweep exists (or consciously skipped); every janitor was landed dry-run first
+- [ ] Community files placed per posture ([`community.md`](community.md#community-files))
 
 ### Docs
 
-- [ ] README says how a release is cut and carries the Verify + Install text. As well as release labels.
-- [ ] AGENTS.md or CLAUDE.md are updated as well.
+([`docs.md`](docs.md) carries the per-surface checklist)
+
+- [ ] README: In sync with reality; and mentions (or link to) details on how to release/publish, etc
+- [ ] AGENTS.md / CLAUDE.md: Agent instructions wired (use progressive disclosure)
+- [ ] CONTRIBUTING.md scaffolded (opt-out) with links to sources of truth, or consciously declined

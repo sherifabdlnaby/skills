@@ -6,22 +6,25 @@ the full case table).
 
 ## The default model: label -> bump -> tag
 
-- **Label decides the bump.** On merge to the default branch, the merged PR's label decides the bump
-  (`major` > `minor` > `patch`, and `skip-release` aborts); the pipeline tags and pushes as the CI
+- **Label decides the bump.** On merge to the default branch, the merged PR's Impact label decides the
+  bump (`release:major` > `release:minor` > `release:patch`; `release:skip` aborts); the pipeline tags and pushes as the CI
   identity (`github-actions[bot]`). Release runs queue so back-to-back merges tag serially (rapid-merge
   caveat in [`platforms/github.md`](platforms/github.md#gotchas)).
-- **Gate + preview on the PR.** The PR job fails when no bump label is set and keeps one comment
+- **Gate + preview on the PR.** The PR job fails when no Impact label is set and keeps one comment
   showing the exact version a merge would cut, recomputed on every label change; the release job
   refreshes open PRs' previews after each stable release so they never go stale. An unlabeled PR that
-  merges anyway falls back to `minor` (patch is too easy to ship by accident; major is costly under
-  immutable releases). **Ask the user** whether that gate/fallback pair fits or they want a different
-  unlabeled-PR policy.
+  merges anyway falls back to `release:minor` (patch is too easy to ship by accident; major is costly
+  under immutable releases). **Ask the user** whether that gate/fallback pair fits or they want a
+  different unlabeled-PR policy.
 - **Publish with generated notes.** `gh release create <tag> --generate-notes`. release-drafter's
-  `autolabeler` ([config](../assets/.github/release-drafter.yml)) applies *category* labels
-  (enhancement/bug/ci/docs) on PRs, and [`.github/release.yml`](../assets/.github/release.yml) (GitHub's
-  native notes config) groups the notes — OR use conventional commits to infer. Tailor the category and
-  autolabeler taxonomy to the repo's real change types. Bump and category labels are separate axes: one
-  sizes the version, the other groups the notes.
+  `autolabeler` ([config](../assets/.github/release-drafter.yml)) applies *Kind* labels
+  (enhancement/bug/ci/documentation/...) on PRs, and [`.github/release.yml`](../assets/.github/release.yml)
+  (GitHub's native notes config) groups the notes — OR use conventional commits to infer. A PR lands
+  in its *first* matching category (verified; undocumented), so order matters: Breaking first — keyed
+  on `release:major`, no separate `breaking-change` label — and Dependencies before CI. Tailor the
+  Kind taxonomy to the repo's real change types; the full roster is in
+  [`hygiene.md`](hygiene.md#label-taxonomy). Impact and Kind are separate axes: one sizes the
+  version, the other groups the notes.
 - **The pipeline stamps the version.** Avoid hardcoded versions in files that need a per-PR edit; the
   publishing pipeline writes the tag into the file (e.g. `package.json`) at build time instead of
   expecting it in the commit. why: a version-in-commit turns every release into a conflict-prone bump PR.
@@ -71,5 +74,4 @@ the auto-tag model.
   release job must do inline vs what an `on: release` workflow can pick up
   ([`platforms/github.md`](platforms/github.md#gotchas)).
 - Prefer Immutable Releases. This changes how releases are prepared (e.g Artifact publishing has to finish first before publishing) so attestation would work.
-- **Seed the labels the release model depends on.** Create `major (red)`/`minor (green)`/`patch (blue)`/`skip-release (yellow)` plus
-  the category labels (`gh label create`) as part of setup.
+- **Seed the labels the release model depends on** before the first gated PR; colors to use lives in [`hygiene.md`](hygiene.md#label-taxonomy).

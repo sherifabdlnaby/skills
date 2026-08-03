@@ -14,24 +14,22 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 
 ## Skills
 
-1. [git](skills/git/) | My git conventions and PR workflow.
+1. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
+2. [cicd-fy](skills/cicd-fy/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
+3. [git](skills/git/) | My git conventions and PR workflow.
    - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: respond to reviews and fix CI, until green (or `forever`).
-2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
-3. [cicd](skills/cicd/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
-4. [kubernetes-debug](skills/kubernetes-debug/) | The mental model that prevents misdiagnosing a converging cluster: independent controllers, events as weak evidence, converging-vs-stuck.
-5. [afk](skills/afk/) | Autonomy contract for when I step away.
-   - [afk-careful](skills/variants/afk-careful/) | Local-only and conservative.
+4. [kubernetes-debug](skills/kubernetes-debug/) | WIP: Failure mode when debugging k8s
+5. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
+   - [afk-careful](skills/variants/afk-careful/) | Conservative with its autonomy.
    - [afk-yolo](skills/variants/afk-yolo/) | Max non-destructive autonomy.
-   - [afk-soon](skills/variants/afk-soon/) | Ask clarifying questions first, then go afk.
-6. [review](skills/review/) | Gate work behind a reviewer panel — fork-session + independent reviewers, cross-model when available.
+   - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
+6. [review](skills/review/) | WIP: Review patterns.
 7. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
-8. [grill](skills/grill/) | A relentless, one-question-at-a-time interview to sharpen a plan before you build it. Vendored from [Matt Pocock](https://github.com/mattpocock/skills), extended to ask through the `AskUserQuestion` tool.
-
-The `afk`, `review`, `watch-pr`, and `grill` skills are manual-only (`disable-model-invocation: true`) — they exist to make me type less, not to auto-fire.
+8. [grill](skills/grill/) | [Matt Pocock](https://github.com/mattpocock/skills) skill extended to ask through the `AskUserQuestion` tool.
 
 ## Models
 
-I mostly use (`opus-4.8`,`gpt 5.5`,`gpt 5.6 sol|terra`, and `grok 4.5`), weaker models might not work as good, especially that I rely on model's world knowledge over explicit examples.
+I mostly use (`opus-4.8|5`,`gpt 5.5`,`gpt 5.6 sol|terra`, and `grok 4.5`), weaker models might not work as good, especially that I rely on model's world knowledge over explicit examples.
 
 ## Installation
 

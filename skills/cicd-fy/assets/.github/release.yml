@@ -1,0 +1,25 @@
+# GitHub's NATIVE generated-release-notes config (this exact path is required; not a workflow — the
+# release workflow is workflows/release.yml). `gh release create --generate-notes` groups entries by
+# these categories; without this file the notes are a flat list and the autolabeler's category labels
+# decorate nothing. Keep the categories in sync with release-drafter.yml (the autolabeler that applies them).
+#
+# ORDER MATTERS: a PR lands in its FIRST matching category (verified; undocumented). Breaking first,
+# and Dependencies before CI (a Dependabot actions-bump carries `dependencies` + autolabeled `ci`).
+changelog:
+  categories:
+    - title: 💥 Breaking Changes
+      labels: ["release:major"]
+    - title: 🔒 Security
+      labels: [security]
+    - title: 🚀 Enhancements
+      labels: [enhancement]
+    - title: 🐛 Bug Fixes
+      labels: [bug]
+    - title: ⬆️ Dependencies
+      labels: [dependencies]
+    - title: ⚙️ CI & Build
+      labels: [ci]
+    - title: 📝 Documentation
+      labels: [documentation]
+    - title: Other Changes
+      labels: ["*"]

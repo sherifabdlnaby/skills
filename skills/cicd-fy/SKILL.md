@@ -1,17 +1,17 @@
 ---
-name: cicd
+name: cicd-fy
 description: >
   Use when setting up, shaping, or auditing a project's CI/CD: a build/test/scan pipeline, a
-  release pipeline, or publishing an artifact (container image, binary, bundle) with signing/attestation.
-  Optionally use the skill to transform a repo's CI/CD to the recommended shape, aka (cicd-fy).
+  release pipeline, or publishing an artifact (container image, binary, bundle) with SBOM, or signing/attestation.
+  Optionally use the skill to transform a repo's CI/CD to the recommended shape (the cicd-fy mode).
 license: MIT
 argument-hint: "Cicd-fy this project | Audit CI/CD | Add a release pipeline"
 metadata:
   author: sherifabdlnaby
-  version: "0.3.2"
+  version: "0.5.0"
 ---
 
-# cicd
+# cicd-fy
 
 CI/CD patterns and the why behind them. Flex them to fit the app and the user's requests.
 
@@ -55,14 +55,19 @@ Best practices based on what you're building.
 - GitHub Actions -> [`platforms/github.md`](references/platforms/github.md)
 
 **CI repo hygiene** (repo settings & upkeep) -> [`references/hygiene.md`](references/hygiene.md)
-Branch protection / rulesets + required checks, merge method, label seeding, action-pin upkeep, CODEOWNERS, protected environments, timeouts, badges, pruning dead
-workflows.
+Branch protection / rulesets + required checks, merge method, the label taxonomy, LICENSE, CODEOWNERS, protected environments,
+timeouts, badges, pruning dead workflows.
 
-**Community control & hygiene** (stale PRs/issues, locking old threads, abandoned branches) -> [`references/community.md`](references/community.md)
+**Community control & hygiene** (stale PRs/issues, locking old threads, abandoned branches, community files) -> [`references/community.md`](references/community.md)
+plus the community-files (CONTRIBUTING; SECURITY/FUNDING/GOVERNANCE/CITATION).
 
-**Security** (Dependabot, secret scanning, code scanning) -> [`references/security.md`](references/security.md)
-Alerts + update PRs with cooldown and groups, push protection, CodeQL default setup, SARIF uploads;
+**Security** (Dependabot, dependency, secret scanning, code scanning) -> [`references/security.md`](references/security.md)
+Alerts + update PRs with cooldown and groups, PR dependency review,
+push protection, private vulnerability reporting, CodeQL default setup, SARIF uploads;
 report-only by default, gates offered to the user.
+
+**Project docs** (README/AGENTS release sections, CONTRIBUTING.md) -> [`references/docs.md`](references/docs.md)
+What the docs must teach about the CI & CD.
 
 **Cicd-fy an existing repo** (set up, reshape, or audit) -> [`references/cicd-fy.md`](references/cicd-fy.md)
 Inventory -> plan with the user -> convert -> verify -> document, plus the full audit checklist.
