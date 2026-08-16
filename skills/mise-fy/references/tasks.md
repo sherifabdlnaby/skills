@@ -12,43 +12,46 @@ How to build or improve mise Tasks.
    skips-if-unchanged (mise auto-tracks an internal marker); add explicit `outputs` when the
    artifact's existence is itself a correctness condition (a deleted output must re-run).
    `--force` bypasses for a clean run.
-4. **TOML for <= 5-line tasks; longer logic use an executable file task** with a shebang + `set -euo pipefail` (unless the repo already has a scripts dir).
-5. **File tasks must be executable** in a discovered dir. Prefer to use `.config/mise/tasks` over `.mise` to keep repo root directories few.
-6. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
-7. **Invoke `mise run <task>` (alias `mise r`)**, never bare `mise <task>` (avoids command/tool conflicts).
-8. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2027.5.0). Built-in; `help=` + `choices` make
+4. **Identify a task nature or lane**: Fast path (`check`/`test`/`dev`, `enter` hook, pre-commit)
+   runs many times a day: cheap, offline-safe, non-interactive, and never `depends` on
+   slow path (`setup`, `setup:*`). Learn more: [Lane map](reference-setup-and-patterns.md#fast-path-vs-slow-path).
+5. **TOML for <= 5-line tasks; longer logic use an executable file task** with a shebang + `set -euo pipefail` (unless the repo already has a scripts dir).
+6. **File tasks must be executable** in a discovered dir. Prefer to use `.config/mise/tasks` over `.mise` to keep repo root directories few.
+7. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
+8. **Invoke `mise run <task>` (alias `mise r`)**, never bare `mise <task>` (avoids command/tool conflicts).
+9. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2027.5.0). Built-in; `help=` + `choices` make
    `--help` and completion free. See Task Arguments below.
-9. **Give every task a `description`**;
-10. add `choices`/simple `complete` when useful and it's a short one-liner command. Avoid hardcoding/enumurating lists that are expected to extend in the future.
-11. Handwritten completion scripts only on request by user; keep them under **`.config/mise/completion/`** (Convention only;
+10. **Give every task a `description`**;
+11. add `choices`/simple `complete` when useful and it's a short one-liner command. Avoid hardcoding/enumurating lists that are expected to extend in the future.
+12. Handwritten completion scripts only on request by user; keep them under **`.config/mise/completion/`** (Convention only;
     mise does **not** auto-load that dir; it's just where we standardize these scripts.).
-12. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal
+13. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal
     helpers. In CI pass `-y`/`--yes` **before** the task name (`mise run -y deploy
     prod`); after it, a task with a `usage` spec parses it as a task arg and errors
     (`unexpected word: -y`). Otherwise the prompt aborts the task (`ERROR aborted by
     user`). Beware: `depends` run **before** the prompt, so keep side effects out of
     a gated task's deps.
-13. **Prefer config to runtime flags**. Put reused settings in `mise.toml`, not ad-hoc `--flags`.
-14. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
-15. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to
+14. **Prefer config to runtime flags**. Put reused settings in `mise.toml`, not ad-hoc `--flags`.
+15. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
+16. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to
     [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks). If user ask for a `check`/`lint`, check if **hk** is set up and use it (refer to -> [`hk.md`](hk.md)).
 
 ## Notes & Gotchas:
 
+- **Don't wire `setup` into the fast path "so it always works".** `test depends =
+  ["setup"]` puts slow, online (possibly interactive) work into a loop that runs dozens
+  of times a day, and breaks offline.
 - **Tasks run from the config root, not your cwd.** Override per-task with `dir` (default `"{{config_root}}"`; set `dir = "{{cwd}}"` to follow the caller). Only reach for `{{config_root}}` when the
   task sets a non-default `dir`.
 - **`run` as an array = serial commands, each its own shell**; `cd` and unexported vars
   don't carry between entries. Use one multi-line `run` (or a file task) for stateful
   sequences. Stops on first failure (`set -e`); `mise run -c`/`--continue-on-error` keeps going.
 - **`sources` alone already gives skip-if-unchanged** you don't need `outputs` just
-  to cache. When `outputs` is omitted, mise auto-promotes it to `{ auto = true }`:
-  it hashes the sources (content or path+size metadata) plus the task definition, and
-  after each successful run **touches an internal marker**
-  (`~/.local/state/mise/task-auto-outputs/<hash>`). Next run it compares source
-  mtimes + that hash against the marker; unchanged -> `sources up-to-date, skipping`.
-  So `sources` alone feeds both the cache **and** `mise watch`. `--force` (or a
-  `depends` that actually ran) bypasses the cache. However, ALWAYS use `outputs`
-  whenever possible.
+  to cache runs, but it will be based only on inputs.
+- **Freshness is mtime-based, per-clone**: `touch` alone re-runs;
+  state lives in `~/.local/state/mise/`, so fresh clones/worktrees start stale.
+- Explicit `outputs` compare make-style: outputs older than sources re-run the task
+  every invocation until the outputs are refreshed.
 - **Auto outputs are blind to your real artifacts** — the marker only tracks
   _inputs_; mise never stat's the files your task wrote. `rm -rf dist/` and mise
   still says `skipping` — it won't regenerate a deleted output. Declare **explicit

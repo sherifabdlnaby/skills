@@ -95,6 +95,8 @@ The mise-fy isn't done until every box is accounted for:
 - [ ] `[env]` replaces `.envrc`/manual exports; secrets policy applied; shell `${VAR:-default}` fallbacks converted to `{ default = ... }`.
 - [ ] Secret redaction applied
 - [ ] Tasks migrated; lint/test/build runnable via `mise run`
+- [ ] Lanes respected: no fast-path task (`check`/`test`/`dev`, `enter` hook) depends on `setup`; only a cached `deps` crosses
+      ([`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#fast-path-vs-slow-path))
 - [ ] Bespoke file-watchers (nodemon/`--watch`/cargo-watch) replaced by `mise watch` + `sources`; `watchexec` pinned if used
 - [ ] Pre-commit hooks configured, and have a CI counterpart.
 - [ ] `.config/` layout applied: `hk.pkl`, linter configs, and the setup stamp live under `.config/`, not the repo root

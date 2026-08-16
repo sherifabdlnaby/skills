@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # mise-fy
@@ -128,3 +128,8 @@ safety/correctness floor: apply them even on a one-tool change, not polish you'd
    In CI a `GITHUB_TOKEN` env var works too (see [`ci.md`](references/ci.md)).
 5. **Mise moves fast.** When you hit a wall, check the recent changelog alongside the docs.
 6. **Shims don't expose every `mise activate` feature** (e.g. some env-on-`cd`); local-vs-CI mismatches often trace here. See [`install.md`](references/install.md) / [`ci.md`](references/ci.md).
+7. Always be aware of **Fast path vs slow path concept.**
+   Whatever runs many times a day (`enter`/`cd` hooks, check, test, dev, pre-commit) is fast-path: cheap, offline-safe, non-interactive.
+   A setup is slow-path: allowed to be slow, online, interactive. Never make a fast-path task depend on a slow-path one, nag instead;
+   ([lane map](references/reference-setup-and-patterns.md#fast-path-vs-slow-path)).
+8. More Generally, always think of how often a task is going to be run by the user. And never make tasks that belong to different cadences depend on each other.

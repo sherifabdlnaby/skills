@@ -34,6 +34,20 @@ Each project should start with: `setup` `check (alias lint)` `test` `build`(when
 These are root tasks. We can include sub-tasks under their namespace if needed. The root task is expected to run the most common.
 For example, we can have 4 different kinds of tests (test:x, test:y:, test:z, and test:e2e), we group test (x/y/z) under just `test` expecting it to be fast.
 
+### Fast path vs slow path
+
+Every task belongs to a lane; the lane sets its budget:
+
+- **Fast path** — `check`, `test`, `dev`, `build`, the `enter` hook, pre-commit. Runs many
+  times a day: cheap, offline-safe, non-interactive, and never `depends` on a slow-path
+  task. Staleness is *reported* here (the `setup:check` nag), never repaired.
+- **Slow path** — `setup` and its `setup:*` sub-tasks. Run deliberately (onboarding, after
+  the nag): may be slow, online, interactive. Nothing on the fast path waits on it.
+- **The one crossing: `deps`.** Fast-path tasks may depend on `deps` because its
+  `sources`/`outputs` cache makes it a no-op when fresh; when stale it self-heals (needs
+  network). The experimental `[deps]` auto engine is this same stance built in. `setup`
+  itself is never a dependency of anything.
+
 Below are guidance on each command.
 
 ### Setup
@@ -44,13 +58,23 @@ fires on the `mise install` that setup runs (and on any future `mise install`). 
 parallelism). Setup should be:
 
 1. Idempotent.
-2. Fast.
-3. Do not do work unnecessarily (do not download a file that already exists, etc) (hint, use Mise tasks source and output)
+2. [Slow-path](#fast-path-vs-slow-path): the first run may be slow, online, or interactive — nothing waits on it.
+3. Cheap to re-run: skip work already done (hint, use Mise tasks source and output).
+
+#### Preflight
+
+When the project needs prerequisites mise can't install (Docker present, VPN reachable, supported
+OS), add a hidden `setup:preflight` that setup `depends` on first. **Check-and-instruct only** —
+anything a script can fix is a regular setup step; preflight fails fast with exact instructions
+before setup burns minutes on a machine that can't finish.
 
 #### Setup Check & Versioning
 
 Setup should include a `setup:check` and `setup:stamp` internal hidden commands that we use to check if the user ran the latest version of a setup or not. It's expected to run as a mise enter hook.
-This allows us to version the setup, so we can notify users to re-run `mise run setup` again if expected version is not equal to saved version.
+This allows us to version the setup, so we can notify (AND NAG!) users to re-run `mise run setup` again if expected version is not equal to saved version.
+
+The stamp is deliberately a **human-bumped counter**, things that auto-run or auto reconcile SHOULD NOT bump the bump. For example: Updating a tool version, or adding new tool, and similar SHOULDN'T
+BUMP the version.
 
 The stamp is written to `.config/mise/setup`. Add a committed `.config/mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see
 [.config/mise/.gitignore](../assets/.config/mise/.gitignore)) that ignores just the generated `setup` file.
@@ -63,19 +87,16 @@ Check the reference [mise.toml](../assets/mise.toml)
 
 Runtime/project dependencies (`node_modules`, a Python `.venv`, `vendor/`, …) belong in their **own `deps` task**,
 never inlined into `setup`. This keeps them runnable on their own after a lockfile change (`mise run deps`) and lets
-each side cache independently. Setup wires `deps` to run **after** `mise install` (the runtime must exist before its
-package manager runs) via `depends_post`; gate the `setup:stamp` on it with `wait_for = ["deps"]` so a successful
-stamp implies deps were installed.
+each side cache independently.
 
 Make it a no-op when nothing changed with `sources` + `outputs` (explicit `outputs` so the cache tracks the install dir itself; see [`tasks.md`](tasks.md)):
 
 - `sources` = the manifest + lockfile(s), e.g. `package.json` + `package-lock.json`/`pnpm-lock.yaml`, `requirements.txt`/`uv.lock`, `go.mod` + `go.sum`.
 - `outputs` = the install dir, e.g. `node_modules`, `.venv`, `vendor`.
 
-`deps` stays runtime-agnostic in shape (one task, cached the same way); only the install command differs per
-runtime (`npm ci`, `pnpm install --frozen-lockfile`, `uv sync`, `go mod download`, …). For the Node-specific
-package-manager **version** pinning (Corepack vs mise), see [`runtimes/node.md`](runtimes/node.md). That is
-orthogonal to *who runs* the install.
+**Pre-deps steps** (e.g. npm auth against a private registry) get their own hidden idempotent task that
+`deps` `depends` on (`deps:auth`, not `setup:*`) so `mise run deps` works standalone. Add one only when the
+project needs it; on the experimental `[deps]` engine a custom provider is the equivalent slot.
 
 #### Native engine: `[deps]` providers (experimental)
 

@@ -8,10 +8,13 @@ Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and cac
 ## Rules and Best Practices:
 
 1. **Pin actions to a commit SHA**, with the version in a trailing comment (`uses: owner/action@<sha> # v1.2.3`). Tags are mutable; SHAs aren't.
-2. **Scope `permissions`** to the minimum. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint comment. The opt-in [auto-fix variant](#optional-auto-fix-prs)
+2. **Pin mise itself via the `version:` input**, not just the action SHA.
+3. **`sha256:` is the byte pin; Hashes the installed binary (per-platform; bump every mise upgrade), and is the only check that runs
+   on an Actions **cache hit** (so checks for poisoned cache!)
+4. **Scope `permissions`** to the minimum. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint comment. The opt-in [auto-fix variant](#optional-auto-fix-prs)
    additionally needs `contents: write` to push the fix branch.
-3. **Cancel superseded runs** with a `concurrency` group keyed on the PR number or ref so a new push stops the old run.
-4. Set the GitHub token via `GITHUB_TOKEN` env / `github_token` input so tool installs don't hit API rate limits.
+5. **Cancel superseded runs** with a `concurrency` group keyed on the PR number or ref so a new push stops the old run.
+6. Set the GitHub token via `GITHUB_TOKEN` env / `github_token` input so tool installs don't hit API rate limits.
 
 ## The lint workflow pattern
 
@@ -64,12 +67,7 @@ Caveats (why it's opt-in):
 
 ## Notes & Gotchas:
 
-- **`mise-action` defaults**: `install` true, `cache` true, `github_token`
-  defaults to `github.token`.
-  So **caching and version pinning are already handled**: you only deal with
-  checksums/attestation manually if you drop the action and install mise
-  yourself (see [`../ci.md`](../ci.md#verifying-the-mise-install); `gh
-  attestation verify … --repo jdx/mise` works out of the box on GitHub runners).
+- **`mise-action` default `version` defaults to CDN-resolved "latest" which is a supply chain risk.
 - **Cache key** should hash `mise.toml` + `mise.lock`; stale keys reinstall silently. `mise-action` does this for you; only set `cache_key` to override.
 - **`persist-credentials: false`** on checkout unless a later step pushes with the checkout token.
 - **`check --pr` silently passes in CI unless you set `origin/HEAD`.**
@@ -113,11 +111,9 @@ jobs:
       - uses: actions/checkout@<sha> # v6   (fetch-depth: 0 if you use `check --pr`)
         with: { fetch-depth: 0 }
       - uses: jdx/mise-action@<sha> # v4   installs mise + tools, runs `mise install`, caches
-        with: { install_args: "--locked" }
+        with: { version: "<mise-version>", install_args: "--locked" } # pin mise too, not just the action (rule 2)
       - run: mise run check --pr # same task as local + pre-commit
 ```
-
-Key `mise-action` inputs: `version`, `install`, `install_args`, `cache`, `cache_key`, `experimental`, `tool_versions`/`mise_toml` (inline config), `working_directory`, `github_token`.
 
 ## Docs:
 

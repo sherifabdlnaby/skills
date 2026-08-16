@@ -52,8 +52,9 @@ jobs:
           persist-credentials: true
 
       - name: Setup mise
-        uses: jdx/mise-action@dba19683ed58901619b14f395a24841710cb4925 # v4.1.0
+        uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
         with:
+          version: "2026.8.3" # pin mise itself, not just the action (use the current mise version, don't copy this one)
           install: true
           install_args: "--locked" # honor mise.lock
           cache: true

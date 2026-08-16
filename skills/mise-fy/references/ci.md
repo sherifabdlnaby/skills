@@ -22,7 +22,7 @@ Platform-specific setup lives under [`ci/`](ci/):
 ## Notes & Gotchas:
 
 - **Color is off in CI by default.** Set `CLICOLOR_FORCE: "1"` / `FORCE_COLOR: "1"` to keep linter output readable in the logs.
-- **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise install the binary, pin the version, and verify it. See [Installing mise in CI](#installing-mise-in-ci).
+- **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise commit a bootstrap script (`mise generate bootstrap`). See [Installing mise in CI](#installing-mise-in-ci).
 - **`mise.lock` is per-platform.** `mise install` records only the platform it
   ran on, so a lockfile grown that way plus `--locked` fails CI on `linux-x64`
   with `No lockfile URL found for <tool>@<ver> on platform linux-x64`, even
@@ -34,19 +34,24 @@ Platform-specific setup lives under [`ci/`](ci/):
 ## Installing mise in CI
 
 **Prefer the platform's official integration** (e.g. `jdx/mise-action` on GitHub). It installs mise, pins the version, caches, and puts tools on `PATH` for you, so the steps below are already handled.
-Pin the *action itself* to a commit SHA.
+Pin the action to a commit SHA **and** pin its mise `version:` input (why: [`ci/github.md`](ci/github.md)).
 
-**No integration / custom image:** install the single static binary yourself, then add the shims dir to `PATH` as a fallback so anything not routed through `mise x`/a task still resolves (see
-[Getting tools on PATH](#getting-tools-on-path)). When you install manually:
+**No integration / custom image: commit a bootstrap script**, don't hand-roll curl + verify:
 
-1. **Verify the download** using **GitHub attestation and/or GPG**, whichever is easier in the image you have (attestation needs the `gh` CLI; GPG needs `gpg`). See
-   [Verifying the mise install](#verifying-the-mise-install) for the exact commands.
-2. **Pin the version** via `MISE_VERSION`; never install "latest". An unpinned `curl … | sh` makes the build non-reproducible.
-3. **Pinning the binary SHA256 is optional, so ask the user.** It's the
-   strongest guarantee (you trust an exact byte-for-byte build, not just the
-   version tag + signature), but you must bump the hash on every mise upgrade,
-   so it adds maintenance. Default to version-pin + verify; add the SHA pin only
-   when the user wants maximum supply-chain assurance.
+```bash
+mise generate bootstrap -V <version> -w ./bin/mise   # commit the result
+```
+
+CI (and contributors without mise) then call `./bin/mise install --locked`, `./bin/mise run check`, … — the script downloads the pinned version on first use, verifies it, and executes it.
+
+1. **The pin by hashes. The script embeds per-platform
+   SHA256s for the pinned version and verifies the download against them.
+2. **Bump by regenerating** with the new `-V`;
+
+Then add the shims dir to `PATH` as the fallback net (see [Getting tools on PATH](#getting-tools-on-path)).
+
+**Last resort**: `curl https://mise.run | sh` with `MISE_VERSION` pinned — install.sh pins the binary SHA for the version it fetches; never "latest". Provenance on top:
+`gh attestation verify <tarball> --repo jdx/mise`, or the GPG-signed `install.sh.sig` (release key `24853EC9F655CE80B48E6C3A8B81C9D17413A06D` on keys.openpgp.org).
 
 ## Getting tools on PATH
 
@@ -70,50 +75,12 @@ The mise binary on `PATH` only gives you the `mise` command; the *managed* tools
 
 Two independent layers
 
-**1. The mise binary itself** is only your concern when CI installs mise
-*manually* (no `mise-action`/package image). Each release publishes per-platform
-checksums and signatures: `SHASUMS256.txt` (+ GPG-signed `SHASUMS256.asc`,
-minisign `.minisig`) and `install.sh.sig`/`.minisig`. Pick the level you need:
-
-Use the following script as reference, and pick what you want from it. (you don't have to copy all steps)
-```bash
-# Mise version, if you update this you must update sha's below.
-ver=v2026.8.0
-
-# Resolve the right asset for THIS runner — ARM and x86 CI need different binaries.
-# uname -m → x64|arm64;  uname -s → linux|macos. (mise also ships *-musl variants.)
-case "$(uname -m)" in
-  x86_64|amd64)   arch=x64   ;;
-  aarch64|arm64)  arch=arm64 ;;
-  *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;;
-esac
-os=$(uname -s | tr '[:upper:]' '[:lower:]'); [ "$os" = darwin ] && os=macos
-asset="mise-$ver-$os-$arch.tar.gz"
-base="https://github.com/jdx/mise/releases/download/$ver"
-
-# (a) checksum. install.sh already pins the binary's SHA256 for the version it fetches,
-#     so the floor is just to pin the version (don't pipe "latest"). To verify a tarball
-#     against mise's published sums (SHASUMS256.txt covers every platform — grep yours):
-curl -fsSLO "$base/$asset"
-curl -fsSL "$base/SHASUMS256.txt" | grep " $asset\$" | sha256sum -c -
-#     Strongest (the optional SHA pin — ask the user): hardcode the expected hash so you
-#     trust an exact build, not whatever the published sums say. The hash is PER-ARCH, so
-#     pin one per runner arch and bump them on every upgrade:
-case "$arch" in
-  x64)   sha="<known-sha256-linux-x64>"   ;;
-  arm64) sha="<known-sha256-linux-arm64>" ;;
-esac
-echo "$sha  $asset" | sha256sum -c -
-
-# (b) GPG signature of the install script (mise release key on keys.openpgp.org).
-#     install.sh auto-detects the runner's arch, so this path needs no arch handling.
-gpg --keyserver hkps://keys.openpgp.org --recv-keys 24853EC9F655CE80B48E6C3A8B81C9D17413A06D
-curl -fsSL https://mise.jdx.dev/install.sh.sig | gpg --decrypt > install.sh   # aborts if not signed by the key
-sh ./install.sh   # honors MISE_VERSION for a pinned, reproducible install
-
-# (c) GitHub artifact attestation — verify build provenance (SLSA) of the downloaded binary
-gh attestation verify "$asset" --repo jdx/mise
-```
+**1. The mise binary** — covered by [Installing mise in CI](#installing-mise-in-ci)
+(bootstrap script: embedded checksums; `mise-action`: minisign-verified release
+checksums, see [`ci/github.md`](ci/github.md)). Only a hand-rolled install
+verifies manually: against the release's `SHASUMS256.txt` (GPG `.asc` /
+minisign `.minisig`) or `gh attestation verify <tarball> --repo jdx/mise`;
+hashes are per-platform — grep the asset for *this* runner's os/arch.
 
 **2. The tools mise installs** are handled by the lockfile, not the steps above.
 With `lockfile = true` + `mise install --locked`, mise re-verifies each tool's
