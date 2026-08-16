@@ -22,7 +22,8 @@ anything you could look up yourself. Don't block on it: a running exploration is
 prerequisite, so only the questions downstream of it wait for the sub-agent to report — ask the
 rest of the frontier now. The *decisions* are the user's — put each to them and wait.
 
-The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.
+The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared
+understanding.
 
 # Notes
 

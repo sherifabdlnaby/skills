@@ -13,12 +13,14 @@ Guidance on Installing Tools and Runtimes via Mise.
    - Tool is **`>=1.0`** → pin at **major** (e.g. `node = "24"`); tracks patches/minors within that major.
    - Tool is **`<1.0`** (0.x) → pin at **minor** (e.g. `ruff = "0.15"`); 0.x ships breaking changes on minor bumps, so a bare major (`"0"`) is meaningless.
 3. **Never use `latest`** until the user explicitly asks for it (even with a lockfile present). The lockfile is a safety net, not a license to float.
-4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it look as expected, and re-order the added part by the command to match file structure (e.g group relevant tools on top of each other)
+4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it look as expected, and re-order the added part by the command to match file structure
+   (e.g group relevant tools on top of each other)
 5. To pin per rule 2: `mise use <tool>@$(mise latest <tool> | cut -d. -f1) --fuzzy` for a `>=1.0` tool (writes the bare major); for a `0.x` tool use `cut -d. -f1,2` to write `0.<minor>`.
 6. Use mise's core backends. If you're choosing backends, pick the one with checksums + timestamp support as much as possible.
 7. Group relevant tools categories close to each other in the toml when you have >6 tools. Use a code comment as a title for group.
 8. If a tool existence in a list is not obvious, add a 3~4 words sentence to give a hint in a code comment on the same line.
-9. If the repo doesn't contain `minimum_release_age` always suggest to add it (e.g. `"7d"`; months are `6mo`, not `6m` — `6m` is minutes and filters nothing; exempt fast-moving tools via `minimum_release_age_excludes` if needed).
+9. If the repo doesn't contain `minimum_release_age` always suggest to add it (e.g. `"7d"`; months are `6mo`, not `6m` — `6m` is minutes and filters nothing; exempt fast-moving tools via
+   `minimum_release_age_excludes` if needed).
 10. If a tool/runtime needed **just for a single task** define it just for the task.
 11. Use and enable Lockfile whenever possible, unless the user told you not to.
 
@@ -26,12 +28,16 @@ Guidance on Installing Tools and Runtimes via Mise.
 
 - **Lockfile only updates when enabled.** `mise use`/`install` write `mise.lock` only after `[settings] lockfile = true`. Without it, fuzzy versions resolve fresh each install.
 - **`mise use` edits the closest config**. It may not be the one you expect in a nested/monorepo tree.
-- **A backend spec goes in the KEY, never the value.** `ripgrep = "aqua:BurntSushi/ripgrep"` is a parse error (`invalid tool: invalid prefix: aqua`) that breaks the whole config; write `"aqua:BurntSushi/ripgrep" = "15"` (see Syntax Reminder).
-- **`prefix:`/fuzzy/`latest` need version listing**. They work on backends that enumerate versions (core, aqua, github/gitlab, cargo, go, npm, pipx) but not on fixed-artifact specifiers (direct URLs, git `ref:`).
+- **A backend spec goes in the KEY, never the value.** `ripgrep = "aqua:BurntSushi/ripgrep"` is a parse error (`invalid tool: invalid prefix: aqua`) that breaks the whole config; write
+  `"aqua:BurntSushi/ripgrep" = "15"` (see Syntax Reminder).
+- **`prefix:`/fuzzy/`latest` need version listing**. They work on backends that enumerate versions (core, aqua, github/gitlab, cargo, go, npm, pipx) but not on fixed-artifact specifiers (direct URLs,
+  git `ref:`).
 - **Per-tool options exist** (`os`, `depends`, `install_env`, `postinstall` via the `name = { ... }` table form) reach for them only when you actually need them; plain `name = "version"` is the norm.
 - **`.tool-versions` is read hierarchically** like any config (a `~/.tool-versions` applies to everything under `$HOME`); mise's canonical global config is `~/.config/mise/config.toml`.
-- **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being picked up," this is usually why.
-- **Tools are lazy by default; `mise install` is the eager step.** To make a *specific* tool lazy and not in everyone's install, scope it to its task or use a tool stub see [Lazy-install for uncommon tools](#lazy-install-for-uncommon-tools).
+- **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being
+  picked up," this is usually why.
+- **Tools are lazy by default; `mise install` is the eager step.** To make a *specific* tool lazy and not in everyone's install, scope it to its task or use a tool stub see
+  [Lazy-install for uncommon tools](#lazy-install-for-uncommon-tools).
 
 ## Backends
 
@@ -65,12 +71,13 @@ disable_backends = ["asdf", "vfox"]   # resolve only via verified backends; drop
 
 ## Runtime Integration
 
-Runtimes have extra integration features (package managers, virtualenvs, idiomatic files, dep install). When adding/configuring one of these, **read its file first**; the general rules above still apply:
+Runtimes have extra integration features (package managers, virtualenvs, idiomatic files, dep install). When adding/configuring one of these, **read its file first**; the general rules above still
+apply:
 
 - **Node** (corepack vs pinned PM, deps task) -> [`runtimes/node.md`](runtimes/node.md)
 
-Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps out of the box** (`npm ci`/`uv sync`).
-That's the cached `deps` task or the experimental `[deps]` providers, which can auto-install before every `mise run`. Both engines: [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#deps).
+Key shared fact: **mise installs the runtime and can create/activate a venv, but it does not install project deps out of the box** (`npm ci`/`uv sync`). That's the cached `deps` task or the
+experimental `[deps]` providers, which can auto-install before every `mise run`. Both engines: [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#deps).
 
 ## External Services & Daemons (Docker, DBs, clusters)
 
