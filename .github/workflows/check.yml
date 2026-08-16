@@ -7,6 +7,9 @@ name: 🎨 Linters, Validators, and Formatters
 
 on:
   pull_request: {}
+  # Merges to the default branch — sweep right away instead of waiting up to a day for the cron.
+  push:
+    branches: [main]
   schedule:
     # Daily sweep so the default branch can't quietly rot.
     - cron: "0 0 * * *"
@@ -110,7 +113,10 @@ jobs:
             export GIT_AUTHOR_DATE="2020-01-01T00:00:00Z" GIT_COMMITTER_DATE="2020-01-01T00:00:00Z"
             git checkout -B "$BRANCH"
             git add -A && git commit -qm "ci: auto-fix lint & format"
-            git push -fq origin "$BRANCH"
+            # --no-verify: `hk install --mise` (mise postinstall) wires hk's hooks into the runner, so this
+            # push would re-run the pre-push gates on the bot's own commit — version-bump can't be met by
+            # a lint-fix commit and aborts the push, so the fix PR never opens. The full check ran above.
+            git push -fq --no-verify origin "$BRANCH"
 
             # Open the PR if none is open yet; an existing one just got updated by the push above.
             if [ -z "$(gh pr list --head "$BRANCH" --base "$TARGET" --state open --json number --jq '.[0].number // empty')" ]; then

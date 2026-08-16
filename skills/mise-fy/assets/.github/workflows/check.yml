@@ -5,6 +5,9 @@ name: 🎨 Linters, Validators, and Formatters
 
 on:
   pull_request: {}
+  # Merges to the default branch — sweep right away instead of waiting up to a day for the cron.
+  push:
+    branches: [main]
   schedule:
     # Daily sweep so the default branch can't quietly rot.
     - cron: "0 0 * * *"

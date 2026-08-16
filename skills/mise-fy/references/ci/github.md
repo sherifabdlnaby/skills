@@ -21,8 +21,8 @@ Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and cac
 The reference workflow reports failures and points the author at the fix; it never touches the PR's code:
 
 - **Scope by event.**
-  PRs lint only changed files (`mise run check --pr`); the daily `schedule`
-  lints everything (`mise run check --all`).
+  PRs lint only changed files (`mise run check --pr`); a `push` to the default
+  branch and the daily `schedule` lint everything (`mise run check --all`).
   A manual `workflow_dispatch` defaults to `--all` but exposes a `scope` choice
   input to pick `--pr` instead.
   Checkout with `fetch-depth: 0` so `--pr` can diff against the default branch.
