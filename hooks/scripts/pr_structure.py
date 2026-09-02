@@ -14,16 +14,17 @@ silences the nudge entirely. Use it when the body deliberately follows a
 different shape, a repo PULL_REQUEST_TEMPLATE or any imposed template, so the
 skeleton doesn't apply. The reason keeps it a conscious choice, not a reflex.
 
-Body extraction is shared with gh_disclosure (same dir, launcher puts it on
-sys.path). stdlib only. Exit 0 always; "no nudge" is emitting nothing.
+Command parsing and body extraction are shared with gh_disclosure (same dir,
+launcher puts it on sys.path), so both hooks read the same body out of the same
+command, heredocs included. stdlib only. Exit 0 always; "no nudge" is emitting
+nothing.
 """
 
 import re
-import shlex
 import sys
 
 import hooklib
-from gh_disclosure import extract_body
+from gh_disclosure import UNREADABLE, extract_body, tokenize
 
 # The skeleton's structure receipts, in skeleton order. Whitespace-tolerant so a
 # reformatted marker still counts.
@@ -52,20 +53,21 @@ def missing_markers(command):
     """Names of skeleton markers absent from a PR body posted by `command`.
 
     Returns [] when the command isn't a PR-body post or the body is uninspectable
-    (editor mode, unreadable --body-file): no body seen, no nudge.
+    (editor mode, unreadable --body-file, opaque shell expansion): no body seen, no
+    nudge. This hook is informational, so an unreadable body just stays quiet.
     """
-    try:
-        tokens = shlex.split(command)
-    except ValueError:
+    parsed = tokenize(command)
+    if parsed is None:
         return []
+    tokens, bodies = parsed
 
     for i in range(len(tokens) - 2):
         if tokens[i] != "gh":
             continue
         if (tokens[i + 1], tokens[i + 2]) not in BODY_ACTIONS:
             continue
-        body = extract_body(tokens[i + 3 :])
-        if body is None:
+        body = extract_body(tokens[i + 3 :], bodies)
+        if body is None or body is UNREADABLE:
             return []
         if BYPASS_RE.search(body):
             return []
