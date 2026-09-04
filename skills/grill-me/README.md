@@ -9,7 +9,7 @@
 
 ## What I extended
 
-- **Rounds go through the `AskUserQuestion` tool**, overriding the markdown template `grilling` prints. Same interview, answered in the picker.
+- **Rounds go through the harness's ask-the-user tool**, overriding the markdown template `grilling` prints. Same interview, answered in the picker rather than by typing back a numbered list.
 
 ## Usage
 
