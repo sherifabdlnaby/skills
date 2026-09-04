@@ -29,6 +29,15 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 8. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
 9. [grill](skills/grill/) | [Matt Pocock](https://github.com/mattpocock/skills) skill extended to ask through the `AskUserQuestion` tool.
 
+### Vendored
+
+Skills I didn't write but use daily, vendored under [`skills/vendor/`](skills/vendor/) so the plugin ships one set instead of asking you to install them separately. Thanks to
+[mattpocock/skills](https://github.com/mattpocock/skills), [humanlayer/skills](https://github.com/humanlayer/skills), [blader/humanizer](https://github.com/blader/humanizer), and
+[github/gh-stack](https://github.com/github/gh-stack).
+
+[`skills-lock.json`](skills-lock.json) is the list, and `mise run skills:sync` rebuilds the directory from it. It records where each skill comes from, not which version, so a sync takes whatever
+upstream has now.
+
 ## Models
 
 I mostly use (`opus-4.8|5`,`gpt 5.5`,`gpt 5.6 sol|terra`, and `grok 4.5`), weaker models might not work as good, especially that I rely on model's world knowledge over explicit examples.

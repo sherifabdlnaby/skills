@@ -84,10 +84,9 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
 // Logic lives in mise tasks (runnable standalone, identical in CI); steps here only route to them.
 local pushGates: Mapping<String, Step> = new Mapping<String, Step> {
   // Stale-marketplace guard: shipped plugin content must ride a manifest version bump.
-  // The glob decides when the question is worth asking; the task answers by diffing vs
-  // default_branch. Keep the glob in sync with the task's content/manifest lists.
+  // Deliberately unglobbed: commonIgnores would subtract skills/vendor from any file list, and
+  // vendored skills ship like the rest. The task diffs vs default_branch and exits early anyway.
   ["version-bump"] {
-    glob = List("skills/**", "hooks/**", ".claude-plugin/*", ".cursor-plugin/*")
     check = "mise run version:check"
   }
 }
