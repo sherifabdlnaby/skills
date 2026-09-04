@@ -9,7 +9,7 @@
 
 ## What I extended
 
-- **Questions go through the `AskUserQuestion` tool** instead of raw markdown.
+- **Rounds go through the `AskUserQuestion` tool**, overriding the markdown template `grilling` prints. Same interview, answered in the picker.
 
 ## Usage
 
