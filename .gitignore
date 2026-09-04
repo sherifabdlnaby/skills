@@ -1,3 +1,7 @@
 # mise local overrides (machine-specific; never committed)
 mise.local.toml
 mise.*.local.toml
+
+# Where the `skills` CLI installs; `mise run skills:sync` copies into skills/vendor and clears these.
+.agents/
+.claude/skills/
