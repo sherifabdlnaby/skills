@@ -10,6 +10,7 @@
 ## What I extended
 
 - **Rounds go through the harness's ask-the-user tool**, overriding the markdown template `grilling` prints. Same interview, answered in the picker rather than by typing back a numbered list.
+- **Never boxed in by the options offered.** Where the harness has no free-text answer of its own, the skill adds one.
 
 ## Usage
 
