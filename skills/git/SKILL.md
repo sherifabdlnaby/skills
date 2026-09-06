@@ -7,7 +7,7 @@ license: MIT
 argument-hint: "[commit|branch|pr|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Git
@@ -44,8 +44,8 @@ relay vs hold, auto-addressing bot reviews, the final digest. Uses `scripts/pr-w
 
 **Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**.
 The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md);
-the post templates, chosen by who made the specific decision (Agent Decided vs Human Guided),
-live in [AI Disclosure](#ai-disclosure) below.
+the post templates, one per tier of human judgment behind the post (Agent Decided, Human Approved,
+Human Guided), live in [AI Disclosure](#ai-disclosure) below.
 Use them as verbatim as possible, do not write from memory.
 
 **Reach for `gh` first.** Every GitHub action goes through the `gh` CLI; the GitHub MCP server is
@@ -88,10 +88,9 @@ Carry `<OWNER/REPO>`, `<trunk>` and `<GITHUB_USERNAME>` through the session from
 
 ## AI Disclosure
 
-Every post on the user's behalf (comment, reply, issue) ends with this footer, after a `---`. Pick
-the variant by who made the specific decision behind the post. A request to handle a task, fix an
-issue, or open a PR does not count as guidance on the decisions the agent makes while doing it.
-The PR-body variant in [`references/pull-requests.md`](references/pull-requests.md) follows the same rule.
+Every post on the user's behalf (comment, reply, issue) ends with an AI footer: a `---`, then one
+line copied verbatim from the templates below. The PR-**body** variants live in
+[`references/pull-requests.md`](references/pull-requests.md) and follow the same rule.
 
 Placeholders, the same in every footer:
 
@@ -99,23 +98,43 @@ Placeholders, the same in every footer:
 - `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
 - `<GITHUB_USERNAME>`: resolve once per session with `gh api user --jq '.login'`.
 
-**Agent Decided** (🤖): the agent chose the position, change, or response without the user's
-direction on that specific decision. A PR is Agent Decided unless the user and you went back and
-forth on the implementation.
+### Picking the variant
+
+The footer answers one question for whoever reads the post: how much human judgment stands behind
+it? Judge the decisions this post carries, not the request that produced them. Asking you to fix a
+bug, handle a review round, or open a PR is a task, not a decision.
+
+**🤖 Agent Decided.** You chose the change, position, or wording. Nobody has vetted it.
 
 ```markdown
----
-
 _<sub>🤖 Agent Decided: Posted by <Claude|Cursor|OpenCode> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-**Human Guided** (🤝): the user chose or materially directed the specific decision. This does not
-mean they reviewed the final wording or implementation.
+**🧍‍♂️👍 Human Approved.** You chose it, the user saw the real thing and said yes. A clear yes on what
+actually ships, not a nod at a sketch you then departed from.
 
 ```markdown
----
-
-_<sub>🤝 Human Guided Response: Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🧍‍♂️👍 Human Approved: Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-When unsure, use Agent Decided.
+**🤝 Human Guided.** The user chose or directed it, you carried it out. They need not have read your
+final wording.
+
+```markdown
+_<sub>🤝 Human Guided: Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+```
+
+Where the line falls:
+
+- "Fix the flaky test, then open a PR" -> 🤖. You picked the fix.
+- You and the user settled the approach together, the smaller calls were yours -> 🤝. The core decision sets the footer, details riding along don't lower it.
+- The user said yes, then you changed the substance -> back to 🤖, or ask again.
+
+**Approval that arrives late** upgrades a PR body, which you edit anyway: bump the footer on the
+next body edit, never on a round-trip of its own. A comment or reply keeps the footer it went out with.
+
+**Pushing more after approval** is your call: judge whether what you added is still what the user
+endorsed. A PR whose whole idea is theirs stays 🤝 regardless.
+
+**Understate, never overstate.** Torn between two? Take the lower one. A footer claiming human
+judgment that never happened is the failure that matters.

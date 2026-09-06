@@ -38,11 +38,12 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 7. After a round is fully addressed (fix pushed, replies posted), re-request review so it lands
    back in the reviewer's queue: `gh pr edit <num> --add-reviewer <login>`.
    Skip for bots; they re-review on push.
-8. End every reply with the AI footer ([SKILL.md AI Disclosure](../SKILL.md#ai-disclosure)):
-   **Agent Decided** when you fixed or pushed back without the user's input (so the reviewer knows
-   no human has vetted it yet), **Human Guided** when the user gave input or approved. You drafted
-   and the user only tweaked? Still Human Guided. A reply posted from a watch loop is Agent Decided
-   by definition.
+8. End every reply with the AI footer ([SKILL.md AI Disclosure](../SKILL.md#ai-disclosure)),
+   picked per reply and not per round, since one round routinely mixes all three: **🤖 Agent
+   Decided** when you fixed or pushed back on your own (so the reviewer knows nobody has vetted it),
+   **🧍‍♂️👍 Human Approved** when the user read the fix or the drafted reply and said yes, **🤝
+   Human Guided** when the position you're posting is the user's. A reply sent from a watch loop is
+   Agent Decided by definition.
 
 ## Batching
 
