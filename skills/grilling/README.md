@@ -7,8 +7,8 @@ Forked from **Matt Pocock**'s [`grilling`](https://github.com/mattpocock/skills/
 
 ## What I changed
 
-A round is a call to the harness's ask-the-user tool. Upstream prints the round as a numbered markdown list and the fork drops that template, so there is nothing left to override and nothing to
-forget. Where a harness offers no free-text answer of its own, the skill adds an option that invites one.
+A round of questions goes through the harness's ask-the-user tool. Upstream writes the round out as a numbered markdown list, and the fork asks with the tool instead, so an agent has nothing to
+override and nothing to forget. A harness without such a tool still gets the written list. Where a harness accepts only the options it is handed, the skill adds one that invites a custom answer.
 
 ## Usage
 
@@ -16,4 +16,4 @@ forget. Where a harness offers no free-text answer of its own, the skill adds an
 /grill-me [what to stress-test]
 ```
 
-Or any 'grill' phrase — this skill triggers on its own.
+Or any 'grill' phrase; this skill triggers on its own.
