@@ -19,6 +19,11 @@ Heredoc bodies are therefore lifted out of the raw string first (see
 `split_heredocs`) and spliced back into the flag value, so the guard checks the
 text gh will actually post. A body we still cannot resolve denies with its own
 reason rather than claiming the footer is missing.
+
+The guard fails closed. gh has many ways to supply a body the guard cannot see
+(`--fill` off commit messages, `--template`, `--editor`, a prompt when no body flag
+is given, a real pipe into `--body-file -`), and every one of them would post an
+undisclosed body. All of them deny, and the denial names the ways that do work.
 """
 
 import re
@@ -49,6 +54,39 @@ POSTING = {
     ("issue", "comment"),
 }
 
+# Of POSTING, the actions that end up with a body no matter what: given no body flag,
+# gh prompts or opens $EDITOR, and whatever it posts was never shown to the guard.
+# `pr edit` and `pr review` are absent because a label, reviewer, title or bare
+# approve carries no body at all.
+BODY_REQUIRED = {
+    ("pr", "create"),
+    ("pr", "comment"),
+    ("issue", "create"),
+    ("issue", "comment"),
+}
+
+# Flags that build the body somewhere the guard cannot follow.
+OPAQUE_FLAGS = {
+    # assembled from commit messages
+    "--fill",
+    "-f",
+    "--fill-first",
+    "--fill-verbose",
+    # starting text pulled from a template
+    "--template",
+    "-T",
+    # replayed from a failed run's saved input
+    "--recover",
+    # $EDITOR writes it
+    "--editor",
+    "-e",
+}
+
+# Nothing the agent authored reaches GitHub: --dry-run prints instead of posting,
+# --delete-last removes a comment, and --web hands a browser to a person, who is
+# accountable for what they type there.
+EXEMPT_FLAGS = {"--dry-run", "--delete-last", "--web", "-w"}
+
 REASON = (
     "AI-disclosure guard: this command posts a body to GitHub but the body has no "
     "valid disclosure footer (`_<sub>\U0001f916|\U0001f91d ... on behalf of @user ... </sub>_`). "
@@ -64,12 +102,16 @@ REASON = (
 # missing" are different problems, and reporting the second for the first sends the
 # agent off rewriting a footer that was already correct.
 REASON_UNREADABLE = (
-    "AI-disclosure guard: this command posts a body to GitHub, but the body comes "
-    "from a shell expansion this guard cannot evaluate (a variable, or a command "
-    "substitution with no inline heredoc), so it cannot check the body for a "
-    "disclosure footer. This is not a claim that your footer is wrong. Write the body "
-    "to a file and pass `--body-file <path>`, or inline the body in a heredoc the "
-    "guard can read, then retry."
+    "AI-disclosure guard: this command posts a body to GitHub that the guard cannot "
+    "read, so it cannot check the body for a disclosure footer. This is NOT a claim "
+    "that your footer is wrong. Pass the body one of these ways instead: write it to a "
+    "file and use `--body-file <path>`, put it inline as `--body '<text>'`, or feed an "
+    "inline heredoc with `--body-file - <<'EOF' ... EOF`. None of these ever reach the "
+    "guard, so none of them are allowed: `--fill`, `--fill-first`, `--fill-verbose`, "
+    "`--template`, `--recover`, `--editor`, leaving out the body flag entirely (gh then "
+    "prompts for one), piping a body into `--body-file -`, a `--body-file` path that "
+    'cannot be opened, and `--body "$VAR"` or `--body "$(...)"`. Fix the command, '
+    "then retry."
 )
 
 # `<<DELIM` / `<<'DELIM'` / `<<-DELIM`, excluding the `<<<` herestring.
@@ -196,10 +238,10 @@ def extract_body(tokens, bodies):
     """Return posted body text, UNREADABLE, or None if there is no body to check.
 
     Handles `--body`/`-b`/`--body=...` inline and `--body-file`/`-F <path>` (read the
-    file). Inline values get any lifted heredoc spliced back in; a value that is still
-    an unevaluated expansion is UNREADABLE, so we neither pass it silently nor blame
-    the footer. Returns None for editor mode (no body flag) or an unreadable body
-    file, so we never false-block something that was never ours to see.
+    file). Inline values get any lifted heredoc spliced back in. Anything whose text
+    never reaches us is UNREADABLE: an unevaluated expansion, a `--body-file` path that
+    will not open, a real pipe into `--body-file -`. None means no body flag was given
+    at all, which the caller judges against the action.
     """
     body_parts = []
     unreadable = False
@@ -218,18 +260,21 @@ def extract_body(tokens, bodies):
             if path == "-":  # body on stdin: readable only as an inline heredoc
                 stdin_body = _stdin_heredoc(tokens, bodies)
                 if stdin_body is None:
-                    return None  # genuinely piped -> don't false-block
+                    unreadable = True  # a real pipe; its text never reaches us
+                    continue
                 body_parts.append(stdin_body)
                 continue
             text = _read_file(path)
             if text is None:
-                return None  # unreadable -> don't false-block
+                unreadable = True
+                continue
             body_parts.append(text)
             continue
         elif t.startswith("--body-file="):
             text, i = _read_file(t[len("--body-file=") :]), i + 1
             if text is None:
-                return None
+                unreadable = True
+                continue
             body_parts.append(text)
             continue
         else:
@@ -241,13 +286,12 @@ def extract_body(tokens, bodies):
         if not resolved and UNRESOLVED_RE.search(spliced):
             unreadable = True
 
-    if not body_parts:
-        return None
     joined = "\n".join(body_parts)
-    # A footer we can see settles it; only fall back to UNREADABLE when it does not.
+    # A footer we can see is one gh will post: whatever the part we cannot read adds,
+    # the visible text still carries the footer. Only fall back when it does not.
     if unreadable and not FOOTER_RE.search(joined):
         return UNREADABLE
-    return joined
+    return joined if body_parts else None
 
 
 def deny_reason(command):
@@ -262,14 +306,23 @@ def deny_reason(command):
         if tokens[i] != "gh":
             continue
         action = (tokens[i + 1], tokens[i + 2])
-        if action in POSTING:
-            body = extract_body(tokens[i + 3 :], bodies)
-            if body is UNREADABLE:
-                return REASON_UNREADABLE
-            if body is not None and not FOOTER_RE.search(body):
-                return REASON
-            # body present+marked, or editor/unreadable file -> this action is fine
+        if action not in POSTING:
+            continue
+        args = tokens[i + 3 :]
+
+        if EXEMPT_FLAGS.intersection(args):
             return None
+        if OPAQUE_FLAGS.intersection(args):
+            return REASON_UNREADABLE
+
+        body = extract_body(args, bodies)
+        if body is UNREADABLE:
+            return REASON_UNREADABLE
+        if body is None:
+            # No body flag. A create or comment still gets one, from a prompt or
+            # $EDITOR; an edit or review with no body posts none.
+            return REASON_UNREADABLE if action in BODY_REQUIRED else None
+        return None if FOOTER_RE.search(body) else REASON
     return None
 
 
