@@ -37,11 +37,11 @@ Stacked-PR restack mechanics and `--onto` (drop intermediate commits) live in [`
 **Reviewing someone else's PR** -> [`references/reviewing.md`](references/reviewing.md)
 Procedure: gather context, check out locally, trace the change, deliver a summary and review guide.
 
-**Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and answered / reviews only), the cheap
+**Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and quiet / reviews only), the cheap
 sub-agent that runs the loop, the stale nudge. Uses `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
 
 **Draft PR that review bots ignore** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
-`pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft; chasing beyond it only on the user's word that a bot exists.
+`pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft; chasing beyond it only on the user's word that a bot exists, with `--wip` on the title.
 
 ## Always
 

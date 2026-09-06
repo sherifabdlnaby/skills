@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-605%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 605 tokens" />
-  <img src="https://img.shields.io/badge/Total-605%20tokens-2ea44f?style=flat-square" alt="Total: 605 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-660%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 660 tokens" />
+  <img src="https://img.shields.io/badge/Total-660%20tokens-2ea44f?style=flat-square" alt="Total: 660 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,7 +13,7 @@ than read, so they are left out.
 
 | File                   | Tokens |
 | ---------------------- | -----: |
-| [`SKILL.md`](SKILL.md) |  `605` |
+| [`SKILL.md`](SKILL.md) |  `660` |
 
 <!-- token-estimates:end -->
 
@@ -38,8 +38,9 @@ Boxes are what the agent is doing; arrow labels are the script's `>>` verdict li
 stateDiagram-v2
     direction TB
     [*] --> Watching
-    Watching --> Flick: draft PR, alongside the first watch
-    Flick --> Watching: back to draft in ten seconds
+    Watching --> Flick: draft PR, once the first watch is up
+    Flick --> Watching: FLICKED, back to draft in ten seconds
+    Flick --> Watching: NOFLICK, nothing touched
 
     Watching --> Watching: QUIET (episode cap, run again)
     Watching --> Nudge: STALE (nothing changed for a stretch)
@@ -62,7 +63,7 @@ stateDiagram-v2
 | Flick     | yes                | no          | yes                     |
 | Fixing    | yes                | yes         | no, CI does not wake it |
 | Answering | yes                | no          | yes                     |
-| mode end  | green and answered | green       | merge, close, or budget |
+| mode end  | green and quiet    | green       | merge, close, or budget |
 
 ## Use
 

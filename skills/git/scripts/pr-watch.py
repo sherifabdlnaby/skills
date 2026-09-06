@@ -11,7 +11,7 @@ against a saved snapshot, and report only the delta. The agent does the thinking
 Subcommands
   watch   Block until something worth reacting to happens (or a stop condition),
           print it, exit. The one a watcher runs in a loop.
-  flick   Draft PR: flick it to ready under a [WIP] title so review bots start,
+  flick   Draft PR: flick it to ready so review bots start,
           then back to draft with the original title.
 Every run ends with one `>>` line, of four kinds:
   EVENT   ongoing: act on the lines above, then run watch again
@@ -285,13 +285,12 @@ def red_checks(snap: dict) -> list[str]:
     return [n for n, c in snap["checks"].items() if is_fail(c)]
 
 
-def count_checks(snap: dict) -> tuple[int, int]:
-    """(ok, red) counts over a snapshot's checks; ok = finished and not red (excludes pending)."""
-    checks = snap["checks"].values()
-    return (
-        sum(1 for c in checks if is_terminal(c) and not is_fail(c)),
-        sum(1 for c in checks if is_fail(c)),
-    )
+def count_checks(snap: dict) -> tuple[int, int, int]:
+    """(passed, red, skipped) over a snapshot's checks; pending ones count in none."""
+    checks = [c for c in snap["checks"].values() if is_terminal(c)]
+    red = sum(1 for c in checks if is_fail(c))
+    skipped = sum(1 for c in checks if c.get("conclusion") in ("SKIPPED", "NEUTRAL"))
+    return len(checks) - red - skipped, red, skipped
 
 
 def pending_checks(snap: dict) -> list[str]:
@@ -404,20 +403,49 @@ def standing(snap: dict) -> dict:
     return d
 
 
+def inline_split(d: dict) -> tuple[list, list]:
+    """Inline comments by author kind: a bot's are a review (BOTREVIEW), a human's a comment."""
+    bots = [c for c in d["new_review_comments"] if c.get("is_bot")]
+    return bots, [c for c in d["new_review_comments"] if not c.get("is_bot")]
+
+
 def has_signal(d: dict, on: set[str]) -> bool:
     """Did anything the caller asked to be woken for happen? A single check
     passing is not a signal (the pending line on the next event shows progress)."""
+    bots, humans = inline_split(d)
     if "fail" in on and d["new_fails"]:
         return True
     if "done" in on and (d["ci_just_settled"] or d["recovered"]):
         return True
-    if "review" in on and d["new_reviews"]:
+    if "review" in on and (d["new_reviews"] or bots):
         return True
-    if "comment" in on and (d["new_comments"] or d["new_review_comments"]):
+    if "comment" in on and (d["new_comments"] or humans):
         return True
     if "state" in on and d["state_changed"]:
         return True
     return False
+
+
+def filtered(d: dict, on: set[str]) -> dict:
+    """The delta as the caller asked to see it: kinds outside --on are dropped from
+    the output and the next-action line, not only from the wake-up."""
+    bots, humans = inline_split(d)
+    f = dict(d)
+    if "fail" not in on:
+        f["new_fails"] = []
+    if "done" not in on:
+        f["recovered"] = []
+        f["ci_just_settled"] = False
+    if "review" not in on:
+        f["new_reviews"] = []
+    if "comment" not in on:
+        f["new_comments"] = []
+    f["new_review_comments"] = (bots if "review" in on else []) + (
+        humans if "comment" in on else []
+    )
+    if "state" not in on:
+        f["state_changed"] = False
+    return f
 
 
 def any_change(d: dict) -> bool:
@@ -465,8 +493,10 @@ def render(snap: dict, d: dict, note: str = "", extra: list[str] | None = None) 
     for n in d["recovered"]:
         lines.append(f"  FIXED   {n} now green")
     if d["ci_just_settled"]:
-        ok, bad = count_checks(snap)
-        lines.append(f"  DONE    all checks finished ({ok} ok, {bad} red)")
+        ok, bad, skipped = count_checks(snap)
+        lines.append(
+            f"  DONE    all checks finished ({ok} passed, {skipped} skipped, {bad} red)"
+        )
     for r in d["new_reviews"]:
         lines += render_item(classify(r, "review"), r.get("state", ""), r)
     for c in d["new_comments"]:
@@ -528,7 +558,13 @@ def load_json(p: Path) -> dict | None:
 
 def load_state(p: Path) -> dict | None:
     st = load_json(p)
-    return st if st and st.get("schema") == SCHEMA else None
+    if st and st.get("schema") != SCHEMA:
+        print(
+            "pr-watch: watcher state from an older version discarded; starting fresh",
+            file=sys.stderr,
+        )
+        return None
+    return st
 
 
 def save_json(p: Path, data: dict) -> None:
@@ -567,8 +603,9 @@ def bot_items_on_head(snap: dict) -> int:
     return n + sum(1 for c in snap["review_comments"].values() if c.get("is_bot"))
 
 
-def revert_flick(pr: int, repo: str, marker: dict) -> list[str]:
+def revert_flick(pr: int, repo: str, marker: dict, ready: bool = True) -> list[str]:
     """Undo a flick: back to draft, original title, review requests it caused removed.
+    `ready=False` when the flip never happened and only the title needs restoring.
     Best effort per step; what could not be undone is named on stderr."""
     done: list[str] = []
 
@@ -580,12 +617,16 @@ def revert_flick(pr: int, repo: str, marker: dict) -> list[str]:
                 f"PR #{pr} {repo} could not {by_hand}; do it by hand", file=sys.stderr
             )
 
-    step(["ready", "--undo"], "draft", "convert back to draft")
-    step(
-        ["edit", "--title", marker["title"]],
-        "title",
-        f"restore the title {marker['title']!r}",
-    )
+    if ready:
+        step(["ready", "--undo"], "draft", "convert back to draft")
+    if marker.get("retitled"):
+        step(
+            ["edit", "--title", marker["title"]],
+            "title",
+            f"restore the title {marker['title']!r}",
+        )
+    if not ready:
+        return done
     data = (
         gh_json(
             ["pr", "view", str(pr), "--repo", repo, "--json", "reviewRequests"],
@@ -610,37 +651,47 @@ def revert_flick(pr: int, repo: str, marker: dict) -> list[str]:
 
 
 def load_flick(repo: str, pr: int) -> dict:
-    return load_json(flick_marker(repo, pr)) or {"flickd": []}
+    """The marker, normalized: an older or hand-edited file never crashes a run."""
+    data = load_json(flick_marker(repo, pr)) or {}
+    return {
+        "flicked": list(data.get("flicked") or []),
+        "inflight": data.get("inflight") or None,
+    }
 
 
 def save_flick(repo: str, pr: int, data: dict) -> None:
-    save_json(flick_marker(repo, pr), data)
+    save_json(flick_marker(repo, pr), {k: v for k, v in data.items() if v})
 
 
-def revert_leftover_flick(pr: int, repo: str, snap: dict) -> list[str]:
+def revert_leftover_flick(pr: int, repo: str, live) -> list[str]:
     """A flick that died mid-way leaves its flip in the marker; any later run puts
-    the PR back before doing its own work, so a flip never outlives its process."""
+    the PR back before doing its own work, so a flip never outlives its process.
+    `live` fetches a fresh snapshot, called only when there is something to undo."""
     data = load_flick(repo, pr)
-    inflight = data.pop("inflight", None)
+    inflight = data["inflight"]
     if not inflight:
         return []
-    lines = []
-    if not snap["draft"] and snap["title"].startswith(WIP):
-        done = revert_flick(pr, repo, inflight)
-        lines.append(f"  REVERT  leftover flick undone: {', '.join(done) or 'nothing'}")
+    snap = live()
+    if not snap["draft"]:
+        done = revert_flick(pr, repo, inflight, ready=True)
+    elif inflight.get("retitled") and snap["title"].startswith(WIP):
+        done = revert_flick(pr, repo, inflight, ready=False)
+    else:
+        done = []
+    data["inflight"] = None
     save_flick(repo, pr, data)
-    return lines
+    return [f"  REVERT  leftover flick undone: {', '.join(done) or 'nothing to undo'}"]
 
 
 def cmd_flick(a) -> int:
-    """Flick a draft: ready under a [WIP] title, --hold seconds, back to draft.
+    """Flick a draft: ready for --hold seconds, then back to draft.
     Whether a review bot picked it up is the watcher's call, not this command's.
     The marker file makes the revert survive a killed process and keeps the
     flick to one per head."""
     pr, repo, url = resolve(a.pr, a.repo)
     before = fetch_snapshot(pr, repo, url)
     head = f"PR #{pr} {repo}"
-    for ln in revert_leftover_flick(pr, repo, before):
+    for ln in revert_leftover_flick(pr, repo, lambda: before):
         print(ln)
         before = fetch_snapshot(pr, repo, url)
     data = load_flick(repo, pr)
@@ -656,36 +707,51 @@ def cmd_flick(a) -> int:
         return noflick("not a draft; review bots already had their chance.")
     if bot_items_on_head(before) or pending_bot_reviews(before):
         return noflick("a bot review already exists or is pending on this head.")
-    if before["head_sha"] in data["flickd"]:
+    if before["head_sha"] in data["flicked"]:
         return noflick(
             "this head was flicked already; chasing further is the user's call."
         )
 
     title = before["title"]
-    wip = title if title.startswith(WIP) else f"{WIP} {title}"
+    wip = f"{WIP} {title}" if a.wip and not title.startswith(WIP) else title
     if a.dry_run:
-        print(
-            f"{head} DRAFT  would: retitle to {wip!r}, mark ready, wait {int(a.hold)}s, revert"
-        )
+        retitle = f"retitle to {wip!r}, " if wip != title else ""
+        print(f"{head} DRAFT  would: {retitle}mark ready, wait {int(a.hold)}s, revert")
         print(verdict("DRYRUN", True, "nothing changed."))
         return 0
 
     inflight = {
         "title": title,
+        "retitled": wip != title,
         "started": time.time(),
         "reviewers_before": [r["login"] for r in before["review_requests"]],
     }
     data["inflight"] = inflight
-    data["flickd"] = sorted(set(data["flickd"]) | {before["head_sha"]})
     save_flick(repo, pr, data)
-    gh(["pr", "edit", str(pr), "--repo", repo, "--title", wip])
-    gh(["pr", "ready", str(pr), "--repo", repo])
-    print(f"{head} ready as {wip!r} for {int(a.hold)}s")
+    if (
+        wip != title
+        and run_gh(["pr", "edit", str(pr), "--repo", repo, "--title", wip]).returncode
+        != 0
+    ):
+        data["inflight"] = None
+        save_flick(repo, pr, data)
+        die(f"could not retitle #{pr}; nothing flicked")
+    if run_gh(["pr", "ready", str(pr), "--repo", repo]).returncode != 0:
+        revert_flick(pr, repo, inflight, ready=False)
+        data["inflight"] = None
+        save_flick(repo, pr, data)
+        die(f"could not mark #{pr} ready; nothing flicked")
+    # Only a flip that happened counts against the head.
+    data["flicked"] = sorted(set(data["flicked"]) | {before["head_sha"]})
+    save_flick(repo, pr, data)
+    print(
+        f"{head} ready{' as ' + repr(wip) if wip != title else ''} for {int(a.hold)}s"
+    )
     try:
         time.sleep(a.hold)
     finally:
-        done = revert_flick(pr, repo, inflight)
-        data.pop("inflight", None)
+        done = revert_flick(pr, repo, inflight, ready=True)
+        data["inflight"] = None
         save_flick(repo, pr, data)
         print(f"{head} reverted: {', '.join(done) or 'nothing'}")
     print(
@@ -714,8 +780,10 @@ def bounds(a, last_change: float) -> tuple[float, float]:
 
 def parse_on(on: str) -> set[str]:
     valid = {"fail", "done", "review", "comment", "state"}
-    if not on or on == "all":
+    if on == "all":
         return valid
+    if not on.strip():
+        die("--on is empty; pass 'all' or a list of fail,done,review,comment,state")
     picked = {x.strip().lower() for x in on.split(",") if x.strip()}
     bad = picked - valid
     if bad:
@@ -738,8 +806,11 @@ def cmd_watch(a) -> int:
     start = time.time()
 
     # Budget and stale clock persist per watcher; a push resets both (below).
-    budget = a.max_total if a.max_total else (old or {}).get("budget")
-    deadline = (old or {}).get("deadline") if old and not a.max_total else None
+    budget = a.max_total or (old or {}).get("budget")
+    same_budget = old is not None and (
+        not a.max_total or a.max_total == old.get("budget")
+    )
+    deadline = old.get("deadline") if same_budget else None
     if budget and deadline is None:
         deadline = start + budget
     stale_step = (budget * a.stale_pct / 100.0) if budget else a.stale
@@ -750,7 +821,7 @@ def cmd_watch(a) -> int:
     polls = 0
 
     snap = old or fetch_snapshot(pr, repo, url)
-    extra = revert_leftover_flick(pr, repo, snap)
+    extra = revert_leftover_flick(pr, repo, lambda: fetch_snapshot(pr, repo, url))
     d = empty_delta() if old else standing(snap)
 
     def finish(name: str, terminal: bool, nxt: str, delta: dict, note: str) -> int:
@@ -762,7 +833,7 @@ def cmd_watch(a) -> int:
             red_reported=red_reported,
         )
         save_json(sp, snap)
-        print(render(snap, delta, note=note, extra=extra))
+        print(render(snap, filtered(delta, on), note=note, extra=extra))
         print(verdict(name, terminal, nxt))
         return 0
 
@@ -782,7 +853,7 @@ def cmd_watch(a) -> int:
         if has_signal(d, on):
             if d["new_fails"]:
                 red_reported = red_key(snap)
-            return finish("EVENT", False, event_next(d), d, note)
+            return finish("EVENT", False, event_next(filtered(d, on)), d, note)
         if "fail" in on and kind == "red" and red_reported != red_key(snap):
             red_reported = red_key(snap)
             d["new_fails"] = standing(snap)["new_fails"]
@@ -794,8 +865,14 @@ def cmd_watch(a) -> int:
                 note,
             )
         if kind == "green" and a.until == "green":
-            ok, _ = count_checks(snap)
-            return finish("DONE", True, f"all checks passed ({ok} ok). stop.", d, note)
+            ok, _, skipped = count_checks(snap)
+            return finish(
+                "DONE",
+                True,
+                f"all checks green ({ok} passed, {skipped} skipped). stop.",
+                d,
+                note,
+            )
         if (
             kind == "green"
             and a.until == "quiet"
@@ -936,12 +1013,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     w.set_defaults(func=cmd_watch)
 
-    pk = sub.add_parser(
-        "flick", help="draft PR: flick it to ready under [WIP], then back to draft"
-    )
+    pk = sub.add_parser("flick", help="draft PR: flick it to ready, then back to draft")
     target(pk)
     pk.add_argument(
         "--hold", type=float, default=10.0, help="seconds to stay ready (default 10)"
+    )
+    pk.add_argument(
+        "--wip",
+        action="store_true",
+        help="prefix the title with [WIP] while ready, for a flick a human may notice",
     )
     pk.add_argument(
         "--dry-run", action="store_true", help="print what would happen, change nothing"
