@@ -21,7 +21,7 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 
 <p>
   <img src="https://img.shields.io/badge/All%20SKILL.md-28%2C831%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 28,831 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-94%2C672%20tokens-2ea44f?style=flat-square" alt="All Markdown: 94,672 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-94%2C663%20tokens-2ea44f?style=flat-square" alt="All Markdown: 94,663 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -38,7 +38,7 @@ than read, so they are left out.
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
-| [`mise-fy`](skills/mise-fy/)                                                           |  `2,209` | `27,576` |
+| [`mise-fy`](skills/mise-fy/)                                                           |  `2,209` | `27,567` |
 | [`review`](skills/review/)                                                             |    `325` |    `325` |
 | [`scaffold-skill`](skills/scaffold-skill/)                                             |  `1,532` |  `2,890` |
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |

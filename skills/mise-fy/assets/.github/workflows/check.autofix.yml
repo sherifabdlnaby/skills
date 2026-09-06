@@ -1,19 +1,18 @@
 # Auto-fix variant of check.yml. Runs the SAME `mise run check` but with --fix: if it changes
 # anything it pushes the fixes to a `bot/ci/<target>` branch, opens (or updates) a PR targeting
 # the branch that was checked, and fails CI. A later clean run closes that PR again. Needs write
-# access — see references/ci/github.md ("Optional: auto-fix PRs"). The report-only check.yml
-# (contents: read) stays the default for repos that don't want this. Copy and adapt.
+# access. The report-only check.yml (contents: read) stays the default for repos that don't want this.
 name: 🎨 Linters, Validators, and Formatters
 
 on:
   pull_request: {}
-  # Merges to the default branch — sweep right away instead of waiting up to a day for the cron.
+  # Merges to the default branch: sweep right away instead of waiting up to a day for the cron.
   push:
     branches: [main]
   schedule:
     # Daily sweep so the default branch can't quietly rot.
     - cron: "0 0 * * *"
-  # Run manually — pick the scope: --all (whole tree) or --pr (this branch's diff vs the default branch).
+  # Run manually, pick the scope: --all (whole tree) or --pr (this branch's diff vs the default branch).
   workflow_dispatch:
     inputs:
       scope:
@@ -27,7 +26,7 @@ permissions:
   contents: write
   pull-requests: write
 
-# One run per PR (or ref) — newer pushes cancel stale runs.
+# One run per PR (or ref): newer pushes cancel stale runs.
 concurrency:
   group: lint-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -57,7 +56,7 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
         with:
-          version: "2026.8.3" # pin mise itself, not just the action (use the current mise version, don't copy this one)
+          version: "2026.8.3" # pin mise itself, not just the action
           install: true
           install_args: "--locked" # honor mise.lock
           cache: true
@@ -96,7 +95,7 @@ jobs:
         run: |
           set -euo pipefail
           # Fork PRs carry a read-only token (by design, see github.md) → annotation only, no PR.
-          [ "$IS_FORK" = true ] && { echo "Fork PR — skipping auto-fix."; exit 0; } || true
+          [ "$IS_FORK" = true ] && { echo "Fork PR, skipping auto-fix."; exit 0; } || true
 
           BRANCH="bot/ci/$TARGET"
           MARKER="<!-- mise-autofix -->"
@@ -112,7 +111,7 @@ jobs:
             git checkout -B "$BRANCH"
             git add -A && git commit -qm "ci: auto-fix lint & format"
             # --no-verify: `hk install --mise` (mise postinstall) wires hk's hooks into the runner, so this
-            # push would re-run the pre-push gates on the bot's own commit — version-bump can't be met by
+            # push would re-run the pre-push gates on the bot's own commit. Version-bump can't be met by
             # a lint-fix commit and aborts the push, so the fix PR never opens. The full check ran above.
             git push -fq --no-verify origin "$BRANCH"
 
@@ -130,7 +129,7 @@ jobs:
             # Sticky comment on the triggering PR, linking the fix PR (PR triggers only).
             if [ "$IS_PR" = true ]; then
               URL="$(gh pr list --head "$BRANCH" --base "$TARGET" --state open --json url --jq '.[0].url')"
-              BODY="$MARKER 🤖 Lint & format fixes are ready in $URL — merge it to apply, or run \`mise run check --fix\` locally."
+              BODY="$MARKER 🤖 Lint & format fixes are ready in $URL, merge it to apply, or run \`mise run check --fix\` locally."
               CID="$(comment_id || true)"
               if [ -n "$CID" ]; then gh api -X PATCH "repos/$REPO/issues/comments/$CID" -f body="$BODY" >/dev/null
               else gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$BODY" >/dev/null; fi
@@ -150,5 +149,5 @@ jobs:
         env:
           REF_NAME: ${{ github.ref_name }} # via env, never interpolated into the shell (zizmor: template-injection)
         run: |
-          echo "::error::Lint & format issues on $REF_NAME — review the auto-fix PR (if one was opened) or run 'mise run check --fix' locally, then push."
+          echo "::error::Lint & format issues on $REF_NAME, review the auto-fix PR (if one was opened) or run 'mise run check --fix' locally, then push."
           exit 1

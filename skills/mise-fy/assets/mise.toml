@@ -1,10 +1,6 @@
-# Canonical reference mise.toml. copy and adapt. See references/reference-setup-and-patterns.md.
-# Start of file below this line.
-# ----------------------------------------------------------------------------------------------------------------------
-
 # Minimum `mise` version. If not matched, will guide user to update.
 # -> Remember to update when relying on newly introduced setting.
-min_version = "2026.8.0" # (do not copy, use the appropriate version or what's installed at the user)
+min_version = "2026.8.0" # oldest mise that supports everything in this file
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
@@ -15,10 +11,10 @@ node = "24"
 # linters & formatters
 actionlint = "1"
 pinact = "3"   # pin GitHub Actions to SHAs; needs a GitHub token for the API (see hk.pkl pinact step)
-# rumdl = "0.2"  # markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Config in rumdl.toml. See hk.md.
+# rumdl = "0.2"  # markdown lint/format (disabled by default; config in rumdl.toml)
 
 # pre-commit
-hk = "1.54.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs (see hk.md) (don't put this comment in generated file)
+hk = "1.54.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
@@ -32,7 +28,7 @@ setup_version = "1" # Increment when you update setup steps, or require users to
 
 # ── ▶️ tasks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tasks.check]
-description = "Run all checks the repo enforces on the working tree (uncommitted changes) — the same suite CI runs"
+description = "Run all checks the repo enforces on the working tree (uncommitted changes), the same suite CI runs"
 alias = ["lint"]
 usage = '''
     flag "--fix"              help="apply fixes instead of only reporting"
@@ -61,7 +57,7 @@ depends_post = ["deps", "setup:stamp"]               # deps after `mise install`
 run = "mise install"                                 # installs tools; runtime deps live in the deps task
 
 [tasks.deps] # install runtime/project dependencies; runnable on its own after a lockfile change
-# alt engine: experimental [deps] providers auto-install before every `mise run` — see reference-setup-and-patterns.md §Deps
+# alt engine: experimental [deps] providers can auto-install before every `mise run` instead
 description = "Install runtime dependencies (cached; skipped when the lockfile is unchanged)"
 sources = ["package.json", "package-lock.json"]      # manifest + lockfile(s) (e.g. pnpm-lock.yaml, uv.lock, go.sum)
 outputs = ["node_modules"]                           # install dir (e.g. .venv, vendor); explicit outputs so the cache tracks it
@@ -80,13 +76,13 @@ run = '[ "$(cat .config/mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] ||
 
 # ── 🪝 hooks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [hooks]
-enter = "MISE_OFFLINE=1 mise run setup:check"  # nudge when setup is stale (see vars.setup_version). MISE_OFFLINE stops this `mise run` re-resolving tools online on every `cd`, which hangs the shell offline (see hooks.md)
+enter = "MISE_OFFLINE=1 mise run setup:check"  # nudge when setup is stale (see vars.setup_version). MISE_OFFLINE stops this `mise run` re-resolving tools online on every `cd`, which hangs the shell offline
 postinstall = "hk install --mise"     # canonical hook install: runs after every `mise install`, idempotent
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]
 lockfile = true                      # keep mise.lock updated; create it once with `mise lock`, commit it
-minimum_release_age = "7d"           # ignore releases <7d old (supply-chain cooldown); always suggest adding
+minimum_release_age = "7d"           # ignore releases <7d old (supply-chain cooldown)
 disable_backends = ["asdf", "vfox"]  # resolve only via verified backends; drop "vfox" if you need a vfox-only tool
 
 # Use `gh` token to overcome github limits, fallback to gcm if gh is not working.
