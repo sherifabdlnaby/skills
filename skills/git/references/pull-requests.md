@@ -181,7 +181,7 @@ tried xxxx, didn't work because yyy.
 
 ---
 
-_<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 <!-- footer emoji by how much human judgment is behind the PR: 🤖 Agent Decided, 🧍‍♂️👍 Human Approved, 🤝 Human Guided; see AI footers -->
 ```
 
@@ -202,15 +202,15 @@ installed, a post is denied when the footer is missing, and when a human tier is
 degree word, so it goes in before the first `gh pr create`.
 
 ```markdown
-_<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ```markdown
-_<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ```markdown
-_<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ## Running `gh pr create`

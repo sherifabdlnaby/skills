@@ -1,7 +1,5 @@
 # AGENTS.md
 
-> Drop-in block for an agent-facing guide. Trim the hk lines if the repo has no pre-commit hooks.
-
 ## Toolchain (mise)
 
 This project uses [**mise**](https://mise.jdx.dev) to pin tools, expose tasks, and wire git hooks. `mise.toml` is the source of truth. Don't install tools by hand or add ad-hoc scripts; add a mise
@@ -22,8 +20,8 @@ Prefer `mise run <task>` over calling the tool directly, so local, hooks, and CI
 
 ## Git hooks (hk)
 
-Commits run [hk](https://hk.jdx.dev), the same `check` CI runs, to format and lint staged files. Fix failures with `mise run check --fix`. Don't disable steps to push a commit through;
-`git commit --no-verify` skips hooks for a WIP commit.
+Commits run [hk](https://hk.jdx.dev) commit gates on staged files, and a push runs the push gates; CI runs both as `mise run check`. Fix failures with `mise run check --fix`. Don't disable steps to
+push a commit through; `git commit --no-verify` skips hooks for a WIP commit.
 
 ## Extending the setup
 

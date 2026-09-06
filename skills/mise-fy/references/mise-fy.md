@@ -56,7 +56,8 @@ Per area, follow the matching reference, converse with user when required.
 
 ### 4. Verify
 
-Run `mise install` then `mise doctor` (clean?); `mise run <task>` for each; fresh-clone smoke test.
+`mise install`, then `mise doctor` reports no issues. Every standard task runs green via `mise run`. Fresh-clone smoke test: clone into a temp dir, `mise trust && mise run setup && mise run check`,
+all green with no manual step in between.
 
 ### 5. Document it (README + AGENTS.md)
 
@@ -82,7 +83,7 @@ whole-tree pass now with `--all`. **This can be large and noisy** (especially
   > the typos / betterleaks ignore configs rather than disabling steps, and list anything that
   > needs my decision. Don't mix these fixes into unrelated changes."
 
-Keep this off `pre-push`/CI gates until the tree is clean, otherwise the first CI run fails on legacy debt.
+PR checks run `--pr`, so they stay green meanwhile. The push-to-trunk and scheduled sweeps run `--all` and stay red until the debt is cleared; expected, not a reason to hold the workflow back.
 
 ## Checklist
 
@@ -95,13 +96,13 @@ The mise-fy isn't done until every box is accounted for:
 - [ ] `[env]` replaces `.envrc`/manual exports; secrets policy applied; shell `${VAR:-default}` fallbacks converted to `{ default = ... }`.
 - [ ] Secret redaction applied
 - [ ] Tasks migrated; lint/test/build runnable via `mise run`
-- [ ] Lanes respected: no fast-path task (`check`/`test`/`dev`, `enter` hook) depends on `setup`; only a cached `deps` crosses
+- [ ] Lanes respected: no fast-path task (e.g. `check`, the `enter` hook) depends on `setup`; only a cached `deps` crosses
       ([`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#fast-path-vs-slow-path))
 - [ ] Bespoke file-watchers (nodemon/`--watch`/cargo-watch) replaced by `mise watch` + `sources`; `watchexec` pinned if used
 - [ ] Pre-commit hooks configured, and have a CI counterpart.
 - [ ] `.config/` layout applied: `hk.pkl`, linter configs, and the setup stamp live under `.config/`, not the repo root
       ([`hk.md`](hk.md#linter-config-lives-in-config-default)). Auditing an existing repo: 3+ relocatable configs at root → suggest migrating (non-blocking).
-- [ ] Retrospective lint run (`mise run check --all`) and existing debt triaged/cleared before gating CI
+- [ ] Retrospective lint run (`mise run check --all`) and existing debt triaged or cleared
 - [ ] CI uses `jdx/mise-action` and runs the same tasks
 - [ ] CI auto-fix variant decided: report-only by default; opt-in write-access variant raised interactively or suggested without blocking when autonomous
       ([`ci/github.md`](ci/github.md#optional-auto-fix-prs))

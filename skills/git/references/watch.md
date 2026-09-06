@@ -47,7 +47,7 @@ your work as the `EVENT`s arrive. `--max-total` is the budget; without it the wa
 
 ## Who runs the loop
 
-Two harness facts (verified on Claude Code and Cursor): a background shell wakes the agent that
+Two harness facts (verified 2026-09 on Claude Code and Cursor): a background shell wakes the agent that
 started it when it exits; a background shell started by a sub-agent does not survive the
 sub-agent's turn. So a sub-agent runs `watch` in the **foreground** and its return is the ping.
 

@@ -4,7 +4,7 @@
 
 ## Getting started
 
-This project uses [**mise**](https://mise.jdx.dev) to pin its tools (languages, CLIs), expose common tasks, and wire up git hooks — so everyone works with the same versions and commands. You only deal
+This project uses [**mise**](https://mise.jdx.dev) to pin its tools (languages, CLIs), expose common tasks, and wire up git hooks, so everyone works with the same versions and commands. You only deal
 with mise once; after that it's a couple of `mise run` commands.
 
 ### 1. Install mise (first time on this machine)
@@ -61,7 +61,7 @@ mise trust      # allow this repo's mise config to load
 mise run setup  # install the pinned tools (git hooks self-install via mise)
 ```
 
-That's everything — you're ready to work.
+That's everything. You're ready to work.
 
 ## Everyday commands
 
@@ -76,7 +76,7 @@ Run `mise run <task> --help` to see a task's options.
 ## Git hooks
 
 `mise run setup` runs `mise install`, which self-installs git hooks (via [hk](https://hk.jdx.dev))
-through a postinstall step. On **commit**, your staged files are formatted and linted automatically — the
-same `check` that runs in CI, so problems surface before you push.
+through a postinstall step. On **commit**, your staged files are formatted and linted; a **push** runs the slower gates. CI
+runs both as `mise run check`, so problems surface before review.
 
 Need to skip them for a work-in-progress commit? `git commit --no-verify`.

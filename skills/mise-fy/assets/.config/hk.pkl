@@ -1,9 +1,9 @@
-// hk.pkl — git hooks for hk. Copy and adapt. See references/hk.md.
-// Pin <VER> to your installed hk (`hk version`); both URLs must match. `hk init` regenerates.
+// hk.pkl: git hooks for hk.
+// Both URLs pin the hk version; keep them equal to the hk in mise.toml [tools] and bump them together.
 amends "package://github.com/jdx/hk/releases/download/v1.54.0/hk@1.54.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v1.54.0/hk@1.54.0#/Builtins.pkl"
 
-// Repo-wide ignores — committed paths only (.gitignore is already honored). Per-step `exclude` stacks on top.
+// Repo-wide ignores: committed paths only (.gitignore is already honored). Per-step `exclude` stacks on top.
 local commonIgnores =
   List(
     "**/vendor/**",
@@ -14,9 +14,9 @@ local commonIgnores =
   )
 
 // Gates by moment; each step lives in exactly one tier, hooks below only compose tiers.
-// `check` mounts the union — the repo's full contract and the only hook CI runs.
+// `check` mounts the union: the repo's full contract and the only hook CI runs.
 
-// Commit gates — run on every commit: file-scoped, fast, auto-fixable.
+// Commit gates: run on every commit. File-scoped, fast, auto-fixable.
 local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["shfmt"] = Builtins.shfmt
   ["actionlint"] = Builtins.actionlint
@@ -24,7 +24,7 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   // anonymous rate limit. Prefer $GITHUB_TOKEN (CI injects it); locally fall back to the dev's `gh`
   // login. gh missing/not-logged-in -> empty token, so pinact runs unauthenticated (rate-limited)
   // instead of failing the commit. hk `env` values are static, so prepend the token to the builtin's
-  // own command (keeps it in sync with the builtin). Needs `gh` on PATH (system or [tools]). See hk.md.
+  // own command (keeps it in sync with the builtin). Needs `gh` on PATH (system or [tools]).
   ["pinact"] = (Builtins.pinact) {
     check_diff =
       "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
@@ -33,10 +33,10 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
       "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
         + Builtins.pinact.fix
   }
-  // ["rumdl"] = Builtins.rumdl // markdown lint/format — CONFIRM with user; ask if they want table formatting (MD060). Needs `rumdl` in [tools] + a rumdl.toml. See hk.md.
+  // ["rumdl"] = Builtins.rumdl // markdown lint/format (needs `rumdl` in [tools] plus a rumdl.toml)
 }
 
-// Push gates — run before a push: slower or branch-scoped checks that would drag the commit loop.
+// Push gates: run before a push. Slower or branch-scoped checks that would drag the commit loop.
 // Logic lives in mise tasks (runnable standalone, identical in CI); steps here only route to them.
 local pushGates: Mapping<String, Step> = new Mapping<String, Step> {
 // ["test"] { check = "mise run test" }
@@ -45,9 +45,9 @@ local pushGates: Mapping<String, Step> = new Mapping<String, Step> {
 exclude = commonIgnores
 
 hooks {
-  // `hk check` / `mise run check` — the union: everything this repo enforces, and the only
-  // hook CI runs. Read-only; `--fix` applies. (No ["fix"] hook on purpose — `hk fix` errors,
-  // shunting to the one blessed entry point; a fix hook would be a second mapping to keep in sync.)
+  // `hk check` / `mise run check`: the union, everything this repo enforces, and the only
+  // hook CI runs. Read-only; `--fix` applies. (No ["fix"] hook on purpose; `hk fix` errors,
+  // shunting to the one blessed entry point, a fix hook would be a second mapping to keep in sync.)
   ["check"] {
     stage = false // `--fix` fixes the tree only; outside a commit, nothing touches the index
     steps {
@@ -56,8 +56,8 @@ hooks {
     }
   }
 
-  // `git commit` (staged) — commit gates only; fix inline. `stash` makes tools judge (and fix)
-  // the staged snapshot, not the working tree — without it, partially-staged files get fixes
+  // `git commit` (staged): commit gates only; fix inline. `stash` makes tools judge (and fix)
+  // the staged snapshot, not the working tree. Without it, partially-staged files get fixes
   // computed on (and re-staged with) unstaged hunks.
   ["pre-commit"] {
     fix = true
@@ -65,13 +65,13 @@ hooks {
     steps = commitGates
   }
 
-  // `git push` — push gates only (every commit already passed the commit gates). Best-effort
+  // `git push`: push gates only (every commit already passed the commit gates). Best-effort
   // locally (`--no-verify` skips); CI's union run is the authoritative gate.
   ["pre-push"] {
     steps = pushGates
   }
 
-  // Commit message ({{commit_msg_file}}) — no-op.
+  // Commit message ({{commit_msg_file}}): no-op.
   ["commit-msg"] {
     steps {
     // ["conventional-commit"] = Builtins.check_conventional_commit

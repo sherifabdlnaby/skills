@@ -104,7 +104,7 @@ Annotated example file tree + `mise.toml` to copy from.
 
 ### Complementary Skills
 
-**CI/CD-f** (checks/release/publish workflows, gating, signing, and community hygiene) -> load **cicd-fy** skill, if installed (from same author).
+**CI/CD** (checks/release/publish workflows, gating, signing, and community hygiene) -> load **cicd-fy** skill, if installed (from same author).
 This skill covers running mise *in* CI; the pipeline's shape is cicd-fy's domain.
 
 
@@ -120,8 +120,8 @@ safety/correctness floor: apply them even on a one-tool change, not polish you'd
    `[tools]`/`[tasks]` file loads untrusted (since 2026.6.6). A fresh clone needs `mise trust`
    (or a `trusted_config_paths` entry).
 2. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
-3. **Set `min_version`** (root level, not under `[settings]`) when you rely on a newer feature, so old clients are guided to update. It also floors users past known-vulnerable releases, e.g.
-   `>=2026.6.5`.
+3. **Set `min_version`** (root level, not under `[settings]`): the oldest release that supports every feature the config uses, never below the known-vulnerable floor (`2026.6.5`), and never
+   above what the author has installed. An old client is then told to update instead of failing on a feature it lacks.
 4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set
    `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`.
    mise tries the gh CLI token first, falls back to git credentials, fails open.
@@ -129,7 +129,7 @@ safety/correctness floor: apply them even on a one-tool change, not polish you'd
 5. **Mise moves fast.** When you hit a wall, check the recent changelog alongside the docs.
 6. **Shims don't expose every `mise activate` feature** (e.g. some env-on-`cd`); local-vs-CI mismatches often trace here. See [`install.md`](references/install.md) / [`ci.md`](references/ci.md).
 7. Always be aware of **Fast path vs slow path concept.**
-   Whatever runs many times a day (`enter`/`cd` hooks, check, test, dev, pre-commit) is fast-path: cheap, offline-safe, non-interactive.
+   Whatever runs many times a day (e.g. `check`, the `enter` hook, pre-commit) is fast-path: cheap, offline-safe, non-interactive.
    A setup is slow-path: allowed to be slow, online, interactive. Never make a fast-path task depend on a slow-path one, nag instead;
-   ([lane map](references/reference-setup-and-patterns.md#fast-path-vs-slow-path)).
+   the [lane map](references/reference-setup-and-patterns.md#fast-path-vs-slow-path) is the one list of members.
 8. More Generally, always think of how often a task is going to be run by the user. And never make tasks that belong to different cadences depend on each other.

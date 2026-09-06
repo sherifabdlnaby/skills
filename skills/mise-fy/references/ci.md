@@ -44,9 +44,7 @@ mise generate bootstrap -V <version> -w ./bin/mise   # commit the result
 
 CI (and contributors without mise) then call `./bin/mise install --locked`, `./bin/mise run check`, … — the script downloads the pinned version on first use, verifies it, and executes it.
 
-1. **The pin by hashes. The script embeds per-platform
-   SHA256s for the pinned version and verifies the download against them.
-2. **Bump by regenerating** with the new `-V`;
+The script embeds per-platform SHA256s for the pinned version and verifies the download against them. Bump by regenerating with the new `-V`.
 
 Then add the shims dir to `PATH` as the fallback net (see [Getting tools on PATH](#getting-tools-on-path)).
 
@@ -57,7 +55,7 @@ Then add the shims dir to `PATH` as the fallback net (see [Getting tools on PATH
 
 The mise binary on `PATH` only gives you the `mise` command; the *managed* tools (node, linters) still need one of:
 
-- **`mise x` / `mise run` is the correct path.** Resolve tools at call time; no shims or activation, nothing to break, and you get pinned versions + mise's `[env]`. See rule 1.
+- **`mise x` / `mise run` is the correct path.** Resolve tools at call time; no shims or activation, nothing to break, and you get pinned versions + mise's `[env]`.
 - **Shims on `PATH` are a fallback safety net, not the primary mechanism.** Add
   `~/.local/share/mise/shims` (`echo "$HOME/.local/share/mise/shims" >>
   "$GITHUB_PATH"`, or `eval "$(mise activate bash --shims)"`) so that **any
@@ -84,9 +82,8 @@ hashes are per-platform — grep the asset for *this* runner's os/arch.
 
 **2. The tools mise installs** are handled by the lockfile, not the steps above.
 With `lockfile = true` + `mise install --locked`, mise re-verifies each tool's
-checksum **and** provenance (cosign / SLSA / minisign / GitHub attestations, all
-on by default; toggle via `MISE_AQUA_COSIGN`, `MISE_AQUA_SLSA`,
-`MISE_AQUA_GITHUB_ATTESTATIONS`, `MISE_AQUA_MINISIGN`) on every CI run, aborting
+checksum **and** provenance (cosign, SLSA, minisign, GitHub attestations; all on
+by default, each with a `MISE_AQUA_*` toggle) on every CI run, aborting
 on mismatch. This is the main reason to commit `mise.lock` and pass `--locked`
 (see [`tools.md`](tools.md)). Pre-populate every CI platform with `mise lock
 --platform linux-x64,…` (see the per-platform gotcha above).

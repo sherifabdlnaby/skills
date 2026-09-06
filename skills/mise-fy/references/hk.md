@@ -10,7 +10,7 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 2. Do not install `pkl`; hk bundles a Pkl evaluator (`pklr`), so no separate install is needed
    (exception: the `pkl`/`pkl_format` lint builtins shell out to the `pkl` CLI).
 3. **For custom linters/tests, delegate to a mise task.** Avoid putting logic in `hk.pkl` where possible.
-4. Pin the `<VER>` in the `amends`/`import` URLs; regenerate with `hk init`, don't hardcode from memory.
+4. Pin the version in both `amends`/`import` URLs to the hk in `[tools]`. Bump by editing both URLs; `hk init` only creates a file for a repo without one, and `--force` overwrites the tiers.
 5. Always use a linter hk builtin settings.
 6. **Steps live in tier mappings named by moment** (`commitGates` / `pushGates`, see `assets/.config/hk.pkl`); hooks only compose tiers. The scaffold
    stubs `pushGates` empty to be filled late if no gates defined.
@@ -18,7 +18,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
    subsets by cost (`pre-commit` = commitGates, `pre-push` = pushGates). Anything outside the union — an inline hook step, an unmounted tier —
    is invisible to CI.
 8. Avoid adding linter files to root directory when they can live elsewhere (e.g .config/); to keep using Builtins prefer the linter's config env var, and splice `--config` into the builtin's own
-   command where it has none. Then verify the config is actually being read: a config the tool can't find degrades to defaults silently, not loudly.
+   command where it has none. Then prove the config is read: a config the tool cannot find falls back to defaults and the step stays green, a **vacuous green**, the check that passes
+   because it checked nothing. Every wiring below ends with the test that rules one out.
 
 ## Notes & Gotchas:
 
@@ -58,7 +59,7 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
 - **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.54"` resolves to the git tag `v1.54`, which doesn't exist →
   `404 Not Found` on install. Use `1.54.0`.
-- **The `actionlint` builtin needs `shellcheck` pinned.** actionlint shells out to shellcheck to lint workflow `run:` blocks; in not defined, or unpinned, it fails. Add both to `[tools]`.
+- **The `actionlint` builtin needs `shellcheck` pinned.** actionlint shells out to shellcheck to lint workflow `run:` blocks; missing or unpinned, it fails. Add both to `[tools]`.
 
 ## Setup & Templates.
 
@@ -76,28 +77,13 @@ list first. run `hk builtins` to list all linters builtins (or grep for the one 
 
 Beyond Popular Runtime Linters (check that yourself, and take a look at builtins). The following Linters are highly recommended and you should always suggest to the user:
 
-- mise: Lint mise file itself.
-- newlines
-- trailing_whitespace
-- check_added_large_files (block large blobs; default >500KB)
-- zizmor (GitHub Actions Security)
-- pinact (GitHub Actions pin SHAs; needs a GitHub token, see note below)
-- actionlint (GitHub Actions Linter)
-- check_executables_have_shebangs
-- check_case_conflict
-- check_merge_conflict
-- byte_order_marker
-- mixed_line_ending (normalize CRLF/LF)
-- check_symlinks (catch broken symlinks)
-- detect_private_key (block committed private keys; cheap, complements betterleaks)
-- yamllint (validate YAML structure syntax, duplicate keys, nesting; see note below)
-- taplo (TOML lint + format; alt impl: `tombi`/`tombi_format`)
-- betterleaks (see note below; confirm + scaffold an ignore file)
-- typos ( must confirm with user, can generate a ton of false positives, see note below; confirm + scaffold an ignore file)
-- lychee: Lint Broken Links. (Important for Agents.md files and to ensure progressive disclsure doesn't break)
-- rumdl ( must confirm with user; full ruleset is noisy on prose/docs repos; ask whether they want table formatting, see note below; confirm + scaffold a config): Markdown lint + format
-  (markdownlint-compatible, Rust).
-- yamlfmt ( must confirm with user since it usually generate a lot of noise).
+- mise: lint the mise config itself.
+- File hygiene: newlines, trailing_whitespace, mixed_line_ending, byte_order_marker, check_added_large_files, check_case_conflict, check_merge_conflict, check_symlinks,
+  check_executables_have_shebangs, detect_private_key (cheap, complements betterleaks).
+- GitHub Actions: actionlint (lint), zizmor (security), pinact (pin to SHAs; needs a token, see its note).
+- Structure: yamllint (structure only, see its note), taplo (TOML lint + format; alt: `tombi`).
+- lychee: broken links, anchors included (what keeps progressive disclosure from rotting; see its note).
+- Confirm with the user first, each is noisy on a real tree and gets a scaffolded config: betterleaks, typos, rumdl, yamlfmt (notes below).
 
 You can recommend to the user other linters based on the project. Use Builtins list of inspiration.
 
@@ -128,7 +114,7 @@ local/relative links and skips http(s), which then show as `👻 Excluded` rathe
 - **`exclude_path` entries are regexes matched against the whole path**, not globs or
   literals. So `.mise` also matches `/mise`, and one bad entry can silently drop a whole
   subtree. When that happens lychee prints `No files found for this input source` and
-  exits `0` with `✅ 0 OK`, a **green vacuous pass, not a real check**. Don't scope
+  exits `0` with `✅ 0 OK`, a **vacuous green**. Don't scope
   inputs with `exclude_path`; let hk pass the file list (it already honors `.gitignore`
   + `commonIgnores`). After wiring lychee up, confirm the run reports a non-zero `OK`
   count, otherwise it's checking nothing.
@@ -204,7 +190,7 @@ rules) plus a fully commented-out `[allowlist]`. See this repo's `.config/better
 
 - **betterleaks never auto-discovers its config, at any path.** A `.betterleaks.toml`
   sitting in the repo root is decorative: scanning with it present is byte-identical to
-  scanning with no config at all. Only `BETTERLEAKS_CONFIG` (see the table below) or
+  scanning with no config at all, a vacuous green for every allowlist entry. Only `BETTERLEAKS_CONFIG` (see the table below) or
   `--config` loads it, so a repo that "has a betterleaks config" has probably been
   scanning on defaults for as long as it's had one. Wire the env var the moment you
   scaffold the file, and prove it: an intentionally malformed config must make the step
@@ -286,7 +272,7 @@ local linters = new Mapping<String, Step> {
 }
 ```
 
-**Prove every route after wiring it.** A config that isn't found is almost never loud: the tool
+**Prove every route after wiring it.** A config that isn't found is a vacuous green: the tool
 falls back to defaults and the step still passes. Check each one against a case only the config
 changes (an accepted word for `typos`, a cosmetic rule for `yamllint`, `👻 Excluded` counts plus a
 non-zero `OK` for `lychee`), or point it at a deliberately broken file and confirm the step fails.

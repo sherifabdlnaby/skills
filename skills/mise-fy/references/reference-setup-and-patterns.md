@@ -28,6 +28,11 @@ The order of settings and options
 3. Linters and Formatters
 4. hk
 
+### Adapting the assets
+
+- **`check.yml`/`check.autofix.yml`'s mise `version:` input** is pinned to whatever was current when this template was last touched; when copying either workflow, replace it with the mise version
+  current at setup time instead of keeping the template's pin.
+
 ## Standard Tasks
 
 Each project should start with: `setup` `check (alias lint)` `test` `build`(when applicable), and `dev`(when applicable).
@@ -73,8 +78,8 @@ before setup burns minutes on a machine that can't finish.
 Setup should include a `setup:check` and `setup:stamp` internal hidden commands that we use to check if the user ran the latest version of a setup or not. It's expected to run as a mise enter hook.
 This allows us to version the setup, so we can notify (AND NAG!) users to re-run `mise run setup` again if expected version is not equal to saved version.
 
-The stamp is deliberately a **human-bumped counter**, things that auto-run or auto reconcile SHOULD NOT bump the bump. For example: Updating a tool version, or adding new tool, and similar SHOULDN'T
-BUMP the version.
+The stamp is a **human-bumped counter**. Bump it only for a change nothing reconciles on its own: a new manual step, a changed preflight, a one-time migration. A missing tool installs itself
+on the next `mise run`, and `deps` self-heals from its cache, so adding or bumping a tool or a dependency leaves the stamp alone.
 
 The stamp is written to `.config/mise/setup`. Add a committed `.config/mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see
 [.config/mise/.gitignore](../assets/.config/mise/.gitignore)) that ignores just the generated `setup` file.
@@ -114,9 +119,9 @@ Offer it when the team accepts `experimental = true`; keep classic as the defaul
 
 ### Check (Lint)
 
-A command that runs all Linters, Formatters, and Static Validators. This is every check we expect to run pre-commit and in CI, NOT unit/integration tests.
-It must be the **same command CI runs** and that the pre-commit hook runs, so behaviour can't drift between local, hook, and CI. Alias it `lint`.
-The canonical CI wiring for this task lives at [.github/workflows/check.yml](../assets/.github/workflows/check.yml) (see [`ci.md`](ci.md)).
+A command that runs all Linters, Formatters, and Static Validators. This is every check we expect to run pre-commit and in CI, NOT unit/integration tests. It is the **one command CI runs**, every gate
+at once; the git hooks run subsets of it by cost (commit gates on commit, push gates on push, see [`hk.md`](hk.md)), so a step outside `check` is invisible to CI. Alias it `lint`. The canonical CI
+wiring for this task lives at [.github/workflows/check.yml](../assets/.github/workflows/check.yml) (see [`ci.md`](ci.md)).
 
 If using hk for pre-commit linters then delegate the actual steps to **hk** (one source of truth; see [`hk.md`](hk.md)) and have the task just forward flags. See the `check` task in the reference
 [mise.toml](../assets/mise.toml). Key points:

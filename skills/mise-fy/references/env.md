@@ -44,7 +44,7 @@ Guidance on managing project environment and variables via Mise `[env]`.
 - **`default` needs mise `2026.6.10`.** On an older client it errors. Preferred path: have
   the user upgrade and bump `min_version = "2026.6.10"` so the feature is guaranteed. If
   you can't require that version, fall back to the self-referencing `${VAR:-default}` shell
-  form (rule 10) instead.
+  form instead.
 
 ## Syntax
 
@@ -71,19 +71,10 @@ vars = { e2e_args = "--headed" }         # override a var for this task
 run = "./scripts/test-e2e.sh {{vars.e2e_args}}"
 ```
 
-## Config environments (`MISE_ENV`)
-
-Mise has a `-E` flag that can control the different mise.toml files that get loaded (like dotenv). mise.{MISE_ENV}.local.toml > mise.local.toml > mise.{MISE_ENV}.toml > mise.toml Platform config
-environments (`mise.macos-arm64.toml` etc.) exist behind `auto_env` — off by default until 2027.6.0, and only enabled via `MISE_AUTO_ENV=1` or a `.miserc.toml` with `auto_env = true` (a `[settings]`
-entry has no effect). Read more at [environments](https://mise.jdx.dev/configuration/environments.html)
-
-## Shell Aliases
-
-mise can also manage **directory-scoped shell aliases** via `[shell_alias]` (e.g. `ll = "ls -la"`), set on enter / unset on leave like `[env]`; needs `mise activate`.
-Read more at [shell_aliases](https://mise.jdx.dev/shell-aliases.html)
-
 ## Docs:
 
 - [environments](https://mise.jdx.dev/environments/)
+- [config environments, `MISE_ENV`](https://mise.jdx.dev/configuration/environments.html)
+- [shell aliases](https://mise.jdx.dev/shell-aliases.html)
 - [task vars](https://mise.jdx.dev/tasks/task-configuration.html#vars)
 - [settings](https://mise.jdx.dev/configuration/settings.html)

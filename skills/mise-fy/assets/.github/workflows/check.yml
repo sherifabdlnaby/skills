@@ -1,17 +1,17 @@
 # Drives the project's own `mise run check` (the same task local dev + the pre-commit
 # hook use) and reports lint/format failures. On a PR it leaves one sticky comment
-# pointing the author at `mise run check --fix`. Copy and adapt. See references/ci.md.
+# pointing the author at `mise run check --fix`.
 name: 🎨 Linters, Validators, and Formatters
 
 on:
   pull_request: {}
-  # Merges to the default branch — sweep right away instead of waiting up to a day for the cron.
+  # Merges to the default branch: sweep right away instead of waiting up to a day for the cron.
   push:
     branches: [main]
   schedule:
     # Daily sweep so the default branch can't quietly rot.
     - cron: "0 0 * * *"
-  # Run manually — pick the scope: --all (whole tree) or --pr (this branch's diff vs the default branch).
+  # Run manually, pick the scope: --all (whole tree) or --pr (this branch's diff vs the default branch).
   workflow_dispatch:
     inputs:
       scope:
@@ -25,7 +25,7 @@ permissions:
   contents: read
   pull-requests: write
 
-# One run per PR (or ref) — newer pushes cancel stale runs.
+# One run per PR (or ref): newer pushes cancel stale runs.
 concurrency:
   group: lint-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -50,7 +50,7 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
         with:
-          version: "2026.8.3" # pin mise itself, not just the action (use the current mise version, don't copy this one)
+          version: "2026.8.3" # pin mise itself, not just the action
           install: true
           install_args: "--locked" # honor mise.lock
           cache: true
@@ -58,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SO tool installs don't hit API rate limits
 
-      # Report only — same `check` task local dev and the pre-commit hook run; we do NOT auto-fix
+      # Report only. Same `check` task local dev and the pre-commit hook run; we do NOT auto-fix
       # in CI. On failure, emit a `::error::` pointing the author at `--fix` (see the comment step).
       - name: Run check
         id: check
@@ -74,12 +74,12 @@ jobs:
           # at the PR base so hk diffs origin/<base>...HEAD (else it finds 0 files and passes green).
           [ "$scope" = pr ] && git remote set-head origin "$BASE_REF" >/dev/null 2>&1 || true
           mise run check "--$scope" || {
-            echo "::error::Lint & format failed on $REF_NAME — fix locally with 'mise run check --fix --$scope', then push. ('mise run setup' installs the pre-commit hook so this happens on every commit.)"
+            echo "::error::Lint & format failed on $REF_NAME, fix locally with 'mise run check --fix --$scope', then push. ('mise run setup' installs the pre-commit hook so this happens on every commit.)"
             exit 1
           }
 
       # One sticky PR comment pointing at `--fix`: post/update it when the check fails,
-      # delete it once the check passes. No inline suggestions — the author runs the fixer.
+      # delete it once the check passes. No inline suggestions; the author runs the fixer.
       - name: Comment lint status
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

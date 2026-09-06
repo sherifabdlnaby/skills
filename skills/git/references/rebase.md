@@ -1,6 +1,6 @@
-# Rebase, Squash, Conflicts
+# Rebase and Conflicts
 
-Rebasing, squashing, and resolving conflicts during a rebase. Stacked-PR restack procedures
+Rebasing and resolving conflicts during a rebase. Stacked-PR restack procedures
 (bottom merged, chain of 3+, mid-stack push) and the cascade form of the conflict and verify steps
 live in [`branches.md`](./branches.md); this file holds the rules those rely on.
 
@@ -48,23 +48,3 @@ stopping, so content can change with no conflict to notice.
 
 Once the force-push is verified, delete any snapshot (`git branch -D <branch>-bk`) so stale `-bk`
 branches don't accumulate.
-
-## Squash
-
-`git rebase -i` opens an editor and hangs the tool call. Both recipes below avoid it.
-
-Everything since `<base>` into one commit:
-
-```
-git reset --soft <base> && git commit
-```
-
-Fixups folded into the commits they belong to:
-
-```
-git commit --fixup <sha>
-GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash <base>
-```
-
-`GIT_SEQUENCE_EDITOR=:` accepts the generated plan without opening anything. Both are rebases, so
-[Verify](#verify) applies.
