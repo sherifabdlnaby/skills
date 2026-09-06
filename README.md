@@ -28,33 +28,33 @@ Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry pr
 other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
 than read, so they are left out.
 
-| Skill                                                                                  | SKILL.md |  Total |
-| -------------------------------------------------------------------------------------- | -------: | -----: |
-| [`afk`](skills/afk/)                                                                   |      228 |    228 |
-| [`cicd-fy`](skills/cicd-fy/)                                                           |    1,408 | 15,609 |
-| [`coding`](skills/coding/)                                                             |    1,048 |  1,048 |
-| [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |      394 |    394 |
-| [`git`](skills/git/)                                                                   |    2,374 | 12,384 |
-| [`grill-me`](skills/grill-me/)                                                         |       61 |     61 |
-| [`grilling`](skills/grilling/)                                                         |      578 |    578 |
-| [`kubernetes-debug`](skills/kubernetes-debug/)                                         |      240 |  1,513 |
-| [`mise-fy`](skills/mise-fy/)                                                           |    2,187 | 28,571 |
-| [`review`](skills/review/)                                                             |      325 |    325 |
-| [`scaffold-skill`](skills/scaffold-skill/)                                             |    1,532 |  2,890 |
-| [`variants/afk-careful`](skills/variants/afk-careful/)                                 |       89 |     89 |
-| [`variants/afk-soon`](skills/variants/afk-soon/)                                       |      166 |    166 |
-| [`variants/afk-yolo`](skills/variants/afk-yolo/)                                       |      114 |    114 |
-| [`variants/watch-pr`](skills/variants/watch-pr/)                                       |      477 |    477 |
-| [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |      766 |  1,917 |
-| [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |    2,070 |  6,873 |
-| [`vendor/handoff`](skills/vendor/handoff/)                                             |      182 |    182 |
-| [`vendor/humanizer`](skills/vendor/humanizer/)                                         |    6,633 |  7,174 |
-| [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |    1,342 |  2,938 |
-| [`vendor/prototype`](skills/vendor/prototype/)                                         |      642 |  3,546 |
-| [`vendor/show-me`](skills/vendor/show-me/)                                             |      775 |    775 |
-| [`vendor/teach`](skills/vendor/teach/)                                                 |    1,946 |  3,804 |
-| [`vendor/wait-what`](skills/vendor/wait-what/)                                         |      100 |    100 |
-| [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |    2,349 |  2,916 |
+| Skill                                                                                  | SKILL.md |    Total |
+| -------------------------------------------------------------------------------------- | -------: | -------: |
+| [`afk`](skills/afk/)                                                                   |    `228` |    `228` |
+| [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,408` | `15,609` |
+| [`coding`](skills/coding/)                                                             |  `1,048` |  `1,048` |
+| [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
+| [`git`](skills/git/)                                                                   |  `2,374` | `12,384` |
+| [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
+| [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
+| [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
+| [`mise-fy`](skills/mise-fy/)                                                           |  `2,187` | `28,571` |
+| [`review`](skills/review/)                                                             |    `325` |    `325` |
+| [`scaffold-skill`](skills/scaffold-skill/)                                             |  `1,532` |  `2,890` |
+| [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
+| [`variants/afk-soon`](skills/variants/afk-soon/)                                       |    `166` |    `166` |
+| [`variants/afk-yolo`](skills/variants/afk-yolo/)                                       |    `114` |    `114` |
+| [`variants/watch-pr`](skills/variants/watch-pr/)                                       |    `477` |    `477` |
+| [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |    `766` |  `1,917` |
+| [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,070` |  `6,873` |
+| [`vendor/handoff`](skills/vendor/handoff/)                                             |    `182` |    `182` |
+| [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `6,633` |  `7,174` |
+| [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |  `1,342` |  `2,938` |
+| [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
+| [`vendor/show-me`](skills/vendor/show-me/)                                             |    `775` |    `775` |
+| [`vendor/teach`](skills/vendor/teach/)                                                 |  `1,946` |  `3,804` |
+| [`vendor/wait-what`](skills/vendor/wait-what/)                                         |    `100` |    `100` |
+| [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |  `2,349` |  `2,916` |
 
 </details>
 

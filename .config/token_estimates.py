@@ -145,6 +145,15 @@ def markdown_table(
     )
 
 
+def count(tokens: int) -> str:
+    # Monospace keeps the digits on a common width, so a column of them lines up when rendered.
+    return f"`{tokens:,}`"
+
+
+def signed(delta: int) -> str:
+    return f"`{delta:+,}`" if delta else "`0`"
+
+
 def report_intro(skill_tokens: int, total_tokens: int, *, plural: bool = False) -> str:
     skill_label = "All SKILL.md" if plural else "SKILL.md"
     total_label = "All Markdown" if plural else "Total"
@@ -167,7 +176,7 @@ def skill_block(estimate: SkillEstimate) -> str:
     for file in estimate.files:
         relative_path = file.path.relative_to(estimate.directory).as_posix()
         rows.append(
-            (f"[`{relative_path}`]({quote(relative_path)})", f"{file.tokens:,}")
+            (f"[`{relative_path}`]({quote(relative_path)})", count(file.tokens))
         )
     table = markdown_table(("File", "Tokens"), rows, {1})
     return "\n\n".join(
@@ -204,7 +213,7 @@ def summary_table(
         if sources is not None:
             source = sources[estimate.directory.name]
             cells.append(f"[{source}](https://github.com/{source})")
-        cells.extend((f"{estimate.skill_tokens:,}", f"{estimate.total_tokens:,}"))
+        cells.extend((count(estimate.skill_tokens), count(estimate.total_tokens)))
         rows.append(tuple(cells))
     return markdown_table(headers, rows, right)
 
@@ -219,7 +228,7 @@ def files_table(estimates: tuple[SkillEstimate, ...], base: Path) -> str:
                 (
                     f"`{display_name(estimate, base)}`",
                     f"[`{name}`]({link})",
-                    f"{file.tokens:,}",
+                    count(file.tokens),
                 )
             )
     return markdown_table(("Skill", "File", "Tokens"), rows, {2})
@@ -319,10 +328,6 @@ def snapshot(estimates: tuple[SkillEstimate, ...]) -> dict[str, dict[str, int]]:
     }
 
 
-def signed(delta: int) -> str:
-    return f"{delta:+,}" if delta else "0"
-
-
 def diff_comment(
     before: dict[str, dict[str, int]], after: dict[str, dict[str, int]]
 ) -> str:
@@ -343,9 +348,9 @@ def diff_comment(
         rows.append(
             (
                 label,
-                f"{new['skill']:,}",
+                count(new["skill"]),
                 signed(skill_delta),
-                f"{new['total']:,}",
+                count(new["total"]),
                 signed(total_delta),
             )
         )
@@ -361,17 +366,17 @@ def diff_comment(
 
     if not rows:
         body = (
-            f"No skill changed size. Still {new_skill:,} tokens of `SKILL.md` "
-            f"and {new_total:,} of Markdown in all."
+            f"No skill changed size. Still {count(new_skill)} tokens of `SKILL.md` "
+            f"and {count(new_total)} of Markdown in all."
         )
     else:
         rows.append(
             (
                 "**All skills**",
-                f"**{new_skill:,}**",
-                f"**{signed(new_skill - old_skill)}**",
-                f"**{new_total:,}**",
-                f"**{signed(new_total - old_total)}**",
+                count(new_skill),
+                signed(new_skill - old_skill),
+                count(new_total),
+                signed(new_total - old_total),
             )
         )
         body = markdown_table(

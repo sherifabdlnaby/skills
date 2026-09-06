@@ -11,9 +11,9 @@ Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry pr
 other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
 than read, so they are left out.
 
-| File                   | Tokens |
-| ---------------------- | -----: |
-| [`SKILL.md`](SKILL.md) |  1,048 |
+| File                   |  Tokens |
+| ---------------------- | ------: |
+| [`SKILL.md`](SKILL.md) | `1,048` |
 
 <!-- token-estimates:end -->
 
