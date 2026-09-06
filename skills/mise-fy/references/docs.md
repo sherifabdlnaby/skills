@@ -41,8 +41,8 @@ Everything the README covers, plus how to *work in* and *extend* the setup. Keep
 
 - **Setup**: `mise trust && mise run setup`. Tools/tasks/env all come from `mise.toml`. Never install a tool by hand or add an ad-hoc script; add a mise tool/task instead.
 - **Run via mise**: `mise run check` before declaring done, `mise run test`; discover with `mise tasks`, inspect flags with `mise run <task> --help`.
-- **Hooks** (hk only): commits run `hk`, the same `check` CI runs. Fix with `mise run check --fix`; don't disable steps to get a commit through. State that setup installs them and where they land —
-  on Git 2.54+ that's git *config*, so an empty `.git/hooks/` doesn't mean no hooks.
+- **Hooks** (hk only): commits run the commit gates through `hk`, pushes run the push gates, and CI runs both as `check`, so a green commit is not yet a green CI. Fix with `mise run check --fix`;
+  don't disable steps to get a commit through. State that setup installs them and where they land — on Git 2.54+ that's git *config*, so an empty `.git/hooks/` doesn't mean no hooks.
 - **How to run a specific hk step**: Agent needs to learn to use --step or --skip-step flags for mise run check when they need shorter feedback loop.
 - **Extending the setup**: Refer the agent where to find tasks, add them, and how to extend hooks.
 

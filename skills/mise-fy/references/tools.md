@@ -12,10 +12,12 @@ Guidance on Installing Tools and Runtimes via Mise.
 2. **Pin by version policy**, never floating:
    - Tool is **`>=1.0`** → pin at **major** (e.g. `node = "24"`); tracks patches/minors within that major.
    - Tool is **`<1.0`** (0.x) → pin at **minor** (e.g. `ruff = "0.15"`); 0.x ships breaking changes on minor bumps, so a bare major (`"0"`) is meaningless.
+   - Exceptions the mechanism forces: a runtime whose minor releases break (e.g. python) pins at **minor**; hk pins the full patch (its Pkl URLs need the exact tag, see
+     [`hk.md`](hk.md)); a Node package manager follows `packageManager` (see [`runtimes/node.md`](runtimes/node.md)).
 3. **Never use `latest`** until the user explicitly asks for it (even with a lockfile present). The lockfile is a safety net, not a license to float.
-4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it look as expected, and re-order the added part by the command to match file structure
+4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it looks as expected, and re-order the added part by the command to match file structure
    (e.g group relevant tools on top of each other)
-5. To pin per rule 2: `mise use <tool>@$(mise latest <tool> | cut -d. -f1) --fuzzy` for a `>=1.0` tool (writes the bare major); for a `0.x` tool use `cut -d. -f1,2` to write `0.<minor>`.
+5. To pin per the version policy: `mise use <tool>@$(mise latest <tool> | cut -d. -f1) --fuzzy` for a `>=1.0` tool (writes the bare major); for a `0.x` tool use `cut -d. -f1,2` to write `0.<minor>`.
 6. Use mise's core backends. If you're choosing backends, pick the one with checksums + timestamp support as much as possible.
 7. Group relevant tools categories close to each other in the toml when you have >6 tools. Use a code comment as a title for group.
 8. If a tool existence in a list is not obvious, add a 3~4 words sentence to give a hint in a code comment on the same line.
@@ -107,7 +109,7 @@ unreachable (e.g. `docker info` before `docker compose up`).
 [tools]
 # --- runtimes (core backend) -----------------------------------------------
 node = "22"                              # >=1.0 → pin major; tracks patches within it
-python = "3.12"                          # prefix-pin at minor
+python = "3.12"                          # exception: minor releases break, pin minor
 ruff = "0.15"                            # <1.0 (0.x) → pin minor (0.x breaks on minor)
 
 # --- everything else (aqua preferred) --------------------------------------
@@ -115,26 +117,23 @@ ripgrep = "15"                           # registry shorthand (resolves via aqua
 "aqua:sharkdp/fd" = "10"                 # explicit backend as KEY, version as value
 "github:koalaman/shellcheck" = "0.11"    # provenance when not in aqua
 
-# --- fuzzy / prefix pins ----------------------------------------------------
-terraform = "prefix:1.9"                 # newest 1.9.x
-deno = { version = "2" }                 # table form, plain pin
-
 # --- table form: per-tool options ------------------------------------------
-rust = { version = "1.80", os = ["linux", "macos"] }       # restrict OS
-my-cli = { version = "1.2", depends = ["node"] }            # install after node
+deno = { version = "2" }                                   # plain pin, table form
+rust = { version = "1", os = ["linux", "macos"] }          # restrict OS
+my-cli = { version = "1", depends = ["node"] }             # install after node
 some-tool = { version = "3", install_env = { CC = "clang" } }  # env at install
 patched = { version = "1", postinstall = "./fix.sh" }       # run after install
 
 
-# --- scope a tool to ONE task (rule 10): lazy-installed, not seen by `depends` ---
+# --- scope a tool to ONE task: lazy-installed, not seen by `depends` ---
 [tasks.build]
-tools.rust = "1.80"
+tools.rust = "1"
 run = "cargo build"
 
 
 [settings]
 lockfile = true                          # write mise.lock (required for pinning)
-minimum_release_age = "7d"               # skip releases newer than 7 days (rule 9)
+minimum_release_age = "7d"               # skip releases newer than 7 days
 ```
 
 ## Lazy-install for uncommon tools
@@ -143,7 +142,7 @@ Not every tool belongs in the shared `[tools]` block that installs it for **ever
 A tool only _some_ workflows touch should be installed **lazily** (only when first used) and **not** for everyone. Two mechanisms; pick in this order:
 
 1. **Task-scoped tool: _prefer this_ when a single task needs the tool.**
-   `[tasks.x] tools.foo = "…"` (rule 10). Installed only when that task runs,
+   `[tasks.x] tools.foo = "…"`. Installed only when that task runs,
    never on `mise install`, and not seen by `depends`. The tool stays declared
    in `mise.toml`, version-pinned like any other.
    - **Don't use it when several tasks need the same tool** as you'd repeat the pin per task and they drift. That's the case for option 2.

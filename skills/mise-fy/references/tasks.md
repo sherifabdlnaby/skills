@@ -12,9 +12,9 @@ How to build or improve mise Tasks.
    skips-if-unchanged (mise auto-tracks an internal marker); add explicit `outputs` when the
    artifact's existence is itself a correctness condition (a deleted output must re-run).
    `--force` bypasses for a clean run.
-4. **Identify a task nature or lane**: Fast path (`check`/`test`/`dev`, `enter` hook, pre-commit)
+4. **Identify a task's lane**: fast path (e.g. `check`, the `enter` hook, pre-commit)
    runs many times a day: cheap, offline-safe, non-interactive, and never `depends` on
-   slow path (`setup`, `setup:*`). Learn more: [Lane map](reference-setup-and-patterns.md#fast-path-vs-slow-path).
+   slow path (`setup`, `setup:*`). Membership: [lane map](reference-setup-and-patterns.md#fast-path-vs-slow-path).
 5. **TOML for <= 5-line tasks; longer logic use an executable file task** with a shebang + `set -euo pipefail` (unless the repo already has a scripts dir).
 6. **File tasks must be executable** in a discovered dir. Prefer to use `.config/mise/tasks` over `.mise` to keep repo root directories few.
 7. **Scope `env`/`tools` to the task** (`[tasks.x] env.FOO` / `tools = [...]`) instead of global when only it needs them.
@@ -22,7 +22,7 @@ How to build or improve mise Tasks.
 9. **Take input via the `usage` spec**; never the deprecated `{{arg()}}/{{option()}}/{{flag()}}` (deprecated since 2026.5.0; scheduled for removal in 2027.5.0). Built-in; `help=` + `choices` make
    `--help` and completion free. See Task Arguments below.
 10. **Give every task a `description`**;
-11. add `choices`/simple `complete` when useful and it's a short one-liner command. Avoid hardcoding/enumurating lists that are expected to extend in the future.
+11. add `choices`/simple `complete` when useful and it's a short one-liner command. Avoid hardcoding/enumerating lists that are expected to extend in the future.
 12. Handwritten completion scripts only on request by user; keep them under **`.config/mise/completion/`** (Convention only;
     mise does **not** auto-load that dir; it's just where we standardize these scripts.).
 13. **Gate destructive tasks with `confirm = "…"`** and `hide = true` on internal
@@ -46,8 +46,6 @@ How to build or improve mise Tasks.
 - **`run` as an array = serial commands, each its own shell**; `cd` and unexported vars
   don't carry between entries. Use one multi-line `run` (or a file task) for stateful
   sequences. Stops on first failure (`set -e`); `mise run -c`/`--continue-on-error` keeps going.
-- **`sources` alone already gives skip-if-unchanged** you don't need `outputs` just
-  to cache runs, but it will be based only on inputs.
 - **Freshness is mtime-based, per-clone**: `touch` alone re-runs;
   state lives in `~/.local/state/mise/`, so fresh clones/worktrees start stale.
 - Explicit `outputs` compare make-style: outputs older than sources re-run the task
@@ -109,70 +107,19 @@ cargo build ${usage_release:+--release}
 
 ## Task Arguments
 
-Take input via the [`usage`](https://usage.jdx.dev) spec: `usage = '''…'''` (TOML) or `#USAGE` lines (file task). Parser is **built-in**; don't add `usage` to `[tools]`. Values arrive as
-**`$usage_<name>`** env vars (dashes->underscores: `--dry-run` -> `$usage_dry_run`), and **only inside a TOML `run`** as Tera **`{{usage.<name>}}`** (variadics are arrays). Precedence:
-**CLI > `env="VAR"` > `default`**.
+Take input via the [`usage`](https://usage.jdx.dev) spec: `usage = '''…'''` (TOML) or `#USAGE` lines (file task). The parser is built-in; don't add `usage` to `[tools]`. Values arrive as
+`$usage_<name>` env vars (dashes to underscores), and inside a TOML `run` also as Tera `{{usage.<name>}}` (variadics are arrays). Precedence: CLI > `env="VAR"` > `default`. The spec grammar
+(args, flags, `choices`, `complete`, defaults) is the usage docs; the `check` task in [`assets/mise.toml`](../assets/mise.toml) is a worked example, and `mise run <task> --help` is generated
+from the spec.
 
-```toml
-[tasks.deploy]
-description = "Deploy app"          # shows in `mise tasks`; --help is auto-generated from the spec
-usage = '''
-arg  "<env>"            help="Target environment" { choices "dev" "staging" "prod" }   # required
-arg  "[tag]"            help="Release tag" default="latest"                            # optional + default
-arg  "[files]" var=#true                                                               # variadic 0+ (1+ uses <files>)
-flag "-p --profile <profile>" help="Build profile" env="BUILD_PROFILE" default="dev"   # flag WITH value
-flag "-f --force"      help="Skip safety checks"                                        # boolean: present->"true"
-flag "--color"         negate="--no-color" default=#true                                # explicit true/false
-flag "-v --verbose"    count=#true                                                      # repeatable -vvv
-complete "env" run="ls deploy/envs" descriptions=#true                                  # dynamic completion
-'''
-run = './deploy.sh "$usage_env" --tag "$usage_tag" ${usage_force:+--force} ${usage_verbose:+-v}'
-```
+Gotchas:
 
-Same spec as a **file task** (`.config/mise/tasks/deploy`, executable). Spec lives in
-`#USAGE`/`#MISE` comments; the body is a plain script, so read **only `$usage_X` env
-vars**. The body isn't Tera-rendered, so `{{usage.X}}` prints literally. Every line
-of a multi-line `{ choices … }` block needs its own `#USAGE`.
-
-```bash
-#!/usr/bin/env bash
-#MISE description="Deploy app"
-#USAGE arg "<env>" help="Target environment" {
-#USAGE   choices "dev" "staging" "prod"
-#USAGE }
-#USAGE arg "[tag]" help="Release tag" default="latest"
-#USAGE arg "[files]" var=#true
-#USAGE flag "-p --profile <profile>" help="Build profile" env="BUILD_PROFILE" default="dev"
-#USAGE flag "-f --force" help="Skip safety checks"
-#USAGE flag "--color" negate="--no-color" default=#true
-#USAGE flag "-v --verbose" count=#true
-#USAGE complete "env" run="ls deploy/envs" descriptions=#true
-set -euo pipefail
-echo "deploying $usage_env (tag=$usage_tag, profile=$usage_profile)"
-[ -n "${usage_force:-}" ] && echo "  --force"
-[ "${usage_verbose:-0}" -gt 0 ] && echo "  verbosity=$usage_verbose"
-./deploy.sh "$usage_env" --tag "$usage_tag" ${usage_force:+--force}
-```
-
-No `#USAGE` spec? Extra CLI args arrive as plain `$@`. Everything else (args, flags, choices, defaults, validation, `complete`, auto `--help`) works exactly like TOML.
-
-| Need                      | Spec                                                                                                               | Consume                                     |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
-| Required / optional arg   | `arg "<x>"` / `arg "[x]"`                                                                                          | `${usage_x?}` / `${usage_x:-}`              |
-| Variadic                  | `arg "<x>" var=#true` (1+), `[x]` (0+); `var_min`/`var_max`                                                        | `{{usage.x}}` (array)                       |
-| Flag with value           | `flag "-p --profile <p>"`                                                                                          | `$usage_profile`                            |
-| **Arbitrary passthrough** | **omit spec** -> extra CLI args append to the **last** `run` cmd; or `arg "[a]" var=#true double_dash="automatic"` | `mise run t -- --raw`                       |
-| Binary true/false         | `flag "-f --force"` or `flag "--x" negate="--no-x" default=#true`                                                  | `${usage_force:-false}`, `{% if usage.x %}` |
-| Defaults                  | `default="…"` (and/or `env="VAR"` as a fallback source)                                                            | (none)                                      |
-| Help                      | `help="…"` per item, `long_help="…"`, `description=` on task                                                       | `mise <task> --help` (auto)                 |
-| Completion                | static `{ choices "a" "b" }`; dynamic `complete "name" run="…" descriptions=#true`                                 | needs `mise completion <shell>` installed   |
-
-Gotchas: required `<arg>` is satisfied by its `env="VAR"` (no CLI value needed) · `hide=#true` drops an item from help/completions · `complete` Tera vars: `words`, `CURRENT`, `PREV`.
-**`{{usage.X}}` works in a TOML `run`, in `confirm`, and in `depends`/`wait_for` args
-— but NOT in `description`** (or other config-load-time fields): there it throws
-`Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not
-just that one. In all file-task bodies use plain `$usage_X` (the body isn't
-Tera-rendered).
+- **`{{usage.X}}` in `description`** (or any other config-load-time field) throws `Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not just that one. It works
+  in `run`, `confirm`, and `depends`/`wait_for` args.
+- **File-task bodies are not Tera-rendered.** `{{usage.X}}` prints literally there; read `$usage_X`. Every line of a multi-line `{ choices … }` block needs its own `#USAGE`.
+- **No spec means passthrough.** Extra CLI args append to the last `run` entry (`$@` in a file task). With a spec they are parsed instead, so an explicit passthrough is
+  `arg "[a]" var=#true double_dash="automatic"`.
+- A required `<arg>` is satisfied by its `env="VAR"` with no CLI value; `hide=#true` drops an item from help and completion.
 
 ## Watch
 
@@ -183,13 +130,7 @@ mise watch test                # run + re-run on source change
 mise watch -r serve            # -r/--restart: kill & restart the process (dev servers)
 ```
 
-Most-used flags (passed through to watchexec): **`-r/--restart`** kill & restart a
-still-running process (dev servers); **`-o/--on-busy-update
-<queue|do-nothing|restart|signal>`** what to do if a change lands mid-run (`-r` =
-`restart`); **`-d/--debounce <time>`** coalesce event bursts (default 50ms);
-**`-p/--postpone`** don't run at startup, wait for the first change;
-**`--poll [interval]`** for network shares/containers where native FS events
-don't fire.
+Flags pass through to watchexec (`mise watch --help`); `-r/--restart` is the one dev servers need, and `--poll` is for filesystems whose native events don't fire.
 
 Worth wiring watch for: tight edit -> rebuild/retest loops, dev servers, doc/asset rebuilds.
 

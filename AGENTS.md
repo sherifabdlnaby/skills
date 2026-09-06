@@ -20,9 +20,9 @@ Prefer `mise run <task>` over calling the tool directly, so local, hooks, and CI
 
 ## Git hooks (hk)
 
-Commits run [hk](https://hk.jdx.dev), the same `check` CI runs, to format and lint staged files. Fix failures with `mise run check --fix`. Don't disable steps to push a commit through;
-`git commit --no-verify` skips hooks for a WIP commit. `mise run setup` installs the hooks into
-git *config* (`hook.<name>.command`) — `.git/hooks/` stays empty, that doesn't mean they're absent.
+Commits run [hk](https://hk.jdx.dev) commit gates on staged files, and a push runs the push gates; CI runs both as `mise run check`. Fix failures with `mise run check --fix`. Don't disable steps to
+push a commit through; `git commit --no-verify` skips hooks for a WIP commit. `mise run setup` installs the hooks into git *config* (`hook.<name>.command`) — `.git/hooks/` stays empty, that doesn't
+mean they're absent.
 
 ## Extending the setup
 

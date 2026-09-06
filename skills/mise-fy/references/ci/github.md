@@ -9,8 +9,8 @@ Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and cac
 
 1. **Pin actions to a commit SHA**, with the version in a trailing comment (`uses: owner/action@<sha> # v1.2.3`). Tags are mutable; SHAs aren't.
 2. **Pin mise itself via the `version:` input**, not just the action SHA.
-3. **`sha256:` is the byte pin; Hashes the installed binary (per-platform; bump every mise upgrade), and is the only check that runs
-   on an Actions **cache hit** (so checks for poisoned cache!)
+3. **`sha256:` is optional hardening.** It pins the mise binary's bytes (per platform, a new hash every mise bump). The reference workflows omit it; add it when a poisoned Actions cache is
+   in your threat model.
 4. **Scope `permissions`** to the minimum. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint comment. The opt-in [auto-fix variant](#optional-auto-fix-prs)
    additionally needs `contents: write` to push the fix branch.
 5. **Cancel superseded runs** with a `concurrency` group keyed on the PR number or ref so a new push stops the old run.
@@ -76,7 +76,7 @@ Caveats (why it's opt-in):
   The Actions checkout never sets `origin/HEAD` (you'll see `fatal: ref
   refs/remotes/origin/HEAD is not a symbolic ref` in the log), so hk falls back
   to diffing the branch against its own upstream: **0 files, every check passes
-  green** even with real lint errors.
+  green** even with real lint errors, a vacuous green (see [`hk.md`](../hk.md)).
   `fetch-depth: 0` doesn't help; neither does materializing a local branch (hk
   reads `origin/HEAD`, not a local ref).
   Fix: when scope is `--pr`, point the symbolic ref at the base right before
@@ -111,7 +111,7 @@ jobs:
       - uses: actions/checkout@<sha> # v6   (fetch-depth: 0 if you use `check --pr`)
         with: { fetch-depth: 0 }
       - uses: jdx/mise-action@<sha> # v4   installs mise + tools, runs `mise install`, caches
-        with: { version: "<mise-version>", install_args: "--locked" } # pin mise too, not just the action (rule 2)
+        with: { version: "<mise-version>", install_args: "--locked" } # pin mise too, not just the action
       - run: mise run check --pr # same task as local + pre-commit
 ```
 
