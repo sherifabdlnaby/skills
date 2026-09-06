@@ -49,7 +49,11 @@ jobs:
         run: |
           set -euo pipefail
           mise run tokens:diff > "$RUNNER_TEMP/comment.md"
-          cat "$RUNNER_TEMP/comment.md" >> "$GITHUB_STEP_SUMMARY"
+          if [ -s "$RUNNER_TEMP/comment.md" ]; then
+            cat "$RUNNER_TEMP/comment.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No skill changed size." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Sync comment
         # Fork PRs carry a read-only token (by design, see github.md) → the job summary is all they get.
@@ -62,6 +66,13 @@ jobs:
           MARKER="<!-- token-estimates:diff -->"
           CID="$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
             --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty")"
+
+          # No table means no skill moved. Say nothing, and clear what an earlier push said.
+          if [ ! -s "$RUNNER_TEMP/comment.md" ]; then
+            [ -n "$CID" ] && gh api -X DELETE "repos/$REPO/issues/comments/$CID" >/dev/null || true
+            exit 0
+          fi
+
           if [ -n "$CID" ]; then
             gh api -X PATCH "repos/$REPO/issues/comments/$CID" -F "body=@$RUNNER_TEMP/comment.md" >/dev/null
           else

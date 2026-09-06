@@ -330,7 +330,7 @@ def snapshot(estimates: tuple[SkillEstimate, ...]) -> dict[str, dict[str, int]]:
 
 def diff_comment(
     before: dict[str, dict[str, int]], after: dict[str, dict[str, int]]
-) -> str:
+) -> str | None:
     gone = {"skill": 0, "total": 0}
     rows: list[tuple[str, ...]] = []
     for name in sorted(before.keys() | after.keys()):
@@ -355,42 +355,17 @@ def diff_comment(
             )
         )
 
-    sums = {
-        key: (
-            sum(entry["skill"] for entry in source.values()),
-            sum(entry["total"] for entry in source.values()),
-        )
-        for key, source in (("before", before), ("after", after))
-    }
-    (old_skill, old_total), (new_skill, new_total) = sums["before"], sums["after"]
-
     if not rows:
-        body = (
-            f"No skill changed size. Still {count(new_skill)} tokens of `SKILL.md` "
-            f"and {count(new_total)} of Markdown in all."
-        )
-    else:
-        rows.append(
-            (
-                "**All skills**",
-                count(new_skill),
-                signed(new_skill - old_skill),
-                count(new_total),
-                signed(new_total - old_total),
-            )
-        )
-        body = markdown_table(
-            ("Skill", "SKILL.md", "Δ", "All Markdown", "Δ"), rows, {1, 2, 3, 4}
-        )
+        return None
 
     return "\n".join(
         (
             DIFF_MARKER,
             "### 🪙 Token estimates",
             "",
-            body,
-            "",
-            f"`SKILL.md` is what an agent loads to decide; the total adds every other Markdown file it can go on to read. tiktoken `{ENCODING_NAME}`.",
+            markdown_table(
+                ("Skill", "SKILL.md", "Δ", "All Markdown", "Δ"), rows, {1, 2, 3, 4}
+            ),
         )
     )
 
@@ -447,7 +422,12 @@ def main() -> int:
         return 0
     if args.diff is not None:
         before = json.loads(args.diff.read_text(encoding="utf-8"))
-        print(diff_comment(before, snapshot(estimates)))
+        comment = diff_comment(before, snapshot(estimates))
+        # Empty stdout is the signal that there is no comment to make; the note is for a human.
+        if comment is None:
+            print("No skill changed size.", file=sys.stderr)
+        else:
+            print(comment)
         return 0
     return write_reports(root, estimates, fix=args.fix)
 
