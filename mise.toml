@@ -59,6 +59,18 @@ hk check $ff ${usage_fix:+--fix} ${usage_all:+--all} ${usage_pr:+--pr} \
 description = "Check generated skill token estimates; pass --fix to update them"
 run = "uv run --locked python .config/token_estimates.py"
 
+[tasks."tokens:diff"]
+description = "Print the token estimate change against BASE_REF (default: origin/main) as a PR comment"
+run = '''
+set -eu
+base="$(mktemp -d)"
+trap 'git worktree remove --force "$base" >/dev/null 2>&1 || true' EXIT
+git worktree add --detach --quiet "$base" "${BASE_REF:-origin/main}"
+# The head copy of the script measures both trees, so a change to the script itself still reports.
+uv run --locked python .config/token_estimates.py --root "$base" --json >"$base.json"
+uv run --locked python .config/token_estimates.py --diff "$base.json"
+'''
+
 [tasks."tokens:setup"]
 description = "Cache tokenizer data used by token estimates"
 hide = true

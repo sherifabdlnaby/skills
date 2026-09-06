@@ -1,0 +1,69 @@
+# Reports what a PR does to the size of every skill, as one sticky comment. Not a gate: skills are
+# allowed to grow, the number just shouldn't grow unnoticed.
+name: 🪙 Token estimates
+
+on:
+  pull_request: {}
+
+# Top-level least-privilege floor; the job below widens to what it needs.
+permissions: {}
+
+# One run per PR — newer pushes cancel stale runs.
+concurrency:
+  group: tokens-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  diff:
+    name: diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Keep one sticky comment on the PR.
+    permissions:
+      contents: read
+      pull-requests: write
+
+    env:
+      GH_TOKEN: ${{ github.token }} # gh CLI auth
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the base commit gets measured too, so it has to be in the tree
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@3c2e0cf82a5b2e5249f0d3635a4d83d0ae861518 # v4.2.5
+        with:
+          install: true
+          install_args: "--locked" # honor mise.lock
+          cache: true
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # so tool installs don't hit API rate limits
+
+      - name: Diff token estimates
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          mise run tokens:diff > "$RUNNER_TEMP/comment.md"
+          cat "$RUNNER_TEMP/comment.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Sync comment
+        # Fork PRs carry a read-only token (by design, see github.md) → the job summary is all they get.
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          MARKER="<!-- token-estimates:diff -->"
+          CID="$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq "map(select(.body|startswith(\"$MARKER\")))[0].id // empty")"
+          if [ -n "$CID" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$CID" -F "body=@$RUNNER_TEMP/comment.md" >/dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -F "body=@$RUNNER_TEMP/comment.md" >/dev/null
+          fi
