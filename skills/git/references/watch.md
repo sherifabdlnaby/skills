@@ -8,13 +8,13 @@ open it only when the commands below do not fit.
 
 ## The contract
 
-Every run ends with one `>>` line. Four kinds, four reactions:
+Every run ends with one `>>` line, of four kinds:
 
 ```
->> EVENT: ongoing. <what to do>, then run watch again.     act, then run the same watch again
->> STALE: ongoing. nothing changed for 22m, 40m of budget left. ...   nudge the user, then run again
->> DONE: done. <reason>. stop.                             digest, stop
->> QUIET: ongoing. no event within this episode; ...       run the same watch again
+>> EVENT: ongoing. <what to do>, then run watch again.
+>> STALE: ongoing. nothing changed for 22m, 40m of budget left. tell the user ..., then run watch again.
+>> DONE: done. <reason>. stop.
+>> QUIET: ongoing. no event within this episode; run the same watch again.
 ```
 
 Event lines above the verdict are self-evident tags: `PUSH`, `FAIL`, `FIXED`, `DONE` (all checks

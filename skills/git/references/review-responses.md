@@ -93,8 +93,7 @@ checks   \([.statusCheckRollup[]?|.conclusion//.state]|group_by(.)|map("\(.[0]//
 ```
 
 The rollup collapses to `checks SUCCESS=12 SKIPPED=6` rather than listing every check.
-(verified on gh 2.x.) For watching rather than looking, `pr-watch.py poll` self-baselines and belongs
-to [`watch.md`](./watch.md).
+(verified on gh 2.x.) For watching rather than looking, `pr-watch.py watch` belongs to [`watch.md`](./watch.md).
 
 ## How much to defer
 

@@ -299,7 +299,7 @@ def pending_checks(snap: dict) -> list[str]:
 
 
 def is_review_bot(item: dict) -> bool:
-    return bool(item.get("is_bot")) or "copilot" in (item.get("login") or "").lower()
+    return bool(item.get("is_bot"))
 
 
 def pending_bot_reviews(snap: dict) -> list[str]:
@@ -346,18 +346,14 @@ def diff(old: dict | None, new: dict) -> dict:
     pushed = bool(old.get("head_sha")) and new["head_sha"] != old["head_sha"]
     oc = {} if pushed else old.get("checks", {})
     nc = new["checks"]
-    new_fails, recovered, newly_done = [], [], []
+    new_fails, recovered = [], []
     for name, ck in nc.items():
         was = oc.get(name)
         if is_fail(ck) and (was is None or not is_fail(was)):
             new_fails.append(
                 {"name": name, "url": ck["url"], "conclusion": ck["conclusion"]}
             )
-        terminal_now = is_terminal(ck)
-        was_terminal = was and is_terminal(was)
-        if terminal_now and not was_terminal and not is_fail(ck):
-            newly_done.append(name)
-        if was and is_fail(was) and not is_fail(ck) and terminal_now:
+        if was and is_fail(was) and not is_fail(ck) and is_terminal(ck):
             recovered.append(name)
 
     def added(key):
@@ -365,31 +361,29 @@ def diff(old: dict | None, new: dict) -> dict:
         return [{"id": k, **v} for k, v in new[key].items() if k not in o]
 
     was_finished = bool(old) and not pushed and checks_finished(old)
-    just_finished = checks_finished(new) and not was_finished
-    state_changed = bool(old) and (
-        new["pr_state"] != old.get("pr_state")
-        or new["merged"] != old.get("merged", False)
-    )
-
     return {
         "pushed": pushed,
+        "checks_moved": any(nc.get(n) != oc.get(n) for n in set(nc) | set(oc)),
         "new_fails": new_fails,
         "recovered": recovered,
-        "newly_done": newly_done,
-        "ci_just_settled": just_finished,
+        "ci_just_settled": checks_finished(new) and not was_finished,
         "new_reviews": added("reviews"),
         "new_comments": added("comments"),
         "new_review_comments": added("review_comments"),
-        "state_changed": bool(state_changed),
+        "state_changed": bool(old)
+        and (
+            new["pr_state"] != old.get("pr_state")
+            or new["merged"] != old.get("merged", False)
+        ),
     }
 
 
 def empty_delta() -> dict:
     return {
         "pushed": False,
+        "checks_moved": False,
         "new_fails": [],
         "recovered": [],
-        "newly_done": [],
         "ci_just_settled": False,
         "new_reviews": [],
         "new_comments": [],
@@ -427,24 +421,8 @@ def has_signal(d: dict, on: set[str]) -> bool:
 
 
 def any_change(d: dict) -> bool:
-    return (
-        d["pushed"]
-        or d["state_changed"]
-        or any(
-            d[k]
-            for k in (
-                "new_fails",
-                "recovered",
-                "newly_done",
-                "new_reviews",
-                "new_comments",
-                "new_review_comments",
-            )
-        )
-    )
-
-
-# ------------------------------------------------------------------ rendering
+    """Anything moved on the PR, signal or not; resets the cadence and the stale clock."""
+    return any(bool(v) for k, v in d.items())
 
 
 INDENT = " " * 12  # continuation lines align under the tag column
@@ -561,15 +539,14 @@ def save_json(p: Path, data: dict) -> None:
 # ------------------------------------------------------------------- settling
 
 
-def settled_kind(snap: dict, no_checks_since: float | None) -> str | None:
-    """'red', 'green', or None while checks are still running."""
+def settled_kind(snap: dict, last_change: float) -> str | None:
+    """'red', 'green', or None while checks are still running. A PR with no checks at
+    all counts as green once nothing has changed for NO_CHECKS_GRACE."""
     if snap["checks"]:
         if not checks_finished(snap):
             return None
         return "red" if red_checks(snap) else "green"
-    if no_checks_since is not None and time.time() - no_checks_since >= NO_CHECKS_GRACE:
-        return "green"
-    return None
+    return "green" if time.time() - last_change >= NO_CHECKS_GRACE else None
 
 
 def red_key(snap: dict) -> str:
@@ -593,24 +570,22 @@ def bot_items_on_head(snap: dict) -> int:
 def revert_flick(pr: int, repo: str, marker: dict) -> list[str]:
     """Undo a flick: back to draft, original title, review requests it caused removed.
     Best effort per step; what could not be undone is named on stderr."""
-    head = f"PR #{pr} {repo}"
-    done = []
-    if run_gh(["pr", "ready", str(pr), "--repo", repo, "--undo"]).returncode == 0:
-        done.append("draft")
-    else:
-        print(f"{head} could not convert back to draft; do it by hand", file=sys.stderr)
-    if (
-        run_gh(
-            ["pr", "edit", str(pr), "--repo", repo, "--title", marker["title"]]
-        ).returncode
-        == 0
-    ):
-        done.append("title")
-    else:
-        print(
-            f"{head} could not restore the title {marker['title']!r}; do it by hand",
-            file=sys.stderr,
-        )
+    done: list[str] = []
+
+    def step(args: list[str], label: str, by_hand: str) -> None:
+        if run_gh(["pr", *args, str(pr), "--repo", repo]).returncode == 0:
+            done.append(label)
+        else:
+            print(
+                f"PR #{pr} {repo} could not {by_hand}; do it by hand", file=sys.stderr
+            )
+
+    step(["ready", "--undo"], "draft", "convert back to draft")
+    step(
+        ["edit", "--title", marker["title"]],
+        "title",
+        f"restore the title {marker['title']!r}",
+    )
     data = (
         gh_json(
             ["pr", "view", str(pr), "--repo", repo, "--json", "reviewRequests"],
@@ -625,22 +600,12 @@ def revert_flick(pr: int, repo: str, marker: dict) -> list[str]:
         if rr.get("__typename") != "Bot"
     ]
     added = [a for a in added if a and a not in was]
-    if (
-        added
-        and run_gh(
-            [
-                "pr",
-                "edit",
-                str(pr),
-                "--repo",
-                repo,
-                "--remove-reviewer",
-                ",".join(added),
-            ]
-        ).returncode
-        == 0
-    ):
-        done.append(f"removed reviewers {', '.join(added)}")
+    if added:
+        step(
+            ["edit", "--remove-reviewer", ",".join(added)],
+            f"removed reviewers {', '.join(added)}",
+            "remove the review requests it caused",
+        )
     return done
 
 
@@ -779,11 +744,7 @@ def cmd_watch(a) -> int:
         deadline = start + budget
     stale_step = (budget * a.stale_pct / 100.0) if budget else a.stale
     last_change = (old or {}).get("last_change_ts") or start
-    stale_steps = (
-        (old or {}).get("stale_steps", 0)
-        if old and old.get("last_change_ts") == last_change
-        else 0
-    )
+    stale_steps = (old or {}).get("stale_steps", 0)
     red_reported = (old or {}).get("red_reported", "")
     interval, _ = bounds(a, last_change)
     polls = 0
@@ -791,7 +752,6 @@ def cmd_watch(a) -> int:
     snap = old or fetch_snapshot(pr, repo, url)
     extra = revert_leftover_flick(pr, repo, snap)
     d = empty_delta() if old else standing(snap)
-    no_checks_since = None if snap["checks"] else start
 
     def finish(name: str, terminal: bool, nxt: str, delta: dict, note: str) -> int:
         snap.update(
@@ -818,12 +778,12 @@ def cmd_watch(a) -> int:
             )
         if deadline is not None and time.time() >= deadline:
             return finish("DONE", True, "time budget used up. stop.", d, note)
-        kind = settled_kind(snap, no_checks_since)
+        kind = settled_kind(snap, last_change)
         if has_signal(d, on):
             if d["new_fails"]:
                 red_reported = red_key(snap)
             return finish("EVENT", False, event_next(d), d, note)
-        if kind == "red" and red_reported != red_key(snap):
+        if "fail" in on and kind == "red" and red_reported != red_key(snap):
             red_reported = red_key(snap)
             d["new_fails"] = standing(snap)["new_fails"]
             return finish(
@@ -887,10 +847,6 @@ def cmd_watch(a) -> int:
             stale_steps = 0
         if d["pushed"] and budget:
             deadline = time.time() + budget
-        if new["checks"]:
-            no_checks_since = None
-        elif d["pushed"] or no_checks_since is None:
-            no_checks_since = time.time()
         snap = new
         # Adaptive backoff within the phase bounds: changes reset to the fast end
         # (handle the opening burst), quiet stretches slow toward the top.
