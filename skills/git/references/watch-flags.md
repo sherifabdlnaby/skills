@@ -25,12 +25,14 @@ State lives under `$WATCH_STATE_DIR`, else the system temp dir, one file per wat
 
 ## `poke`
 
-| flag               | default  | what it does                                                             |
-| ------------------ | -------- | ------------------------------------------------------------------------ |
-| `--pr`, `--repo`   | as above |                                                                          |
-| `--max-wait`       | `480`    | seconds to stay ready waiting for a bot review                           |
-| `--register-grace` | `180`    | revert early when no bot review request or new check appears within this |
-| `--dry-run`        | off      | print the plan, change nothing                                           |
+| flag               | default  | what it does                                                                          |
+| ------------------ | -------- | ------------------------------------------------------------------------------------- |
+| `--pr`, `--repo`   | as above |                                                                                       |
+| `--hold`           | `10`     | seconds to stay ready on a plain flick                                                |
+| `--stay`           | off      | hold the PR ready until a bot review lands or `--max-wait`; allowed on a flicked head |
+| `--max-wait`       | `480`    | `--stay` only: cap in seconds                                                         |
+| `--register-grace` | `180`    | `--stay` only: revert early when no bot review request or new check appears within    |
+| `--dry-run`        | off      | print the plan, change nothing                                                        |
 
 The marker file sits beside the watcher state; a leftover one is reverted by the next `watch` or
 `poke` run on that PR.

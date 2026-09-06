@@ -11,8 +11,8 @@ against a saved snapshot, and report only the delta. The agent does the thinking
 Subcommands
   watch   Block until something worth reacting to happens (or a stop condition),
           print it, exit. The one a watcher runs in a loop.
-  poke    Draft PR: mark it ready under a [WIP] title so review bots run, wait for
-          their review, then restore the draft state and title.
+  poke    Draft PR: flick it to ready under a [WIP] title so review bots start,
+          then restore the draft state and title; --stay holds it until a review lands.
 
 Every run ends with one `>>` line, of four kinds:
   EVENT   ongoing: act on the lines above, then run watch again
@@ -646,93 +646,117 @@ def revert_poke(pr: int, repo: str, marker: dict) -> list[str]:
     return done
 
 
+def load_poke(repo: str, pr: int) -> dict:
+    return load_json(poke_marker(repo, pr)) or {"poked": []}
+
+
+def save_poke(repo: str, pr: int, data: dict) -> None:
+    save_json(poke_marker(repo, pr), data)
+
+
 def revert_leftover_poke(pr: int, repo: str, snap: dict) -> list[str]:
-    """A poke that died mid-way leaves its marker; any later run puts the PR back
-    before doing its own work, so a flip never outlives the process that made it."""
-    mp = poke_marker(repo, pr)
-    marker = load_json(mp)
-    if not marker:
+    """A poke that died mid-way leaves its flip in the marker; any later run puts
+    the PR back before doing its own work, so a flip never outlives its process."""
+    data = load_poke(repo, pr)
+    inflight = data.pop("inflight", None)
+    if not inflight:
         return []
     lines = []
     if not snap["draft"] and snap["title"].startswith(WIP):
-        done = revert_poke(pr, repo, marker)
+        done = revert_poke(pr, repo, inflight)
         lines.append(f"  REVERT  leftover poke undone: {', '.join(done) or 'nothing'}")
-    mp.unlink(missing_ok=True)
+    save_poke(repo, pr, data)
     return lines
 
 
 def cmd_poke(a) -> int:
-    """Flip a draft to ready under a [WIP] title so review bots run, wait for a bot
-    review, then revert. The marker file makes the revert survive a killed process."""
+    """Flip a draft to ready under a [WIP] title so review bots start, then revert.
+    The default flick lasts --hold seconds; --stay holds the PR ready until a bot
+    review lands. The marker file makes the revert survive a killed process and
+    keeps the plain flick to one per head."""
     pr, repo, url = resolve(a.pr, a.repo)
     before = fetch_snapshot(pr, repo, url)
     head = f"PR #{pr} {repo}"
     for ln in revert_leftover_poke(pr, repo, before):
         print(ln)
         before = fetch_snapshot(pr, repo, url)
+    data = load_poke(repo, pr)
+
+    def nopoke(why: str) -> int:
+        print(head)
+        print(verdict("NOPOKE", True, why))
+        return 0
+
     if is_closed(before):
-        print(head)
-        print(verdict("NOPOKE", True, "PR merged/closed. nothing to poke."))
-        return 0
+        return nopoke("PR merged/closed. nothing to poke.")
     if not before["draft"]:
-        print(head)
-        print(
-            verdict(
-                "NOPOKE", True, "not a draft; review bots already had their chance."
-            )
-        )
-        return 0
+        return nopoke("not a draft; review bots already had their chance.")
     if bot_items_on_head(before) or pending_bot_reviews(before):
-        print(head)
-        print(
-            verdict(
-                "NOPOKE",
-                True,
-                "a bot review already exists or is pending on this head.",
-            )
+        return nopoke("a bot review already exists or is pending on this head.")
+    if before["head_sha"] in data["poked"] and not a.stay:
+        return nopoke(
+            "this head was flicked already; `poke --stay` holds it ready until a review lands."
         )
-        return 0
 
     title = before["title"]
     wip = title if title.startswith(WIP) else f"{WIP} {title}"
+    plan = (
+        f"hold ready up to {minutes(a.max_wait)}"
+        if a.stay
+        else f"revert after {int(a.hold)}s"
+    )
     if a.dry_run:
-        print(
-            f"{head} DRAFT  would: retitle to {wip!r}, mark ready, wait up to {minutes(a.max_wait)}, revert"
-        )
+        print(f"{head} DRAFT  would: retitle to {wip!r}, mark ready, {plan}")
         print(verdict("DRYRUN", True, "nothing changed."))
         return 0
 
-    marker = {
+    inflight = {
         "title": title,
         "started": time.time(),
         "reviewers_before": [r["login"] for r in before["review_requests"]],
     }
-    save_json(poke_marker(repo, pr), marker)
+    data["inflight"] = inflight
+    data["poked"] = sorted(set(data["poked"]) | {before["head_sha"]})
+    save_poke(repo, pr, data)
     gh(["pr", "edit", str(pr), "--repo", repo, "--title", wip])
     gh(["pr", "ready", str(pr), "--repo", repo])
-    print(f"{head} marked ready as {wip!r}; waiting for review bots")
+    print(f"{head} marked ready as {wip!r}; {plan}")
     start = time.time()
-    name, nxt = "NOPOKE", f"ready for {minutes(a.max_wait)}, no bot review landed."
+    name, nxt = "POKED", ""
     try:
-        while time.time() - start < a.max_wait:
-            time.sleep(min(POKE_POLL_GAP, max(0.0, a.max_wait - (time.time() - start))))
+        if not a.stay:
+            time.sleep(a.hold)
             now = fetch_snapshot(pr, repo, url)
-            landed = bot_items_on_head(now) - bot_items_on_head(before)
-            if landed > 0:
-                name, nxt = (
-                    "POKED",
-                    f"{landed} bot review item(s) landed; run watch to pick them up.",
-                )
-                break
-            registered = bool(pending_bot_reviews(now)) or bool(
+            seen = pending_bot_reviews(now) + sorted(
                 set(now["checks"]) - set(before["checks"])
             )
-            if not registered and time.time() - start >= a.register_grace:
-                nxt = f"nothing registered in {minutes(a.register_grace)}; no review bot reacts to ready here."
-                break
+            nxt = (
+                f"flicked for {int(a.hold)}s; registered: {', '.join(seen)}. run watch, the review lands as BOTREVIEW."
+                if seen
+                else f"flicked for {int(a.hold)}s; nothing registered yet. run watch; no BOTREVIEW in a few "
+                "minutes on a repo with a review bot means `poke --stay`."
+            )
+        else:
+            nxt = f"held ready {minutes(a.max_wait)}, no bot review landed."
+            while time.time() - start < a.max_wait:
+                time.sleep(
+                    min(POKE_POLL_GAP, max(0.0, a.max_wait - (time.time() - start)))
+                )
+                now = fetch_snapshot(pr, repo, url)
+                landed = bot_items_on_head(now) - bot_items_on_head(before)
+                if landed > 0:
+                    nxt = f"{landed} bot review item(s) landed after {minutes(time.time() - start)}; run watch to pick them up."
+                    break
+                registered = bool(pending_bot_reviews(now)) or bool(
+                    set(now["checks"]) - set(before["checks"])
+                )
+                if not registered and time.time() - start >= a.register_grace:
+                    nxt = f"nothing registered in {minutes(a.register_grace)}; no review bot reacts to ready here."
+                    break
     finally:
-        done = revert_poke(pr, repo, marker)
-        poke_marker(repo, pr).unlink(missing_ok=True)
+        done = revert_poke(pr, repo, inflight)
+        data.pop("inflight", None)
+        save_poke(repo, pr, data)
         print(f"{head} reverted: {', '.join(done) or 'nothing'}")
     print(verdict(name, True, nxt))
     return 0
@@ -986,21 +1010,31 @@ def build_parser() -> argparse.ArgumentParser:
     w.set_defaults(func=cmd_watch)
 
     pk = sub.add_parser(
-        "poke", help="draft PR: go ready under [WIP] so review bots run, then revert"
+        "poke", help="draft PR: go ready under [WIP] so review bots start, then revert"
     )
     target(pk)
+    pk.add_argument(
+        "--hold",
+        type=float,
+        default=10.0,
+        help="seconds to stay ready on a plain flick (default 10)",
+    )
+    pk.add_argument(
+        "--stay",
+        action="store_true",
+        help="hold the PR ready until a bot review lands (or --max-wait); the second attempt on a head",
+    )
     pk.add_argument(
         "--max-wait",
         type=float,
         default=480.0,
-        help="seconds to stay ready waiting for a bot review (default 480)",
+        help="--stay only: cap in seconds (default 480)",
     )
     pk.add_argument(
         "--register-grace",
         type=float,
         default=180.0,
-        help="revert early when no bot review request or new check appears within this "
-        "many seconds (default 180)",
+        help="--stay only: revert early when no bot review request or new check appears within this (default 180)",
     )
     pk.add_argument(
         "--dry-run", action="store_true", help="print what would happen, change nothing"

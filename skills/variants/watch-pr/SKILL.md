@@ -30,7 +30,7 @@ gh pr view --json number,url,headRefName,state,isDraft
 
 ## Before the first watch
 
-1. **Draft PR:** run `poke` once, so review bots get their turn.
+1. **Draft PR:** run `poke` once, so review bots get their turn; `poke --stay` only when a known bot stays silent.
 2. **Existing review threads:** unresolved threads already on the PR are not news to the watch.
    Fetch them per review-responses [Batching](../../git/references/review-responses.md#batching)
    and address them first.

@@ -79,12 +79,15 @@ before the first watch:
 python3 scripts/pr-watch.py poke --pr <N> --repo <OWNER/REPO>
 ```
 
-Mechanical, no judgment: `[WIP]` on the title, mark ready, wait up to eight minutes for a bot review,
-then back to draft, original title, the human review requests the flip caused removed. A marker
-file records the flip, and any later `watch` or `poke` run reverts a leftover one first, so a PR is
-never left ready by a killed process. `POKED` means a `BOTREVIEW` comes on the next watch;
-`NOPOKE` means none will (not a draft, a review already there, or no bot reacts to ready in this
-repo). Once per PR head, never per push. The cost: marking ready notifies reviewers once, and the
+Mechanical, no judgment: `[WIP]` on the title, mark ready, ten seconds, then back to draft, original
+title, and the human review requests the flip caused removed. The verdict names what registered in
+that window (a Copilot review request, a new check); a review that started lands as `BOTREVIEW` on a
+later watch. One flick per head commit. A marker file records the flip, and any later `watch` or
+`poke` run reverts a leftover one first, so a killed process never leaves a PR ready.
+
+No `BOTREVIEW` after a few minutes on a repo you know has a review bot? `poke --stay` holds the PR
+ready until a bot review lands or eight minutes pass, then reverts the same way. That is the one
+judgment call; the plain flick has none. Either way marking ready notifies reviewers once, and the
 `[WIP]` title is what tells them to wait.
 
 ## The stale nudge
