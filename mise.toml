@@ -5,7 +5,6 @@ min_version = "2026.6.6"
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
 
-# All tools are native binaries — no node/python/ruby runtime dependency.
 # linters & formatters
 actionlint = "1"    # GitHub Actions linter
 shellcheck = "0.11" # actionlint uses it to lint workflow run: blocks — 0.x, pin minor
@@ -21,7 +20,9 @@ yamllint = "1"      # YAML structure (duplicate keys, indentation); cosmetic rul
 taplo = "0.10"      # TOML lint + format (mise.toml, *.toml) — 0.x, pin minor
 
 # tasks' own dependencies
-jq = "1" # JSON reads in tasks (version:check manifests, check completions)
+jq = "1"        # JSON reads in tasks (version:check manifests, check completions)
+python = "3.13" # token estimate generator
+uv = "0.12"     # locked Python dependencies
 
 # pre-commit
 hk = "1.54.0" # keep in sync with the pin in .config/hk.pkl
@@ -32,7 +33,7 @@ hk = "1.54.0" # keep in sync with the pin in .config/hk.pkl
 
 # ── 📏 vars ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 [vars]
-setup_version = "1" # increment when setup steps change / users must re-run setup
+setup_version = "2" # increment when setup steps change / users must re-run setup
 
 # ── ▶️ tasks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tasks.check]
@@ -53,6 +54,15 @@ hk check $ff ${usage_fix:+--fix} ${usage_all:+--all} ${usage_pr:+--pr} \
   ${usage_step:+$(printf -- '--step %s ' $usage_step)} \
   ${usage_skip_step:+$(printf -- '--skip-step %s ' $usage_skip_step)}
 '''
+
+[tasks.tokens]
+description = "Check generated skill token estimates; pass --fix to update them"
+run = "uv run --locked python .config/token_estimates.py"
+
+[tasks."tokens:setup"]
+description = "Cache tokenizer data used by token estimates"
+hide = true
+run = 'uv run --locked python -c "import tiktoken; tiktoken.get_encoding(\"o200k_base\")"'
 
 [tasks."version:check"]
 # Guard against a stale marketplace cache: Claude/Cursor key the installed plugin on the `version`
@@ -133,13 +143,18 @@ run = [
 # those dirs thrown away. Left behind they load every vendored skill a second time, as project
 # skills beside the copy the plugin ships.
 description = "Make skills/vendor match skills-lock.json"
-run = '''
-set -eu
-npx -y skills@latest experimental_install
-rm -rf skills/vendor                 # replace wholesale: a dropped entry has to leave the tree too
-cp -R .agents/skills skills/vendor
-rm -rf .agents .claude/skills
-'''
+run = [
+  '''
+  set -eu
+  npx -y skills@latest experimental_install
+  rm -rf skills/vendor                 # replace wholesale: a dropped entry has to leave the tree too
+  cp -R .agents/skills skills/vendor
+  rm -rf .agents .claude/skills
+  ''',
+  { task = "tokens", args = [
+    "--fix",
+  ] },
+]
 
 [tasks.test]
 description = "Run tests (no automated tests yet — no-op placeholder)"
@@ -149,8 +164,8 @@ depends = [
 run = "echo 'no tests yet'"
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
-depends_post = ["setup:stamp"] # stamp the version only after a successful setup
-run = "mise install"           # installs tools (+ anything else per use-case)
+depends_post = ["setup:stamp"]                                      # stamp the version only after a successful setup
+run = ["mise install", "uv sync --locked", "mise run tokens:setup"]
 
 [tasks."setup:stamp"] # write the version of the last run setup to .config/mise/setup
 hide = true

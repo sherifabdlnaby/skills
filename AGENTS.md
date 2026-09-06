@@ -66,6 +66,14 @@ upgrade and read `git diff skills/vendor` before committing it.
 Linters skip the directory (`**/vendor/**` in `.config/hk.pkl`), which is what lets upstream formatting survive a sync. The CLI installs into agent dirs and takes no flag to aim elsewhere, so the
 sync moves its output out of `.agents/` and `.claude/skills/` and deletes both; they stay gitignored because in the tree they load every vendored skill a second time, as project skills.
 
+## Skill READMEs
+
+Every skill has a regular `README.md` for humans who are deciding whether and how to use it. Write from the skill and its references, but explain the problem, outcome, operating shape, and important
+tradeoffs instead of copying prompt text or addressing an executing agent. Include a direct link to `SKILL.md`, which remains the canonical agent instructions.
+
+Owned skills keep that prose beside the skill. Curated pages for vendored skills live under `.config/skill-readmes/vendor/` because `skills:sync` replaces `skills/vendor/`; the generator materializes
+them after each sync. Keep generated token-estimate blocks intact and update them only with `mise run tokens --fix`.
+
 ## CI not visible in the tree
 
 Beyond `.github/workflows/`: CodeQL default setup, Dependabot alerts + security updates, secret
