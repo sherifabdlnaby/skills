@@ -78,6 +78,14 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["check-case-conflict"] = Builtins.check_case_conflict
   ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
   ["check-symlinks"] = Builtins.check_symlinks // catch broken symlinks
+
+  // Generated reports read the final output of every formatter above.
+  ["token-estimates"] {
+    exclusive = true
+    check = "mise run tokens"
+    fix = "mise run tokens --fix"
+    stage = List("README.md", "skills/**/README.md")
+  }
 }
 
 // Push gates — run before a push: slower or branch-scoped checks that would drag the commit loop.
