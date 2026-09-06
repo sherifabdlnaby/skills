@@ -1,43 +1,67 @@
 #!/usr/bin/env python3
-"""Rebase backup guard.
+"""Rebase snapshot guard.
 
-Enforces the git skill's one unrecoverable-failure rule (references/rebase.md):
-create a local `<branch>-bk` backup branch before any rebase. Wired to the
-pre-shell hook (PreToolUse:Bash / beforeShellExecution); denies a command that
-*starts* a rebase while no backup ref exists, telling the agent the exact command
-to run instead. Compliance is the override: create the backup (even inline,
-`git branch x-bk && git rebase ...`) and the same rebase sails through.
+Enforces the git skill's conflict rule (references/rebase.md): once a rebase has
+stopped on a conflict, snapshot the pre-rebase tip (`git branch <branch>-bk
+ORIG_HEAD`) before the first move of the resolution. Wired to the pre-shell hook
+(PreToolUse:Bash / beforeShellExecution). While a rebase is in progress and no
+snapshot exists, it denies the commands that begin a resolution or overwrite
+ORIG_HEAD, naming the exact command to run first. A snapshot created on the same
+line (`git branch x-bk ORIG_HEAD && git add ...`) sails through.
 
-Never blocks mid-rebase plumbing (--continue/--abort/--skip), and fails open on
-anything it can't determine (no cwd, detached HEAD, git errors): a guard that
-can't see clearly must not get in the way. stdlib only. Exit 0 always.
+Starting a rebase, or one that replays clean, is never touched: the snapshot is
+lazy by design, and `git rebase --abort` is always allowed. Fails open on anything
+it cannot determine (no cwd, git errors): a guard that cannot see clearly must not
+get in the way. stdlib only. Exit 0 always.
 """
 
+import os
 import shlex
 import subprocess
 import sys
 
 import hooklib
 
-# Mid-rebase / no-op flags: the rebase already started (backup ship has sailed)
-# or nothing is being rewritten.
-RESUME_FLAGS = {
-    "--continue",
-    "--abort",
-    "--skip",
-    "--quit",
-    "--edit-todo",
-    "--show-current-patch",
+# git subcommands that begin a resolution or overwrite ORIG_HEAD.
+RESOLVING = {
+    "add",
+    "rm",
+    "mv",
+    "reset",
+    "restore",
+    "checkout",
+    "stash",
+    "merge",
+    "pull",
+    "cherry-pick",
 }
+RESUMING = {"--continue", "--skip"}
+
+# Global git options that take a value, so the subcommand is the token after it.
+GIT_OPTS_WITH_VALUE = {"-C", "-c", "--git-dir", "--work-tree", "--namespace"}
 
 GIT_TIMEOUT = 3  # seconds; a hung git must not hang the hook
 
 
-def starts_rebase(tokens):
-    """True when the command line starts a new rebase."""
-    for i, token in enumerate(tokens[:-1]):
-        if token == "git" and "rebase" in tokens[i + 1 :]:
-            return not RESUME_FLAGS.intersection(tokens)
+def subcommands(tokens):
+    """Yield (subcommand, rest) for every `git ...` invocation on the line."""
+    for i, token in enumerate(tokens):
+        if token != "git":
+            continue
+        j = i + 1
+        while j < len(tokens) and tokens[j].startswith("-"):
+            j += 2 if tokens[j] in GIT_OPTS_WITH_VALUE else 1
+        if j < len(tokens):
+            yield tokens[j], tokens[j + 1 :]
+
+
+def resolves(tokens):
+    """True when the command line makes a move a stopped rebase must be snapshotted before."""
+    for sub, rest in subcommands(tokens):
+        if sub in RESOLVING:
+            return True
+        if sub == "rebase" and RESUMING.intersection(rest):
+            return True
     return False
 
 
@@ -57,29 +81,44 @@ def git(cwd, *args):
     return proc.stdout.strip()
 
 
-def backup_missing(command, cwd):
-    """True iff `command` starts a rebase and no backup branch exists.
+def rebasing_branch(cwd):
+    """Name of the branch a stopped rebase is rewriting, or None when no rebase is in progress."""
+    for state_dir in ("rebase-merge", "rebase-apply"):
+        path = git(cwd, "rev-parse", "--git-path", state_dir)
+        if not path:
+            continue
+        path = os.path.join(cwd, path) if not os.path.isabs(path) else path
+        try:
+            with open(os.path.join(path, "head-name"), encoding="utf-8") as fh:
+                head = fh.read().strip()
+        except OSError:
+            continue
+        if head.startswith("refs/heads/"):
+            return head[len("refs/heads/") :]
+    return None
 
-    Returns (missing, branch); branch is None whenever missing is False.
-    """
+
+def snapshot_missing(command, cwd):
+    """Returns (missing, branch); branch is None whenever missing is False."""
     try:
         tokens = shlex.split(command)
     except ValueError:
         return False, None
 
-    if not starts_rebase(tokens):
+    if not resolves(tokens):
         return False, None
     if any(token.endswith("-bk") for token in tokens):
-        return False, None  # backup created or referenced in the same line
-
+        return False, None  # snapshot created or referenced on the same line
     if not cwd:
         return False, None
-    branch = git(cwd, "branch", "--show-current")
-    if not branch:
-        return False, None  # detached HEAD or git error: fail open
 
-    ref = git(cwd, "show-ref", "--verify", f"refs/heads/{branch}-bk")
-    if ref is not None:
+    branch = rebasing_branch(cwd)
+    if not branch:
+        return False, None
+    if (
+        git(cwd, "show-ref", "--verify", "--quiet", f"refs/heads/{branch}-bk")
+        is not None
+    ):
         return False, None
     return True, branch
 
@@ -94,20 +133,21 @@ def main():
         return 0
 
     cwd = data.get("cwd") if isinstance(data.get("cwd"), str) else None
-    missing, branch = backup_missing(command, cwd)
+    missing, branch = snapshot_missing(command, cwd)
     if not missing:
         return 0
 
     hooklib.deny(
         data,
         (
-            "Rebase backup guard: no backup branch exists for the branch you are "
-            f"about to rewrite. Per the git skill (references/rebase.md), create it "
-            f"first, then rerun:\n\n"
-            f"  git branch {branch}-bk && {command}\n\n"
-            "The backup is the only recovery path if the rebase goes wrong."
+            f"Rebase snapshot guard: a rebase is stopped on `{branch}` and no snapshot "
+            "exists. Per the git skill (references/rebase.md), snapshot the pre-rebase "
+            "tip first, then rerun:\n\n"
+            f"  git branch {branch}-bk ORIG_HEAD && {command}\n\n"
+            "ORIG_HEAD is overwritten by the next reset, merge or pull; the snapshot "
+            "is the recovery path."
         ),
-        "Blocked a rebase with no backup branch.",
+        "Blocked a conflict resolution with no rebase snapshot.",
     )
     return 0
 
