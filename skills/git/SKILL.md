@@ -1,7 +1,7 @@
 ---
 name: git
 description: >
-  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open PR, stack PRs (also when gh-stack drives the stack), or write/update the description of a Pull Request (PR / stacked diff), respond to review comments, review a PR, or watch/babysit a PR's CI or reviews.
+  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open PR, stack PRs (also when gh-stack drives the stack), or write/update the description of a Pull Request (PR / stacked diff), respond to review comments, review a PR, watch/babysit a PR's CI or reviews, or get a review bot (Copilot, Bugbot) to run on a draft PR.
   Carries the user's git conventions and style you are expected to match. Load as early as possible, the moment git or GitHub work is anywhere in the chat's future.
 license: MIT
 argument-hint: "[commit|branch|pr|rebase|review|watch]"
@@ -39,6 +39,9 @@ Procedure: gather context, check out locally, trace the change, deliver a summar
 
 **Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and answered / reviews only), the cheap
 sub-agent that runs the loop, poking a draft so review bots run, the stale nudge. Uses `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
+
+**Draft PR that review bots ignore** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
+`pr-watch.py poke`: a mechanical flick to ready and back so Copilot, Bugbot, and their kind review a draft; the watch picks the review up.
 
 ## Always
 

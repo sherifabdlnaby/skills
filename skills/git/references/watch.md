@@ -72,23 +72,22 @@ The parent reacts, then relaunches the same watcher, same `--watcher` id.
 
 ## Draft PRs and review bots
 
-Review bots skip drafts. When the mode answers bot reviews and the PR is a draft, run `poke` once
+Review bots skip drafts. When the mode answers bot reviews and the PR is a draft, flick it once
 before the first watch:
 
 ```
 python3 scripts/pr-watch.py poke --pr <N> --repo <OWNER/REPO>
 ```
 
-Mechanical, no judgment: `[WIP]` on the title, mark ready, ten seconds, then back to draft, original
-title, and the human review requests the flip caused removed. The verdict names what registered in
-that window (a Copilot review request, a new check); a review that started lands as `BOTREVIEW` on a
-later watch. One flick per head commit. A marker file records the flip, and any later `watch` or
-`poke` run reverts a leftover one first, so a killed process never leaves a PR ready.
+Mechanical, no judgment: `[WIP]` on the title, mark ready, ten seconds, back to draft with the
+original title and the human review requests the flip caused removed. One flick per head commit. A
+marker file records the flip, and any later `watch` or `poke` run reverts a leftover one first, so a
+killed process never leaves a PR ready.
 
-No `BOTREVIEW` after a few minutes on a repo you know has a review bot? `poke --stay` holds the PR
-ready until a bot review lands or eight minutes pass, then reverts the same way. That is the one
-judgment call; the plain flick has none. Either way marking ready notifies reviewers once, and the
-`[WIP]` title is what tells them to wait.
+Whether a bot picked it up is the watcher's call: a review that started lands as `BOTREVIEW`; none
+after a few minutes on a repo you know has a bot means the flick was too short for it. Then hold the
+PR open yourself, `gh pr ready <N>` now and `gh pr ready --undo <N>` once the review is in. Either
+way marking ready notifies reviewers once, and the `[WIP]` title is what tells them to wait.
 
 ## The stale nudge
 

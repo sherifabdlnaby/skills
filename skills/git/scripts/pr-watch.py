@@ -12,8 +12,7 @@ Subcommands
   watch   Block until something worth reacting to happens (or a stop condition),
           print it, exit. The one a watcher runs in a loop.
   poke    Draft PR: flick it to ready under a [WIP] title so review bots start,
-          then restore the draft state and title; --stay holds it until a review lands.
-
+          then back to draft with the original title.
 Every run ends with one `>>` line, of four kinds:
   EVENT   ongoing: act on the lines above, then run watch again
   STALE   ongoing: nothing changed for a stretch; tell the user, then run watch again
@@ -82,7 +81,6 @@ PENDING_STATUS = {
 
 HOT_WINDOW = 300.0  # seconds since the last change before the cadence cools down
 NO_CHECKS_GRACE = 120.0  # a PR with no checks at all counts as green after this
-POKE_POLL_GAP = 15.0
 WIP = "[WIP]"
 
 
@@ -670,10 +668,10 @@ def revert_leftover_poke(pr: int, repo: str, snap: dict) -> list[str]:
 
 
 def cmd_poke(a) -> int:
-    """Flip a draft to ready under a [WIP] title so review bots start, then revert.
-    The default flick lasts --hold seconds; --stay holds the PR ready until a bot
-    review lands. The marker file makes the revert survive a killed process and
-    keeps the plain flick to one per head."""
+    """Flick a draft: ready under a [WIP] title, --hold seconds, back to draft.
+    Whether a review bot picked it up is the watcher's call, not this command's.
+    The marker file makes the revert survive a killed process and keeps the
+    flick to one per head."""
     pr, repo, url = resolve(a.pr, a.repo)
     before = fetch_snapshot(pr, repo, url)
     head = f"PR #{pr} {repo}"
@@ -693,20 +691,15 @@ def cmd_poke(a) -> int:
         return nopoke("not a draft; review bots already had their chance.")
     if bot_items_on_head(before) or pending_bot_reviews(before):
         return nopoke("a bot review already exists or is pending on this head.")
-    if before["head_sha"] in data["poked"] and not a.stay:
-        return nopoke(
-            "this head was flicked already; `poke --stay` holds it ready until a review lands."
-        )
+    if before["head_sha"] in data["poked"]:
+        return nopoke("this head was flicked already.")
 
     title = before["title"]
     wip = title if title.startswith(WIP) else f"{WIP} {title}"
-    plan = (
-        f"hold ready up to {minutes(a.max_wait)}"
-        if a.stay
-        else f"revert after {int(a.hold)}s"
-    )
     if a.dry_run:
-        print(f"{head} DRAFT  would: retitle to {wip!r}, mark ready, {plan}")
+        print(
+            f"{head} DRAFT  would: retitle to {wip!r}, mark ready, wait {int(a.hold)}s, revert"
+        )
         print(verdict("DRYRUN", True, "nothing changed."))
         return 0
 
@@ -720,45 +713,21 @@ def cmd_poke(a) -> int:
     save_poke(repo, pr, data)
     gh(["pr", "edit", str(pr), "--repo", repo, "--title", wip])
     gh(["pr", "ready", str(pr), "--repo", repo])
-    print(f"{head} marked ready as {wip!r}; {plan}")
-    start = time.time()
-    name, nxt = "POKED", ""
+    print(f"{head} ready as {wip!r} for {int(a.hold)}s")
     try:
-        if not a.stay:
-            time.sleep(a.hold)
-            now = fetch_snapshot(pr, repo, url)
-            seen = pending_bot_reviews(now) + sorted(
-                set(now["checks"]) - set(before["checks"])
-            )
-            nxt = (
-                f"flicked for {int(a.hold)}s; registered: {', '.join(seen)}. run watch, the review lands as BOTREVIEW."
-                if seen
-                else f"flicked for {int(a.hold)}s; nothing registered yet. run watch; no BOTREVIEW in a few "
-                "minutes on a repo with a review bot means `poke --stay`."
-            )
-        else:
-            nxt = f"held ready {minutes(a.max_wait)}, no bot review landed."
-            while time.time() - start < a.max_wait:
-                time.sleep(
-                    min(POKE_POLL_GAP, max(0.0, a.max_wait - (time.time() - start)))
-                )
-                now = fetch_snapshot(pr, repo, url)
-                landed = bot_items_on_head(now) - bot_items_on_head(before)
-                if landed > 0:
-                    nxt = f"{landed} bot review item(s) landed after {minutes(time.time() - start)}; run watch to pick them up."
-                    break
-                registered = bool(pending_bot_reviews(now)) or bool(
-                    set(now["checks"]) - set(before["checks"])
-                )
-                if not registered and time.time() - start >= a.register_grace:
-                    nxt = f"nothing registered in {minutes(a.register_grace)}; no review bot reacts to ready here."
-                    break
+        time.sleep(a.hold)
     finally:
         done = revert_poke(pr, repo, inflight)
         data.pop("inflight", None)
         save_poke(repo, pr, data)
         print(f"{head} reverted: {', '.join(done) or 'nothing'}")
-    print(verdict(name, True, nxt))
+    print(
+        verdict(
+            "POKED",
+            True,
+            "flicked. a bot review, if any, lands as BOTREVIEW on the watch.",
+        )
+    )
     return 0
 
 
@@ -1010,31 +979,11 @@ def build_parser() -> argparse.ArgumentParser:
     w.set_defaults(func=cmd_watch)
 
     pk = sub.add_parser(
-        "poke", help="draft PR: go ready under [WIP] so review bots start, then revert"
+        "poke", help="draft PR: flick it to ready under [WIP], then back to draft"
     )
     target(pk)
     pk.add_argument(
-        "--hold",
-        type=float,
-        default=10.0,
-        help="seconds to stay ready on a plain flick (default 10)",
-    )
-    pk.add_argument(
-        "--stay",
-        action="store_true",
-        help="hold the PR ready until a bot review lands (or --max-wait); the second attempt on a head",
-    )
-    pk.add_argument(
-        "--max-wait",
-        type=float,
-        default=480.0,
-        help="--stay only: cap in seconds (default 480)",
-    )
-    pk.add_argument(
-        "--register-grace",
-        type=float,
-        default=180.0,
-        help="--stay only: revert early when no bot review request or new check appears within this (default 180)",
+        "--hold", type=float, default=10.0, help="seconds to stay ready (default 10)"
     )
     pk.add_argument(
         "--dry-run", action="store_true", help="print what would happen, change nothing"
