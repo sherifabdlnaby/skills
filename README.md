@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-28%2C026%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 28,026 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-94%2C672%20tokens-2ea44f?style=flat-square" alt="All Markdown: 94,672 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-28%2C741%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 28,741 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-95%2C306%20tokens-2ea44f?style=flat-square" alt="All Markdown: 95,306 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -34,7 +34,7 @@ than read, so they are left out.
 | [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,408` | `15,609` |
 | [`coding`](skills/coding/)                                                             |  `1,048` |  `1,048` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
-| [`git`](skills/git/)                                                                   |  `2,374` | `12,384` |
+| [`git`](skills/git/)                                                                   |  `2,483` | `12,412` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
@@ -44,7 +44,9 @@ than read, so they are left out.
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
 | [`variants/afk-soon`](skills/variants/afk-soon/)                                       |    `166` |    `166` |
 | [`variants/afk-yolo`](skills/variants/afk-yolo/)                                       |    `114` |    `114` |
-| [`variants/watch-pr`](skills/variants/watch-pr/)                                       |    `477` |    `477` |
+| [`variants/watch-pr`](skills/variants/watch-pr/)                                       |    `605` |    `605` |
+| [`variants/watch-pr-ci`](skills/variants/watch-pr-ci/)                                 |    `228` |    `228` |
+| [`variants/watch-pr-comments`](skills/variants/watch-pr-comments/)                     |    `250` |    `250` |
 | [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |    `766` |  `1,917` |
 | [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,070` |  `6,873` |
 | [`vendor/handoff`](skills/vendor/handoff/)                                             |    `182` |    `182` |
