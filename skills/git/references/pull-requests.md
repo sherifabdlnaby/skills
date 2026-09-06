@@ -198,7 +198,8 @@ _<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on 
 These are the PR-**body** footers, one per tier. Which tier to pick, the placeholders, and the
 comment and reply footers all live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure). Append at
 the very end, after a `---` separator. Where the disclosure hook that ships beside this skill is
-installed, a post without a footer is denied, so it goes in before the first `gh pr create`.
+installed, a post is denied when the footer is missing, and when a human tier is missing its
+degree word, so it goes in before the first `gh pr create`.
 
 ```markdown
 _<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_

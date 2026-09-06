@@ -34,12 +34,17 @@ import hooklib
 
 # A valid footer line per SKILL.md -> AI Disclosure: `_<sub>` + a tier emoji
 # (🤖 Agent Decided / 🧍‍♂️👍 Human Approved / 🤝 Human Guided) + attribution
-# ("on behalf of @user") + `</sub>_`.
+# ("on behalf of @user") + `</sub>_`. The two human tiers also grade the degree, so
+# they must carry a `(word)` before the colon; which word is the agent's call and
+# stays out of here.
 # We validate the skeleton, not the full template text, so the templates stay owned
-# by SKILL.md and the agent keeps the tier choice; requiring one of the emojis is
-# what forces that choice to be made at all.
+# by SKILL.md and the agent keeps both choices; requiring the emoji and the
+# parenthetical is what forces those choices to be made at all.
 FOOTER_RE = re.compile(
-    r"_<sub>\s*(?:\U0001f916|\U0001f9cd|\U0001f91d)\S*\s.*?\bon behalf of @[A-Za-z0-9-]+\b.*?</sub>_",
+    r"_<sub>\s*(?:"
+    r"\U0001f916[^:\n]*"  # 🤖 grades nothing
+    r"|[\U0001f9cd\U0001f91d][^:\n]*\([^()<>\n]+\)[^:\n]*"  # 🧍👍 / 🤝 carry a degree
+    r"):.*?\bon behalf of @[A-Za-z0-9-]+\b.*?</sub>_",
     re.DOTALL,
 )
 
@@ -96,8 +101,9 @@ REASON = (
     "it), \U0001f9cd\u200d\u2642\ufe0f\U0001f44d Human Approved (you chose, the user saw "
     "the real thing and said yes), \U0001f91d Human Guided (the user chose or directed it). "
     "A general request to handle the task is not human judgment on the decisions inside it. "
-    "For a PR body use the `Created with ...` footer in references/pull-requests.md. "
-    "Add it, then retry."
+    "The two human tiers also carry a degree in parentheses, so `Human Approved (read):` "
+    "passes where `Human Approved:` does not. For a PR body use the `Created with ...` "
+    "footer in references/pull-requests.md. Add it, then retry."
 )
 
 # Distinct from REASON on purpose: "I cannot see your body" and "your footer is
