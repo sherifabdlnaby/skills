@@ -65,7 +65,8 @@ your call when a one-off is cheaper:
   own eyes is a payload.
 - **Same-shape mutations ride one request.** GraphQL aliases: every reply, resolve, or title edit of a round in one `gh api graphql`. Aliases fail independently, so read the per-alias `errors[].path`,
   not the exit code.
-- **Bodies travel by file.** PR body or GraphQL query to a file, then `--body-file` / `-F query=@file`. (why: shell quoting eats backticks and `$`, and a file stays editable for the next update.)
+- **Bodies travel by file.** PR body or GraphQL query to a file, then `--body-file` / `-F query=@file`. (why: shell quoting eats backticks and `$`, and a file stays editable for the next update.) The
+  disclosure guard denies a body it cannot read, so `--fill`, `--template`, `--editor`, a piped `--body-file -`, and `--body "$VAR"` are all refused.
 
 **Resolve once per session, reuse everywhere.** One line for all three:
 
