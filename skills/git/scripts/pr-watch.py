@@ -5,43 +5,50 @@
 # ///
 """Watch a GitHub PR: poll CI, reviews, and comments, return only what changed.
 
-Built for an agent to run (directly, or from a cheap background sub-agent). It does
-the predictable, token-heavy part: poll, diff against a saved snapshot, and report
-only the delta. The agent does the thinking.
+Built for an agent to run. It does the predictable, token-heavy part: poll, diff
+against a saved snapshot, and report only the delta. The agent does the thinking.
 
 Subcommands
-  poll    One-shot: fetch, diff vs the saved snapshot, update it, print the delta.
-  watch   Loop with adaptive backoff; block until a high-signal event (or deadline),
-          then print the delta and exit. This is the one a background agent runs.
-Both self-baseline: the first run on a fresh --watcher records the current state
-and reports nothing as new, so no separate "arm" step is needed.
+  watch   Block until something worth reacting to happens (or a stop condition),
+          print it, exit. The one a watcher runs in a loop.
+  poke    Draft PR: mark it ready under a [WIP] title so review bots run, wait for
+          their review, then restore the draft state and title.
 
-Why a snapshot file: diffing needs a "last seen". Each watcher keeps its OWN snapshot
-(via --watcher), so several agents can watch the same PR without clobbering cursors.
+Every run ends with one `>>` line, of four kinds:
+  EVENT   ongoing: act on the lines above, then run watch again
+  STALE   ongoing: nothing changed for a stretch; tell the user, then run watch again
+  DONE    stop: the --until condition, a merge/close, or the budget
+  QUIET   ongoing: the episode cap passed; run the same watch again
 
-High-signal events (what wakes the agent in `watch`):
-  FAIL      a check went red (CI, CodeQL, anything)
-  DONE      all checks reached a terminal state (the "CI finished" milestone)
-  REVIEW    a review was submitted (Copilot or human)
-  COMMENT   a new issue comment or inline review comment
-  STATE     the PR merged / closed
-Plain churn (queued -> running, a job starting) updates the snapshot silently and does
-NOT wake the agent. That is the point: the noisy opening burst stays quiet.
+Stop conditions come from --until:
+  green   all checks passed
+  quiet   green, no pending review request, no activity for --comment-grace
+  closed  only a merge/close ends it
+A time budget (--max-total) ends any of them.
 
-Cadence is self-paced: polls run hot (10-30s gaps) while something changed within the
-last 5 minutes, cool to a flat 60s after that, and snap back to hot on any change.
-The phase is persisted per --watcher, so re-runs keep the pace; there are no cadence
-flags to manage (--min/--max-interval exist only as overrides).
+What counts as an event: a check going red or recovering, all checks finishing, a
+review, a comment, a merge/close. A single check passing or a job starting only
+updates the snapshot; the noisy opening burst stays quiet.
 
-Everything is stdlib; `gh` does auth and API. Run with plain `python3` (or `./pr-watch.py`):
-no venv or dependency install, so it works in a read-only sandbox where `uv run` can't
-write its cache.
+Each watcher keeps its OWN snapshot (via --watcher), so several agents can watch
+the same PR without clobbering cursors. The first run on a fresh --watcher reports
+the current standing (red checks now) and baselines reviews and comments, so old
+history never surfaces as news.
+
+A push changes the head SHA. The check baseline, the budget, and the stale clock
+all reset with it, so a fix gets a full window and a re-failing check is reported.
+
+Cadence is self-paced: hot (10-30s gaps) while something changed within the last
+5 minutes, a flat 60s after that, and back to hot on any change.
+
+Everything is stdlib; `gh` does auth and API. Run with plain `python3`.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
@@ -50,15 +57,18 @@ import tempfile
 import time
 from pathlib import Path
 
-SCHEMA = 1
+SCHEMA = 3
 
 # Conclusions that mean a check is red. SKIPPED / NEUTRAL / SUCCESS are fine.
+# CANCELLED counts: a cancelled required check blocks the merge until it reruns.
 FAIL_CONCLUSIONS = {
     "FAILURE",
+    "ERROR",
     "TIMED_OUT",
     "ACTION_REQUIRED",
     "STARTUP_FAILURE",
     "STALE",
+    "CANCELLED",
 }
 # A check is still running while in one of these (or has no status yet).
 PENDING_STATUS = {
@@ -70,32 +80,27 @@ PENDING_STATUS = {
     "EXPECTED",
 }
 
-COPILOT_LOGINS = {
-    "copilot",
-    "copilot-pull-request-reviewer",
-    "github-copilot",
-    "github-advanced-security",
-}
-
-# Bot detection is by AUTHOR login only, never comment body (a human saying "review" is not a bot).
-# BOT_RE: is this author automated at all. REVIEW_TOOL_RE: is it specifically a code-review tool
-# (the subset that makes a plain issue comment react-worthy, excluding generic bots like
-# github-actions that only post greetings/labels/CI chatter).
-BOT_RE = re.compile(r"\[bot\]|bot|copilot|codeql|review|reviewer|sonar|snyk", re.I)
-REVIEW_TOOL_RE = re.compile(r"copilot|codeql|sonar|snyk|review|reviewer", re.I)
+HOT_WINDOW = 300.0  # seconds since the last change before the cadence cools down
+NO_CHECKS_GRACE = 120.0  # a PR with no checks at all counts as green after this
+POKE_POLL_GAP = 15.0
+WIP = "[WIP]"
 
 
 # --------------------------------------------------------------------------- gh
 
 
-def gh(args: list[str], check: bool = True) -> str:
-    """Run a gh command, return stdout. Raises on failure unless check=False."""
+def run_gh(args: list[str]) -> subprocess.CompletedProcess:
     try:
-        proc = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=60)
+        return subprocess.run(["gh", *args], capture_output=True, text=True, timeout=60)
     except FileNotFoundError:
         die("gh not found on PATH. Install GitHub CLI.")
     except subprocess.TimeoutExpired:
         die(f"gh timed out: gh {' '.join(args)}")
+
+
+def gh(args: list[str], check: bool = True) -> str:
+    """Run a gh command, return stdout. Exits on failure unless check=False."""
+    proc = run_gh(args)
     if check and proc.returncode != 0:
         die(f"gh failed: gh {' '.join(args)}\n{proc.stderr.strip()}")
     return proc.stdout
@@ -113,13 +118,20 @@ def gh_json(args: list[str], check: bool = True):
         return None
 
 
+def die(msg: str) -> None:
+    print(f"pr-watch: {msg}", file=sys.stderr)
+    sys.exit(2)
+
+
 # ------------------------------------------------------------------- resolving
 
 
 def resolve(pr: str | None, repo: str | None) -> tuple[int, str, str]:
-    """Return (pr_number, owner/repo, url). Defaults to the current branch's PR."""
-    fields = "number,url,headRepository,headRepositoryOwner"
-    args = ["pr", "view", "--json", fields]
+    """Return (pr_number, base owner/repo, url). Defaults to the current branch's PR.
+
+    The repo comes from the PR URL: on a fork PR `headRepository` is the fork, and
+    reviews and comments live on the base repo."""
+    args = ["pr", "view", "--json", "number,url"]
     if pr:
         args.insert(2, pr)
     if repo:
@@ -129,19 +141,12 @@ def resolve(pr: str | None, repo: str | None) -> tuple[int, str, str]:
         die(
             "could not resolve a PR. Pass --pr <num|url> or run on a branch with an open PR."
         )
-    now = repo
-    if not now:
-        owner = (data.get("headRepositoryOwner") or {}).get("login")
-        name = (data.get("headRepository") or {}).get("name")
-        if owner and name:
-            now = f"{owner}/{name}"
-    if not now:
-        # Fall back to the URL: https://github.com/<owner>/<repo>/pull/<n>
-        m = re.search(r"github\.com/([^/]+/[^/]+)/pull/", data.get("url", ""))
-        now = m.group(1) if m else None
-    if not now:
+    url = data.get("url", "")
+    m = re.search(r"github\.com/([^/]+/[^/]+)/pull/", url)
+    base = m.group(1) if m else repo
+    if not base:
         die("could not determine owner/repo. Pass --repo <owner/repo>.")
-    return int(data["number"]), now, data["url"]
+    return int(data["number"]), base, url
 
 
 # -------------------------------------------------------------------- snapshot
@@ -155,14 +160,16 @@ def rest(repo: str, path: str) -> list[dict]:
     return [c for c in out if isinstance(c, dict)] if isinstance(out, list) else []
 
 
+PR_FIELDS = "number,url,state,mergedAt,isDraft,reviewDecision,statusCheckRollup,title,headRefOid,reviewRequests"
+
+
 def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
     """One normalized picture of the PR: checks, reviews, comments, state.
 
     PR state + checks come from `gh pr view`. Reviews and comments come from REST,
-    which (unlike `gh pr view`) carries `user.type` (the authoritative bot flag) and
-    `html_url` per item, so each line the agent sees is self-contained."""
-    fields = "number,url,state,mergedAt,isDraft,reviewDecision,statusCheckRollup,title"
-    data = gh_json(["pr", "view", str(pr), "--repo", repo, "--json", fields]) or {}
+    which (unlike `gh pr view`) carries `user.type` (the bot flag) and `html_url`
+    per item, so each line the agent sees is self-contained."""
+    data = gh_json(["pr", "view", str(pr), "--repo", repo, "--json", PR_FIELDS]) or {}
 
     checks: dict[str, dict] = {}
     for c in data.get("statusCheckRollup") or []:
@@ -179,6 +186,11 @@ def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
             link = c.get("detailsUrl") or ""
         checks[name] = {"status": status, "conclusion": concl, "url": link}
 
+    requests = []
+    for rr in data.get("reviewRequests") or []:
+        login = rr.get("login") or rr.get("slug") or rr.get("name") or "?"
+        requests.append({"login": login, "is_bot": rr.get("__typename") == "Bot"})
+
     def author(c: dict) -> dict:
         u = c.get("user") or {}
         return {"author": u.get("login") or "?", "is_bot": u.get("type") == "Bot"}
@@ -190,6 +202,7 @@ def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
         reviews[str(r["id"])] = {
             **author(r),
             "state": r.get("state") or "",
+            "sha": r.get("commit_id") or "",
             "at": r.get("submitted_at") or "",
             "body": trim_body(r.get("body")),
             "url": r.get("html_url") or "",
@@ -214,8 +227,6 @@ def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
             "url": c.get("html_url") or "",
         }
 
-    settled = bool(checks) and all(is_terminal(ck) for ck in checks.values())
-
     return {
         "schema": SCHEMA,
         "repo": repo,
@@ -225,12 +236,13 @@ def fetch_snapshot(pr: int, repo: str, url: str) -> dict:
         "pr_state": data.get("state") or "OPEN",
         "merged": bool(data.get("mergedAt")),
         "draft": bool(data.get("isDraft")),
+        "head_sha": data.get("headRefOid") or "",
         "review_decision": data.get("reviewDecision") or "",
+        "review_requests": requests,
         "checks": checks,
         "reviews": reviews,
         "comments": comments,
         "review_comments": review_comments,
-        "ci_settled": settled,
         "ts": time.time(),
     }
 
@@ -261,9 +273,18 @@ def is_fail(check: dict) -> bool:
 
 def is_terminal(check: dict) -> bool:
     """A check has finished (passed, failed, or skipped), not still running."""
-    return (
-        check.get("status", "") not in PENDING_STATUS and check.get("status", "") != ""
+    status = check.get("status", "")
+    return status not in PENDING_STATUS and status != ""
+
+
+def checks_finished(snap: dict) -> bool:
+    return bool(snap["checks"]) and all(
+        is_terminal(ck) for ck in snap["checks"].values()
     )
+
+
+def red_checks(snap: dict) -> list[str]:
+    return [n for n, c in snap["checks"].items() if is_fail(c)]
 
 
 def count_checks(snap: dict) -> tuple[int, int]:
@@ -275,49 +296,45 @@ def count_checks(snap: dict) -> tuple[int, int]:
     )
 
 
+def pending_checks(snap: dict) -> list[str]:
+    return [n for n, c in snap["checks"].items() if not is_terminal(c)]
+
+
+def is_review_bot(item: dict) -> bool:
+    return bool(item.get("is_bot")) or "copilot" in (item.get("login") or "").lower()
+
+
+def pending_bot_reviews(snap: dict) -> list[str]:
+    return [r["login"] for r in snap.get("review_requests", []) if is_review_bot(r)]
+
+
 def is_copilot(login: str) -> bool:
-    lo = login.lower().rstrip("]").replace("[bot", "")
-    return lo in COPILOT_LOGINS or "copilot" in lo
-
-
-def is_bot(login: str) -> bool:
-    return bool(BOT_RE.search(login or ""))
-
-
-def is_review_tool(login: str) -> bool:
-    return bool(REVIEW_TOOL_RE.search(login or ""))
-
-
-def item_is_bot(item: dict) -> bool:
-    """Authoritative when the API gave us `is_bot` (user.type == Bot); login regex as
-    a fallback for items that predate the flag or lost it to a stale snapshot."""
-    return bool(item.get("is_bot")) or is_bot(item.get("author", ""))
+    return "copilot" in login.lower()
 
 
 def classify(item: dict, kind: str) -> str:
-    """Line tag for a review/comment. kind: 'review' (submitted), 'inline' (on the diff),
-    'issue' (PR conversation). BOTREVIEW = an automated code review to address automatically.
-    Any bot review/inline comment is a BOTREVIEW; for a plain issue comment only a review
-    TOOL counts (generic bots like github-actions post labels/CI chatter, not review)."""
-    if kind == "issue":
-        return "BOTREVIEW" if is_review_tool(item.get("author", "")) else "COMMENT"
-    bot = item_is_bot(item)
+    """Line tag for a review/comment. kind: 'review' (submitted), 'inline' (on the
+    diff), 'issue' (PR conversation). BOTREVIEW = an automated code review to
+    address; a bot's PR-conversation comment is plain COMMENT (labels, CI chatter,
+    greetings) and stays the watcher's call."""
     if kind == "review":
-        return "BOTREVIEW" if bot else "REVIEW"
-    return "BOTREVIEW" if bot else "COMMENT"  # inline
+        return "BOTREVIEW" if item.get("is_bot") else "REVIEW"
+    if kind == "inline":
+        return "BOTREVIEW" if item.get("is_bot") else "COMMENT"
+    return "COMMENT"
 
 
 def has_botreview(d: dict) -> bool:
-    return (
-        any(classify(r, "review") == "BOTREVIEW" for r in d["new_reviews"])
-        or any(classify(c, "inline") == "BOTREVIEW" for c in d["new_review_comments"])
-        or any(classify(c, "issue") == "BOTREVIEW" for c in d["new_comments"])
+    return any(classify(r, "review") == "BOTREVIEW" for r in d["new_reviews"]) or any(
+        classify(c, "inline") == "BOTREVIEW" for c in d["new_review_comments"]
     )
 
 
 def event_next(d: dict) -> str:
+    if d["new_fails"]:
+        return "fix the red check(s), push, then run watch again."
     if has_botreview(d):
-        return "auto-address BOTREVIEW per references/pull-requests.md (unless told not to), then run watch again."
+        return "address the BOTREVIEW per references/review-responses.md, then run watch again."
     return "react to the lines above, then run watch again."
 
 
@@ -325,9 +342,12 @@ def event_next(d: dict) -> str:
 
 
 def diff(old: dict | None, new: dict) -> dict:
-    """High-signal delta between two snapshots. Empty lists => nothing notable."""
+    """High-signal delta between two snapshots. Empty lists => nothing notable.
+    A head SHA change resets the check baseline: every check on the new head is new."""
     old = old or {}
-    oc, nc = old.get("checks", {}), new["checks"]
+    pushed = bool(old.get("head_sha")) and new["head_sha"] != old["head_sha"]
+    oc = {} if pushed else old.get("checks", {})
+    nc = new["checks"]
     new_fails, recovered, newly_done = [], [], []
     for name, ck in nc.items():
         was = oc.get(name)
@@ -346,17 +366,19 @@ def diff(old: dict | None, new: dict) -> dict:
         o = old.get(key, {})
         return [{"id": k, **v} for k, v in new[key].items() if k not in o]
 
-    ci_just_settled = new["ci_settled"] and not old.get("ci_settled", False)
-    state_changed = old and (
+    was_finished = bool(old) and not pushed and checks_finished(old)
+    just_finished = checks_finished(new) and not was_finished
+    state_changed = bool(old) and (
         new["pr_state"] != old.get("pr_state")
         or new["merged"] != old.get("merged", False)
     )
 
     return {
+        "pushed": pushed,
         "new_fails": new_fails,
         "recovered": recovered,
         "newly_done": newly_done,
-        "ci_just_settled": ci_just_settled,
+        "ci_just_settled": just_finished,
         "new_reviews": added("reviews"),
         "new_comments": added("comments"),
         "new_review_comments": added("review_comments"),
@@ -364,14 +386,38 @@ def diff(old: dict | None, new: dict) -> dict:
     }
 
 
+def empty_delta() -> dict:
+    return {
+        "pushed": False,
+        "new_fails": [],
+        "recovered": [],
+        "newly_done": [],
+        "ci_just_settled": False,
+        "new_reviews": [],
+        "new_comments": [],
+        "new_review_comments": [],
+        "state_changed": False,
+    }
+
+
+def standing(snap: dict) -> dict:
+    """Delta for a fresh watcher: what is red right now, nothing else. Reviews and
+    comments already on the PR are history, not news."""
+    d = empty_delta()
+    d["new_fails"] = [
+        {"name": n, "url": c["url"], "conclusion": c["conclusion"]}
+        for n, c in snap["checks"].items()
+        if is_fail(c)
+    ]
+    return d
+
+
 def has_signal(d: dict, on: set[str]) -> bool:
-    """Did anything the agent asked to be woken for happen? Any check finishing or
-    recovering counts, not just the full settle: the watcher should see every state
-    change so it stays current and can answer when the parent asks. Whether a single
-    success is worth forwarding to the parent is the watcher's call, not the script's."""
+    """Did anything the caller asked to be woken for happen? A single check
+    passing is not a signal (the pending line on the next event shows progress)."""
     if "fail" in on and d["new_fails"]:
         return True
-    if "done" in on and (d["ci_just_settled"] or d["newly_done"] or d["recovered"]):
+    if "done" in on and (d["ci_just_settled"] or d["recovered"]):
         return True
     if "review" in on and d["new_reviews"]:
         return True
@@ -382,15 +428,25 @@ def has_signal(d: dict, on: set[str]) -> bool:
     return False
 
 
+def any_change(d: dict) -> bool:
+    return (
+        d["pushed"]
+        or d["state_changed"]
+        or any(
+            d[k]
+            for k in (
+                "new_fails",
+                "recovered",
+                "newly_done",
+                "new_reviews",
+                "new_comments",
+                "new_review_comments",
+            )
+        )
+    )
+
+
 # ------------------------------------------------------------------ rendering
-
-
-def pending_checks(snap: dict) -> list[str]:
-    return [
-        n
-        for n, c in snap["checks"].items()
-        if c["status"] in PENDING_STATUS or c["status"] == ""
-    ]
 
 
 INDENT = " " * 12  # continuation lines align under the tag column
@@ -399,7 +455,7 @@ INDENT = " " * 12  # continuation lines align under the tag column
 def who(item: dict) -> str:
     """`@login (bot)` / `Copilot (bot)` / `@login (human)`: author plus a bot flag."""
     name = "Copilot" if is_copilot(item["author"]) else f"@{item['author']}"
-    return f"{name} ({'bot' if item_is_bot(item) else 'human'})"
+    return f"{name} ({'bot' if item.get('is_bot') else 'human'})"
 
 
 def render_item(tag: str, head_extra: str, item: dict) -> list[str]:
@@ -416,11 +472,16 @@ def render_item(tag: str, head_extra: str, item: dict) -> list[str]:
     return out
 
 
-def render(snap: dict, d: dict, note: str = "") -> str:
+def render(snap: dict, d: dict, note: str = "", extra: list[str] | None = None) -> str:
     head = f"PR #{snap['pr']} {snap['repo']} {snap['pr_state']}"
     if snap["merged"] and snap["pr_state"] != "MERGED":
         head += " MERGED"
+    if snap.get("draft"):
+        head += " DRAFT"
     lines = [head + (f"  {note}" if note else "")]
+    lines += extra or []
+    if d["pushed"]:
+        lines.append(f"  PUSH    head is now {snap['head_sha'][:7]}, checks restarted")
     for f in d["new_fails"]:
         lines.append(f"  FAIL    {f['name']} [{f['conclusion']}]")
         if f.get("url"):
@@ -430,8 +491,6 @@ def render(snap: dict, d: dict, note: str = "") -> str:
     if d["ci_just_settled"]:
         ok, bad = count_checks(snap)
         lines.append(f"  DONE    all checks finished ({ok} ok, {bad} red)")
-    elif d["newly_done"]:
-        lines.append(f"  DONE    {', '.join(d['newly_done'])}")
     for r in d["new_reviews"]:
         lines += render_item(classify(r, "review"), r.get("state", ""), r)
     for c in d["new_comments"]:
@@ -445,6 +504,9 @@ def render(snap: dict, d: dict, note: str = "") -> str:
     pend = pending_checks(snap)
     if pend:
         lines.append(f"  pending: {', '.join(sorted(pend))}")
+    bots = pending_bot_reviews(snap)
+    if bots:
+        lines.append(f"  review pending: {', '.join(sorted(bots))}")
     return "\n".join(lines)
 
 
@@ -458,127 +520,225 @@ def verdict(name: str, terminal: bool, nxt: str) -> str:
     return f">> {name}: {'done' if terminal else 'ongoing'}. {nxt}"
 
 
+def minutes(s: float) -> str:
+    return f"{int(s // 60)}m" if s >= 60 else f"{int(s)}s"
+
+
 # --------------------------------------------------------------------- state io
+
+
+def state_dir() -> Path:
+    return Path(
+        os.environ.get("WATCH_STATE_DIR") or Path(tempfile.gettempdir()) / "watch"
+    )
 
 
 def state_path(repo: str, pr: int, watcher: str, override: str | None) -> Path:
     if override:
         return Path(override)
-    base = os.environ.get("WATCH_STATE_DIR") or Path(tempfile.gettempdir()) / "watch"
-    slug = repo.replace("/", "_")
-    return Path(base) / f"{slug}-pr{pr}-{watcher}.json"
+    return state_dir() / f"{repo.replace('/', '_')}-pr{pr}-{watcher}.json"
 
 
-def load_state(p: Path) -> dict | None:
+def poke_marker(repo: str, pr: int) -> Path:
+    return state_dir() / f"{repo.replace('/', '_')}-pr{pr}-poke.json"
+
+
+def load_json(p: Path) -> dict | None:
     try:
         return json.loads(p.read_text())
     except (FileNotFoundError, json.JSONDecodeError):
         return None
 
 
-def resolve_deadline(
-    old: dict | None, max_total: float | None, reset: bool
-) -> float | None:
-    """Absolute wall-clock deadline, persisted so it spans every re-watch.
+def load_state(p: Path) -> dict | None:
+    st = load_json(p)
+    return st if st and st.get("schema") == SCHEMA else None
 
-    Set once (on the first poll/watch) from --max-total and preserved across episodes
-    using the SAME --watcher. --reset-budget restarts it.
-    """
-    if old and old.get("deadline_ts") and not reset:
-        return old["deadline_ts"]
-    if max_total and max_total > 0:
-        return time.time() + max_total
+
+def save_json(p: Path, data: dict) -> None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(data))
+
+
+# ------------------------------------------------------------------- settling
+
+
+def settled_kind(snap: dict, no_checks_since: float | None) -> str | None:
+    """'red', 'green', or None while checks are still running."""
+    if snap["checks"]:
+        if not checks_finished(snap):
+            return None
+        return "red" if red_checks(snap) else "green"
+    if no_checks_since is not None and time.time() - no_checks_since >= NO_CHECKS_GRACE:
+        return "green"
     return None
 
 
-def budget_left(deadline: float | None) -> float | None:
-    return None if deadline is None else deadline - time.time()
+def red_key(snap: dict) -> str:
+    """Identity of a red settle, reported once per head + set of red checks."""
+    return snap["head_sha"] + ":" + ",".join(sorted(red_checks(snap)))
 
 
-def save_state(p: Path, snap: dict) -> None:
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(snap))
+# ------------------------------------------------------------------------ poke
 
 
-def die(msg: str) -> None:
-    print(f"pr-watch: {msg}", file=sys.stderr)
-    sys.exit(2)
+def bot_items_on_head(snap: dict) -> int:
+    """Bot reviews and inline comments made against the current head."""
+    n = sum(
+        1
+        for r in snap["reviews"].values()
+        if r.get("is_bot") and r.get("sha") == snap["head_sha"]
+    )
+    return n + sum(1 for c in snap["review_comments"].values() if c.get("is_bot"))
 
 
-# -------------------------------------------------------------------- commands
-
-
-def prepare(a) -> tuple[int, str, str, Path, dict | None]:
-    """Shared command setup: resolve the PR and load this watcher's prior snapshot."""
-    pr, repo, url = resolve(a.pr, a.repo)
-    sp = state_path(repo, pr, a.watcher, a.state)
-    return pr, repo, url, sp, load_state(sp)
-
-
-def cmd_poll(a) -> int:
-    pr, repo, url, sp, old = prepare(a)
-    snap = fetch_snapshot(pr, repo, url)
-    snap["deadline_ts"] = resolve_deadline(old, a.max_total, a.reset_budget)
-    d = diff(old, snap)
-    if old is None or any_change(d):
-        snap["last_change_ts"] = time.time()
+def revert_poke(pr: int, repo: str, marker: dict) -> list[str]:
+    """Undo a poke: back to draft, original title, review requests it caused removed.
+    Best effort per step; what could not be undone is named on stderr."""
+    head = f"PR #{pr} {repo}"
+    done = []
+    if run_gh(["pr", "ready", str(pr), "--repo", repo, "--undo"]).returncode == 0:
+        done.append("draft")
     else:
-        snap["last_change_ts"] = old.get("last_change_ts") or time.time()
-    save_state(sp, snap)
-    on = parse_on(a.on)
-    left = budget_left(snap["deadline_ts"])
-    signal = has_signal(d, on)
-
-    if left is not None and left <= 0:
-        name, terminal, nxt = "BUDGET SPENT", True, "time budget used up. stop."
-    elif is_closed(snap):
-        name, terminal, nxt = "CLOSED", True, "PR merged/closed. stop."
-    elif old is None:
-        name, terminal, nxt = (
-            "BASELINE",
-            False,
-            "baseline saved; run `watch` to react to changes.",
-        )
-    elif signal:
-        name, terminal, nxt = "EVENT", False, event_next(d)
+        print(f"{head} could not convert back to draft; do it by hand", file=sys.stderr)
+    if (
+        run_gh(
+            ["pr", "edit", str(pr), "--repo", repo, "--title", marker["title"]]
+        ).returncode
+        == 0
+    ):
+        done.append("title")
     else:
-        name, terminal, nxt = "QUIET", False, "nothing new since last check."
-
-    if a.json:
         print(
-            json.dumps(
-                {
-                    "delta": d,
-                    "pending": pending_checks(snap),
-                    "ci_settled": snap["ci_settled"],
-                    "signal": signal,
-                    "budget_left": None if left is None else int(left),
-                    "outcome": name,
-                    "terminal": terminal,
-                    "next": nxt,
-                }
+            f"{head} could not restore the title {marker['title']!r}; do it by hand",
+            file=sys.stderr,
+        )
+    data = (
+        gh_json(
+            ["pr", "view", str(pr), "--repo", repo, "--json", "reviewRequests"],
+            check=False,
+        )
+        or {}
+    )
+    was = set(marker.get("reviewers_before", []))
+    added = [
+        rr.get("login") or rr.get("slug") or rr.get("name")
+        for rr in data.get("reviewRequests") or []
+        if rr.get("__typename") != "Bot"
+    ]
+    added = [a for a in added if a and a not in was]
+    if (
+        added
+        and run_gh(
+            [
+                "pr",
+                "edit",
+                str(pr),
+                "--repo",
+                repo,
+                "--remove-reviewer",
+                ",".join(added),
+            ]
+        ).returncode
+        == 0
+    ):
+        done.append(f"removed reviewers {', '.join(added)}")
+    return done
+
+
+def revert_leftover_poke(pr: int, repo: str, snap: dict) -> list[str]:
+    """A poke that died mid-way leaves its marker; any later run puts the PR back
+    before doing its own work, so a flip never outlives the process that made it."""
+    mp = poke_marker(repo, pr)
+    marker = load_json(mp)
+    if not marker:
+        return []
+    lines = []
+    if not snap["draft"] and snap["title"].startswith(WIP):
+        done = revert_poke(pr, repo, marker)
+        lines.append(f"  REVERT  leftover poke undone: {', '.join(done) or 'nothing'}")
+    mp.unlink(missing_ok=True)
+    return lines
+
+
+def cmd_poke(a) -> int:
+    """Flip a draft to ready under a [WIP] title so review bots run, wait for a bot
+    review, then revert. The marker file makes the revert survive a killed process."""
+    pr, repo, url = resolve(a.pr, a.repo)
+    before = fetch_snapshot(pr, repo, url)
+    head = f"PR #{pr} {repo}"
+    for ln in revert_leftover_poke(pr, repo, before):
+        print(ln)
+        before = fetch_snapshot(pr, repo, url)
+    if is_closed(before):
+        print(head)
+        print(verdict("NOPOKE", True, "PR merged/closed. nothing to poke."))
+        return 0
+    if not before["draft"]:
+        print(head)
+        print(
+            verdict(
+                "NOPOKE", True, "not a draft; review bots already had their chance."
             )
         )
         return 0
-    if name in ("BASELINE", "EVENT"):
+    if bot_items_on_head(before) or pending_bot_reviews(before):
+        print(head)
         print(
-            render(
-                snap,
-                d,
-                note=None if name == "EVENT" else "(first poll, baseline saved)",
+            verdict(
+                "NOPOKE",
+                True,
+                "a bot review already exists or is pending on this head.",
             )
         )
-    elif name in ("QUIET",):
-        pend = pending_checks(snap)
-        extra = f" pending: {', '.join(sorted(pend))}" if pend else " all checks done"
-        print(f"PR #{pr} {repo} {snap['pr_state']} no change.{extra}")
-    else:  # BUDGET SPENT / CLOSED
-        print(f"PR #{pr} {repo} {snap['pr_state']}")
-    print(verdict(name, terminal, nxt))
+        return 0
+
+    title = before["title"]
+    wip = title if title.startswith(WIP) else f"{WIP} {title}"
+    if a.dry_run:
+        print(
+            f"{head} DRAFT  would: retitle to {wip!r}, mark ready, wait up to {minutes(a.max_wait)}, revert"
+        )
+        print(verdict("DRYRUN", True, "nothing changed."))
+        return 0
+
+    marker = {
+        "title": title,
+        "started": time.time(),
+        "reviewers_before": [r["login"] for r in before["review_requests"]],
+    }
+    save_json(poke_marker(repo, pr), marker)
+    gh(["pr", "edit", str(pr), "--repo", repo, "--title", wip])
+    gh(["pr", "ready", str(pr), "--repo", repo])
+    print(f"{head} marked ready as {wip!r}; waiting for review bots")
+    start = time.time()
+    name, nxt = "NOPOKE", f"ready for {minutes(a.max_wait)}, no bot review landed."
+    try:
+        while time.time() - start < a.max_wait:
+            time.sleep(min(POKE_POLL_GAP, max(0.0, a.max_wait - (time.time() - start))))
+            now = fetch_snapshot(pr, repo, url)
+            landed = bot_items_on_head(now) - bot_items_on_head(before)
+            if landed > 0:
+                name, nxt = (
+                    "POKED",
+                    f"{landed} bot review item(s) landed; run watch to pick them up.",
+                )
+                break
+            registered = bool(pending_bot_reviews(now)) or bool(
+                set(now["checks"]) - set(before["checks"])
+            )
+            if not registered and time.time() - start >= a.register_grace:
+                nxt = f"nothing registered in {minutes(a.register_grace)}; no review bot reacts to ready here."
+                break
+    finally:
+        done = revert_poke(pr, repo, marker)
+        poke_marker(repo, pr).unlink(missing_ok=True)
+        print(f"{head} reverted: {', '.join(done) or 'nothing'}")
+    print(verdict(name, True, nxt))
     return 0
 
 
-HOT_WINDOW = 300.0  # seconds since the last change before the cadence cools down
+# ----------------------------------------------------------------------- watch
 
 
 def bounds(a, last_change: float) -> tuple[float, float]:
@@ -590,130 +750,6 @@ def bounds(a, last_change: float) -> tuple[float, float]:
     lo = a.min_interval if a.min_interval is not None else (10.0 if hot else 60.0)
     hi = a.max_interval if a.max_interval is not None else (30.0 if hot else 60.0)
     return lo, max(lo, hi)
-
-
-def cmd_watch(a) -> int:
-    pr, repo, url, sp, old = prepare(a)
-    on = parse_on(a.on)
-    # Per-episode cap. Unset defaults to the whole budget (so a detached background
-    # task only exits on a real event or terminal stop), else to 900s.
-    max_wait = a.max_wait if a.max_wait is not None else (a.max_total or 900.0)
-    start = time.time()
-    deadline = resolve_deadline(old, a.max_total, a.reset_budget)
-    # Cadence survives re-runs: a watcher relaunched right after an event starts
-    # hot, one relaunched after a long quiet stretch starts cold.
-    last_change = (old or {}).get("last_change_ts") or time.time()
-    interval, _ = bounds(a, last_change)
-    snap = old or fetch_snapshot(pr, repo, url)
-    snap["deadline_ts"] = deadline
-    snap["last_change_ts"] = last_change
-    save_state(sp, snap)
-    if is_closed(snap):
-        print(render(snap, empty_delta(), note="(already closed)"))
-        print(verdict("CLOSED", True, "PR merged/closed. stop."))
-        return 0
-    settled_since: float | None = time.time() if snap["ci_settled"] else None
-    polls = 0
-
-    while True:
-        waited = time.time() - start
-        # Global budget: spans every episode (terminal, stop for good).
-        if deadline is not None and time.time() >= deadline:
-            print(render(snap, empty_delta(), note=f"(polls={polls})"))
-            print(verdict("BUDGET SPENT", True, "time budget used up. stop."))
-            return 0
-        # Per-episode cap: not terminal, the caller is expected to re-run watch.
-        if waited >= max_wait:
-            print(
-                render(
-                    snap,
-                    empty_delta(),
-                    note=f"(no event in {int(waited)}s, polls={polls})",
-                )
-            )
-            print(verdict("QUIET", False, "no event yet; run the same watch again."))
-            return 0
-
-        # Comment tail is bounded: once CI is done, wait at most --comment-grace
-        # for late reviews/comments, then stop instead of polling forever.
-        if (
-            settled_since is not None
-            and (time.time() - settled_since) >= a.comment_grace
-        ):
-            print(
-                render(
-                    snap,
-                    empty_delta(),
-                    note=f"(quiet {int(a.comment_grace)}s after CI done)",
-                )
-            )
-            print(verdict("SETTLED", True, "checks finished, no new activity. stop."))
-            return 0
-
-        lo, hi = bounds(a, last_change)
-        nap = min(max(lo, min(interval, hi)), max_wait - waited + 0.1)
-        if deadline is not None:
-            nap = min(nap, max(0.0, deadline - time.time()) + 0.1)
-        time.sleep(nap)
-        polls += 1
-        new = fetch_snapshot(pr, repo, url)
-        new["deadline_ts"] = deadline
-        d = diff(snap, new)
-        if any_change(d):
-            last_change = time.time()
-        new["last_change_ts"] = last_change
-        save_state(sp, new)
-
-        if new["ci_settled"] and settled_since is None:
-            settled_since = time.time()
-        # New activity (comment/review) extends the tail so an active discussion
-        # isn't cut off mid-stream, still capped by --max-wait overall.
-        if d["new_comments"] or d["new_review_comments"] or d["new_reviews"]:
-            settled_since = time.time() if new["ci_settled"] else None
-
-        if is_closed(new):
-            print(render(new, d, note=f"(+{int(time.time() - start)}s, polls={polls})"))
-            print(verdict("CLOSED", True, "PR merged/closed. stop."))
-            return 0
-        if has_signal(d, on):
-            print(render(new, d, note=f"(+{int(time.time() - start)}s, polls={polls})"))
-            print(verdict("EVENT", False, event_next(d)))
-            return 0
-
-        snap = new
-        # Adaptive backoff within the phase bounds: changes reset to the fast end
-        # (handle the opening burst), quiet stretches slow toward the top.
-        interval = lo if any_change(d) else min(interval * 1.6, hi)
-
-
-def empty_delta() -> dict:
-    return {
-        "new_fails": [],
-        "recovered": [],
-        "newly_done": [],
-        "ci_just_settled": False,
-        "new_reviews": [],
-        "new_comments": [],
-        "new_review_comments": [],
-        "state_changed": False,
-    }
-
-
-def any_change(d: dict) -> bool:
-    return (
-        any(
-            d[k]
-            for k in (
-                "new_fails",
-                "recovered",
-                "newly_done",
-                "new_reviews",
-                "new_comments",
-                "new_review_comments",
-            )
-        )
-        or d["state_changed"]
-    )
 
 
 def parse_on(on: str) -> set[str]:
@@ -729,6 +765,143 @@ def parse_on(on: str) -> set[str]:
     return picked
 
 
+def cmd_watch(a) -> int:
+    pr, repo, url = resolve(a.pr, a.repo)
+    sp = state_path(repo, pr, a.watcher, a.state)
+    old = load_state(sp)
+    on = parse_on(a.on)
+    grace = (
+        a.comment_grace
+        if a.comment_grace is not None
+        else (120.0 if a.until == "quiet" else 0.0)
+    )
+    start = time.time()
+
+    # Budget and stale clock persist per watcher; a push resets both (below).
+    budget = a.max_total if a.max_total else (old or {}).get("budget")
+    deadline = (old or {}).get("deadline") if old and not a.max_total else None
+    if budget and deadline is None:
+        deadline = start + budget
+    stale_step = (budget * a.stale_pct / 100.0) if budget else a.stale
+    last_change = (old or {}).get("last_change_ts") or start
+    stale_steps = (
+        (old or {}).get("stale_steps", 0)
+        if old and old.get("last_change_ts") == last_change
+        else 0
+    )
+    red_reported = (old or {}).get("red_reported", "")
+    interval, _ = bounds(a, last_change)
+    polls = 0
+
+    snap = old or fetch_snapshot(pr, repo, url)
+    extra = revert_leftover_poke(pr, repo, snap)
+    d = empty_delta() if old else standing(snap)
+    no_checks_since = None if snap["checks"] else start
+
+    def finish(name: str, terminal: bool, nxt: str, delta: dict, note: str) -> int:
+        snap.update(
+            budget=budget,
+            deadline=deadline,
+            last_change_ts=last_change,
+            stale_steps=stale_steps,
+            red_reported=red_reported,
+        )
+        save_json(sp, snap)
+        print(render(snap, delta, note=note, extra=extra))
+        print(verdict(name, terminal, nxt))
+        return 0
+
+    while True:
+        note = f"(+{int(time.time() - start)}s, polls={polls})"
+        if is_closed(snap):
+            return finish(
+                "DONE",
+                True,
+                f"PR {'merged' if snap['merged'] else 'closed'}. stop.",
+                d,
+                note,
+            )
+        if deadline is not None and time.time() >= deadline:
+            return finish("DONE", True, "time budget used up. stop.", d, note)
+        kind = settled_kind(snap, no_checks_since)
+        if has_signal(d, on):
+            if d["new_fails"]:
+                red_reported = red_key(snap)
+            return finish("EVENT", False, event_next(d), d, note)
+        if kind == "red" and red_reported != red_key(snap):
+            red_reported = red_key(snap)
+            d["new_fails"] = standing(snap)["new_fails"]
+            return finish(
+                "EVENT",
+                False,
+                "checks finished with failures. fix, push, then run watch again.",
+                d,
+                note,
+            )
+        if kind == "green" and a.until == "green":
+            ok, _ = count_checks(snap)
+            return finish("DONE", True, f"all checks passed ({ok} ok). stop.", d, note)
+        if (
+            kind == "green"
+            and a.until == "quiet"
+            and not pending_bot_reviews(snap)
+            and time.time() - last_change >= grace
+        ):
+            return finish(
+                "DONE",
+                True,
+                f"checks green, no review pending, quiet for {minutes(grace)}. stop.",
+                d,
+                note,
+            )
+        quiet_for = time.time() - last_change
+        if stale_step > 0 and math.floor(quiet_for / stale_step) > stale_steps:
+            stale_steps = math.floor(quiet_for / stale_step)
+            left = (
+                "no budget"
+                if deadline is None
+                else f"{minutes(max(0.0, deadline - time.time()))} of budget left"
+            )
+            return finish(
+                "STALE",
+                False,
+                f"nothing changed for {minutes(quiet_for)}, {left}. tell the user (⚠️ line: what is "
+                "pending, your call: stop / keep / extend), then run watch again.",
+                d,
+                note,
+            )
+        if time.time() - start >= a.max_wait:
+            return finish(
+                "QUIET",
+                False,
+                "no event within this episode; run the same watch again.",
+                d,
+                note,
+            )
+
+        lo, hi = bounds(a, last_change)
+        nap = min(max(lo, min(interval, hi)), a.max_wait - (time.time() - start) + 0.1)
+        if deadline is not None:
+            nap = min(nap, max(0.0, deadline - time.time()) + 0.1)
+        time.sleep(max(nap, 0.0))
+        polls += 1
+        new = fetch_snapshot(pr, repo, url)
+        d = diff(snap, new)
+        if any_change(d):
+            last_change = time.time()
+            stale_steps = 0
+        if d["pushed"] and budget:
+            deadline = time.time() + budget
+        if new["checks"]:
+            no_checks_since = None
+        elif d["pushed"] or no_checks_since is None:
+            no_checks_since = time.time()
+        snap = new
+        # Adaptive backoff within the phase bounds: changes reset to the fast end
+        # (handle the opening burst), quiet stretches slow toward the top.
+        interval = lo if any_change(d) else min(interval * 1.6, hi)
+
+
 # ------------------------------------------------------------------------ main
 
 
@@ -740,71 +913,99 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    def common(sp):
+    def target(sp):
         sp.add_argument("--pr", help="PR number or URL (default: current branch's PR)")
         sp.add_argument("--repo", help="owner/repo (default: current repo)")
-        sp.add_argument(
-            "--watcher",
-            default="default",
-            help="state namespace; give each concurrent watcher its own id",
-        )
-        sp.add_argument("--state", help="explicit snapshot path (overrides --watcher)")
-        sp.add_argument(
-            "--max-total",
-            type=float,
-            default=None,
-            help="total wall-clock budget in seconds, counted across EVERY re-watch "
-            "on this --watcher; set once, returns BUDGET SPENT when exhausted",
-        )
-        sp.add_argument(
-            "--reset-budget",
-            action="store_true",
-            help="restart the --max-total budget instead of preserving it",
-        )
 
-    po = sub.add_parser("poll", help="one-shot delta vs saved snapshot")
-    common(po)
-    po.add_argument(
-        "--on", default="all", help="signal filter: fail,done,review,comment,state"
+    w = sub.add_parser("watch", help="block until an event or a stop condition")
+    target(w)
+    w.add_argument(
+        "--watcher",
+        default="default",
+        help="state namespace; one per concurrent watcher",
     )
-    po.add_argument("--json", action="store_true", help="machine-readable output")
-    po.set_defaults(func=cmd_poll)
-
-    w = sub.add_parser("watch", help="block until a high-signal event or deadline")
-    common(w)
+    w.add_argument("--state", help="explicit snapshot path (overrides --watcher)")
+    w.add_argument(
+        "--until",
+        choices=["green", "quiet", "closed"],
+        default="quiet",
+        help="stop condition: green = all checks passed; quiet = green + no review "
+        "pending + no activity for --comment-grace; closed = only merge/close (default quiet)",
+    )
     w.add_argument(
         "--on",
         default="all",
         help="wake on: fail,done,review,comment,state (default all)",
     )
     w.add_argument(
+        "--max-total",
+        type=float,
+        default=None,
+        help="time budget in seconds, persisted per --watcher across re-runs and reset by a "
+        "push; ends with DONE when used up (default: none)",
+    )
+    w.add_argument(
+        "--stale-pct",
+        type=float,
+        default=30.0,
+        help="with a budget: percent of it without any change before a STALE nudge, "
+        "repeated at each step (default 30)",
+    )
+    w.add_argument(
+        "--stale",
+        type=float,
+        default=1800.0,
+        help="without a budget: seconds without any change before a STALE nudge, "
+        "repeated at each step (default 1800; 0 disables)",
+    )
+    w.add_argument(
+        "--max-wait",
+        type=float,
+        default=540.0,
+        help="cap per episode, seconds; returns QUIET and expects a re-run. Fits under a "
+        "10-minute tool timeout (default 540)",
+    )
+    w.add_argument(
+        "--comment-grace",
+        type=float,
+        default=None,
+        help="with --until quiet: seconds of no activity after green before DONE (default 120)",
+    )
+    w.add_argument(
         "--min-interval",
         type=float,
         default=None,
-        help="override the fastest poll gap, seconds (default: self-paced, "
-        "10 while active / 60 when quiet)",
+        help="override the fastest poll gap, seconds (default: 10 while active, 60 when quiet)",
     )
     w.add_argument(
         "--max-interval",
         type=float,
         default=None,
-        help="override the slowest poll gap, seconds (default: self-paced, "
-        "30 while active / 60 when quiet)",
-    )
-    w.add_argument(
-        "--max-wait",
-        type=float,
-        default=None,
-        help="hard cap per episode, seconds (default: --max-total if set, else 900)",
-    )
-    w.add_argument(
-        "--comment-grace",
-        type=float,
-        default=0.0,
-        help="after all checks finish, seconds to keep waiting for late comments "
-        "(default 0: settle now; a still-running check already keeps watch alive)",
+        help="override the slowest poll gap, seconds (default: 30 while active, 60 when quiet)",
     )
     w.set_defaults(func=cmd_watch)
+
+    pk = sub.add_parser(
+        "poke", help="draft PR: go ready under [WIP] so review bots run, then revert"
+    )
+    target(pk)
+    pk.add_argument(
+        "--max-wait",
+        type=float,
+        default=480.0,
+        help="seconds to stay ready waiting for a bot review (default 480)",
+    )
+    pk.add_argument(
+        "--register-grace",
+        type=float,
+        default=180.0,
+        help="revert early when no bot review request or new check appears within this "
+        "many seconds (default 180)",
+    )
+    pk.add_argument(
+        "--dry-run", action="store_true", help="print what would happen, change nothing"
+    )
+    pk.set_defaults(func=cmd_poke)
     return p
 
 

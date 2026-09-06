@@ -8,7 +8,7 @@ Classify who left each comment first, because it sets how much you defer. Then r
 ## Who Left It
 
 1. **Automated review (bot / AI tool).** Copilot, CodeQL, Sonar, Snyk, a review bot. Detected by
-   author: GitHub `user.type == Bot`, or a review-tool login. `pr-watch.py` tags these `BOTREVIEW`.
+   author: GitHub `user.type == Bot`. `pr-watch.py` tags these `BOTREVIEW`.
 2. **AI-disclosed (an agent behind a human account).** A comment from a person's account whose body
    carries AI authorship: a 🤖 emoji, or an explicit line like "on behalf of @...", "created with
    assistance from", "generated with/by". Agents post under their operator's GitHub identity (the

@@ -1,152 +1,100 @@
 # Watching a PR
 
-Watch a PR's CI, reviews, and comments and react the moment something happens, no sleep loop.
-Use [`scripts/pr-watch.py`](../scripts/pr-watch.py) (stdlib only, run with `python3`).
+Watch a PR's CI, reviews, and comments and react when something happens, no sleep loop.
+[`scripts/pr-watch.py`](../scripts/pr-watch.py) (stdlib only, `python3`, run from the git skill's
+directory) polls, diffs against a per-watcher snapshot, and prints only what changed. Don't read
+its source. The defaults are the contract; every flag is in [`watch-flags.md`](./watch-flags.md),
+open it only when the commands below do not fit.
 
-> **Don't read `pr-watch.py`.** In doubt, check `python3 scripts/pr-watch.py <subcommand> --help`.
-> Source is last resort.
+## The contract
 
-Watches: CI checks/failures, CodeQL, Copilot/human reviews, new comments (issue + inline).
-
-## How it works
-
-Each poll snapshots the PR and diffs it against the last one saved on disk, so only new things
-surface. `queued -> running` churn updates the snapshot silently and never wakes you, that's the
-point: the noisy opening burst stays quiet. State lives per `--watcher`, so several watchers can
-follow the same PR without clobbering each other.
-
-The script paces itself: it polls hot while things are changing, cools after a quiet stretch, and
-snaps back to hot on any change (a push counts: it surfaces as the checks it re-triggers). The pace
-is saved per `--watcher` and survives re-runs; there are no cadence flags to manage.
-
-Two subcommands: `watch` (the workhorse: blocks until a real event or a stop condition) and `poll`
-(one-shot "status right now"). Both self-baseline, the first run on a fresh `--watcher` records
-current state and reports nothing as new, so there's no separate setup step.
-
-`poll` is for watching: it baselines against a `--watcher` and reports what changed since. For a
-plain look at where a PR stands, outside any watch, the one-liner in
-[`review-responses.md`](./review-responses.md#where-the-pr-stands) answers it without touching
-watcher state.
-
-Two filters stack: the script surfaces only real events (mechanical); the watcher sub-agent judges
-which are worth interrupting you for and reconciles the rest into a final digest (semantic).
-
-## The output contract
-
-`watch` blocks and returns only when something real happens. Event lines are self-evident tags,
-and every run ends with one `>>` verdict line that decides everything:
+Every run ends with one `>>` line. Four kinds, four reactions:
 
 ```
->> EVENT: ongoing. react to the lines above, then run watch again.
->> SETTLED: done. checks finished, no new activity. stop.
->> BUDGET SPENT: done. time budget used up. stop.
->> CLOSED: done. PR merged/closed. stop.
->> QUIET: ongoing. no event yet; run the same watch again.
+>> EVENT: ongoing. <what to do>, then run watch again.     act, then run the same watch again
+>> STALE: ongoing. nothing changed for 22m, 40m of budget left. ...   nudge the user, then run again
+>> DONE: done. <reason>. stop.                             digest, stop
+>> QUIET: ongoing. no event within this episode; ...       run the same watch again
 ```
 
-Protocol: **`ongoing`** -> act on any event lines, then run `watch` again. **`done`** -> report and stop.
+Event lines above the verdict are self-evident tags: `PUSH`, `FAIL`, `FIXED`, `DONE` (all checks
+finished), `BOTREVIEW` (an automated code review), `REVIEW` (human), `COMMENT`, `STATE`, `REVERT`
+(a leftover poke undone). Each review or comment is a self-contained block with author, `(bot|human)`,
+id, URL, and body lines. Trailing `pending:` and `review pending:` lines say what is still expected.
 
-### Event Tags
+**`BOTREVIEW`: address it by default**, unless the user said not to, per
+[review-responses.md](./review-responses.md). `FAIL`: fix, push, run the same watch again; the push
+resets the check baseline, the budget, and the stale clock by itself.
 
-| tag         | meaning                               |
-| ----------- | ------------------------------------- |
-| `FAIL`      | a check went red                      |
-| `FIXED`     | a red check recovered                 |
-| `DONE`      | checks reached a terminal state       |
-| `BOTREVIEW` | automated code review to auto-address |
-| `REVIEW`    | a human review was submitted          |
-| `COMMENT`   | human chatter or generic-bot comment  |
-| `STATE`     | merged / closed transition            |
+The first run on a fresh `--watcher` reports the standing (red checks now). Reviews already on the
+PR are history and stay silent: what still needs an answer among them comes from
+[review-responses.md, Batching](./review-responses.md#batching), before the first watch.
 
-A trailing `pending: <names>` line lists checks still running. Each review/comment is a
-self-contained block (tag, `@author (bot|human)`, state or file path, `#id`, URL, body lines), so
-the agent can decide without a follow-up fetch. The watcher wakes on every change (even one check
-passing) so it stays current; deciding what reaches you is its job, not the script's.
+## Modes
 
 ```
-BOTREVIEW Copilot (bot) COMMENTED · #2023457056
-            https://github.com/o/r/pull/42#pullrequestreview-2023457056
-            Consider null-checking foo before the deref on line 88.
-COMMENT   @octocat (human) path/to/file.go · #1583153997
-            https://github.com/o/r/pull/42#discussion_r1583153997
-            Could we pull this into a helper?
+python3 scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> [--max-total <s>] \
+    --until green --on fail,done,state          # green CI, nothing else
+    --until quiet                               # green CI and reviews answered (default)
+    --until closed --on review,comment,state    # reviews answered, CI is not mine
 ```
 
-**Automated reviews (`BOTREVIEW`): address them by default**, unless the user said not to. A
-`BOTREVIEW` is an automated code review (Copilot, CodeQL, Sonar, a review bot); bot-ness comes from
-GitHub's `user.type` (login pattern as a fallback). Reply per [review-responses.md](review-responses.md).
+`--until quiet` waits for pending review-bot requests (Copilot shows up as one) and then for a short
+silence, so a bot review landing right after the last check is not missed. `--max-total` is the
+budget; without it the watch runs until `--until` or a merge/close.
 
-On `FAIL` the script can't fix it: stop, fix and push, then re-run `watch` on the same `--watcher`.
+## Who runs the loop
 
-**When you push a fix** (after a `FAIL` or a review): re-run on the **same** `--watcher`, never a
-fresh one and never clearing state, the snapshot diff is what tells new from old. On a budgeted
-watch add `--reset-budget` so the new CI gets a full window, and hold your own pushed
-commits/replies as noise so the watcher doesn't ping you about your own actions.
+Two harness facts (verified on Claude Code and Cursor): a background shell wakes the agent that
+started it when it exits; a background shell started by a sub-agent does not survive the
+sub-agent's turn. So a sub-agent runs `watch` in the **foreground** and its return is the ping.
 
-## How to Run It
+**A cheap sub-agent** (Haiku, Composer, the cheapest the harness offers) runs the loop. It does not
+read the PR or the diff; it relays. It holds noise, judges nothing it cannot judge from the lines
+themselves, and fetches one review thread only when a comment is not obvious on its face. Claude
+Code runs it in the background, so the parent keeps working. Cursor runs it in the foreground, so
+the parent waits on it; that is the price of a clean context there. Foreground `watch` calls sit
+under the tool timeout: Claude Code caps a call at 10 minutes, hence `--max-wait 540`; set the
+tool's timeout at its maximum.
 
-Keep polling off your own turn: never `sleep`+re-run, never hold a blocking `watch` call in your turn.
+The brief, short: the command, the Hold list from this conversation (known-flaky checks, expected
+noise, a reviewer the user handles), and:
 
-**Preferred, background sub-agent.** Spawn a _cheap_ background watcher: an explore-style read-only
-agent on an explicit fast/cheap model (Haiku, Composer, nano, …). It only reads, judges, and relays,
-so a cheap model suffices; name the model, or it inherits the parent's. It pings you only when
-something needs action.
+> On `QUIET` run it again. On `EVENT` return with the lines that need action (a red check, a
+> `BOTREVIEW`, a human review requesting changes or asking a question, anything you cannot call
+> noise); hold bot greetings, label and coverage chatter, a bare LGTM, and run again. On `STALE`
+> or `DONE` return with the line and a digest: what you surfaced, what you held (counts), the final
+> state. Terse, exact names and links.
 
-**Tell it what to ignore.** Paste this conversation's relevant context into the prompt's Hold list:
-known-flaky checks, expected noise, a reviewer you'll handle yourself.
-It can only skip what you mark safe; given nothing, it falls back to the generic noise rules. It is
-read-only: it relays and never acts, and when unsure it relays.
+The parent reacts, then relaunches the same watcher, same `--watcher` id.
 
-**Fallback, background task.** Only when you can't spawn a sub-agent: launch `watch` yourself as a
-**background command (Bash background mode)**. It exits on an event and the harness re-invokes _you_, so
-you apply the same notify / hold / digest judgment on each wake-up:
+**Fallback:** run `watch` as your own background command; the harness wakes you with the verdict.
+
+## Draft PRs and review bots
+
+Review bots skip drafts. When the mode answers bot reviews and the PR is a draft, run `poke` once
+before the first watch:
 
 ```
-python3 scripts/pr-watch.py watch --pr <N> --repo <R> --watcher <id> [--max-total <T>]
+python3 scripts/pr-watch.py poke --pr <N> --repo <OWNER/REPO>
 ```
 
-### Sub-agent prompt example
+Mechanical, no judgment: `[WIP]` on the title, mark ready, wait up to eight minutes for a bot review,
+then back to draft, original title, the human review requests the flip caused removed. A marker
+file records the flip, and any later `watch` or `poke` run reverts a leftover one first, so a PR is
+never left ready by a killed process. `POKED` means a `BOTREVIEW` comes on the next watch;
+`NOPOKE` means none will (not a draft, a review already there, or no bot reacts to ready in this
+repo). Once per PR head, never per push. The cost: marking ready notifies reviewers once, and the
+`[WIP]` title is what tells them to wait.
 
-> You watch GitHub PR **#<NUM>** in **<OWNER/REPO>** from `<git-skill-dir>`. Run this as a
-> **background task** (never blocking) so you can answer me mid-run:
->
-> ```
-> python3 scripts/pr-watch.py watch --pr <NUM> --repo <OWNER/REPO> --watcher <<GIVE IT A UNIQUE ID YOURSELF>>
-> ```
->
-> The script paces its own polling. On each `>>` verdict: `ongoing` -> judge the event lines,
-> relaunch the same command in the background; `done` -> send the digest and stop.
->
-> Track every event so you can answer if I ask, but **ping me only for**: a red check, a `BOTREVIEW`,
-> a human review requesting changes or asking a question, a merge/close, or anything you can't
-> confidently call noise. When unsure, ping.
->
-> **Hold silently** (note it, don't ping): bot greetings, label/coverage/changelog chatter, a bare
-> LGTM or approval, a superseded comment, a single check passing, plus <ignore-list>. Holding is
-> never hiding.
->
-> On a terminal `>>` (`SETTLED`/`CLOSED`/`BUDGET SPENT`), stop and send a **digest**: what you pinged
-> about, what you held (counts, not a dump), the final state (CI, reviews, merged?), and flag
-> anything held that turned out to matter.
->
-> **Terse, few words**, exact names + links, no full sentences: `CI red. unit-test fail. <link>` /
-> `BOTREVIEW copilot. null-check foo.go:88. <link>` / `held: 3 label-bot, 1 LGTM. CI green. me done.`
+## The stale nudge
 
-## Flags that matter
+`STALE` comes at each 30% of the budget without any change (every 30 minutes without a budget) and
+resets on activity. Print one line for the user and keep watching:
 
-- `--watcher <id>`: state namespace, one per concurrent watcher (snapshots don't collide).
-- `--max-total <s>`: total budget across every re-watch on a `--watcher`; survives re-runs (stored
-  as an absolute deadline) -> `BUDGET SPENT`. Unset means no global cap.
-- `--reset-budget`: restart `--max-total` (use after pushing a fix on a budgeted watch).
-- `--comment-grace <s>`: after all checks finish, seconds to wait for late comments (default 0: a
-  still-running check already keeps watch alive). New activity resets the timer.
-- Everything else (`--on`, poll-gap overrides, per-episode caps): `--help`. The defaults are the
-  contract.
+```
+⚠️ PR #42 quiet 22m, 40m of budget left. pending: e2e (queued), review by Copilot. My call: keep.
+```
 
-## Notes
-
-- **No checks yet**: watch keeps waiting rather than declaring `SETTLED` over an empty set.
-- **Already merged/closed** when you start: the first run returns `CLOSED: done`.
-- **`gh` missing / not authed / timeout**: the script exits non-zero with a one-line `pr-watch:`
-  error on stderr instead of hanging.
-- `--json` (poll only) emits the machine-readable delta; `watch` is text-only.
+The facts are in the verdict and the pending lines; the call is yours: stop, keep, or extend.
+Never block on a question here; the user answers when they look.
