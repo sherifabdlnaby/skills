@@ -37,9 +37,9 @@ Boxes are what the agent is doing; arrow labels are the script's `>>` verdict li
 ```mermaid
 stateDiagram-v2
     direction TB
-    [*] --> Poke: draft PR and the mode answers bot reviews
-    [*] --> Watching: otherwise
-    Poke --> Watching: POKED / NOPOKE (back to draft)
+    [*] --> Watching
+    Watching --> Poke: draft, and I said the repo has a review bot
+    Poke --> Watching: back to draft in ten seconds
 
     Watching --> Watching: QUIET (episode cap, run again)
     Watching --> Nudge: STALE (nothing changed for a stretch)
@@ -59,7 +59,7 @@ stateDiagram-v2
 
 | arrow     | watch-pr           | watch-pr-ci | watch-pr-comments       |
 | --------- | ------------------ | ----------- | ----------------------- |
-| Poke      | yes                | no          | yes                     |
+| Poke      | on my word         | no          | on my word              |
 | Fixing    | yes                | yes         | no, CI does not wake it |
 | Answering | yes                | no          | yes                     |
 | mode end  | green and answered | green       | merge, close, or budget |

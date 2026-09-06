@@ -72,8 +72,8 @@ The parent reacts, then relaunches the same watcher, same `--watcher` id.
 
 ## Draft PRs and review bots
 
-Review bots skip drafts. When the mode answers bot reviews and the PR is a draft, flick it once
-before the first watch:
+Review bots skip drafts. On the user's word that this repo has one (said in the chat, or `poke` in
+the skill's arguments), flick the draft, alongside the watch rather than before it:
 
 ```
 python3 scripts/pr-watch.py poke --pr <N> --repo <OWNER/REPO>
@@ -84,10 +84,10 @@ original title and the human review requests the flip caused removed. One flick 
 marker file records the flip, and any later `watch` or `poke` run reverts a leftover one first, so a
 killed process never leaves a PR ready.
 
-Whether a bot picked it up is the watcher's call: a review that started lands as `BOTREVIEW`; none
-after a few minutes on a repo you know has a bot means the flick was too short for it. Then hold the
-PR open yourself, `gh pr ready <N>` now and `gh pr ready --undo <N>` once the review is in. Either
-way marking ready notifies reviewers once, and the `[WIP]` title is what tells them to wait.
+The flick is assumed to be enough: the review, if one comes, lands as `BOTREVIEW` on the watch.
+Never infer a bot from the repo's history or go looking for one; without the user's word, a draft
+stays a draft and silence is the expected outcome. Marking ready notifies reviewers once, and the
+`[WIP]` title is what tells them to wait.
 
 ## The stale nudge
 

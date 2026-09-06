@@ -2,7 +2,7 @@
 name: watch-pr
 description: Watch a PR until CI is green and its reviews are answered.
 license: MIT
-argument-hint: "[PR number or URL] [duration|forever] [humans] (defaults to current branch's PR, 30m)"
+argument-hint: "[PR number or URL] [duration|forever] [humans] [poke] (defaults to current branch's PR, 30m)"
 disable-model-invocation: true
 metadata:
   author: sherifabdlnaby
@@ -30,7 +30,8 @@ gh pr view --json number,url,headRefName,state,isDraft
 
 ## Before the first watch
 
-1. **Draft PR:** run `poke` once, so review bots get their turn.
+1. **Draft PR:** only when I said this repo has a review bot, or passed `poke` in `$ARGUMENTS`, run
+   `poke` once, alongside the watch. Otherwise leave the draft alone; do not go looking for a bot.
 2. **Existing review threads:** unresolved threads already on the PR are not news to the watch.
    Fetch them per review-responses [Batching](../../git/references/review-responses.md#batching)
    and address them first.
