@@ -66,7 +66,9 @@ than read, so they are left out.
 2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
 3. [cicd-fy](skills/cicd-fy/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
 4. [git](skills/git/) | My git conventions and PR workflow.
-   - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: respond to reviews and fix CI, until green (or `forever`).
+   - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: fix CI and answer reviews, until green and quiet (or `forever`).
+   - [watch-pr-ci](skills/variants/watch-pr-ci/) | CI only: fix what goes red, stop at green.
+   - [watch-pr-comments](skills/variants/watch-pr-comments/) | Reviews only: answer them as they land.
 5. [kubernetes-debug](skills/kubernetes-debug/) | WIP: Failure mode when debugging k8s
 6. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
    - [afk-careful](skills/variants/afk-careful/) | Conservative with its autonomy.
