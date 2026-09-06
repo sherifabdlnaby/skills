@@ -72,7 +72,8 @@ Every skill of ours has a `README.md` beside it, for humans deciding whether and
 important tradeoffs instead of copying prompt text or addressing an executing agent. Include a direct link to `SKILL.md`, which remains the canonical agent instructions.
 
 Vendored skills get none of that: we don't describe work we didn't write. `skills/vendor/README.md` is generated whole — an index of what is vendored, where it came from, and what it costs — and it
-is the only README under `skills/vendor/` that is ours. Keep generated token-estimate blocks intact and update them only with `mise run tokens --fix`.
+is the only README under `skills/vendor/` that is ours. Keep generated token-estimate blocks intact and update them only with `mise run tokens --fix`. `mise run tokens:diff` prints what a branch does
+to every skill's size; a workflow runs the same task on each PR and keeps the answer as one sticky comment.
 
 ## CI not visible in the tree
 

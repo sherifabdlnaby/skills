@@ -11,22 +11,22 @@ Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry pr
 other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
 than read, so they are left out.
 
-| File                                                                   | Tokens |
-| ---------------------------------------------------------------------- | -----: |
-| [`SKILL.md`](SKILL.md)                                                 |  1,408 |
-| [`assets/CONTRIBUTING.md`](assets/CONTRIBUTING.md)                     |    454 |
-| [`references/artifacts/docker.md`](references/artifacts/docker.md)     |  1,118 |
-| [`references/artifacts/go.md`](references/artifacts/go.md)             |    928 |
-| [`references/artifacts/packaged.md`](references/artifacts/packaged.md) |    659 |
-| [`references/checks.md`](references/checks.md)                         |    709 |
-| [`references/cicd-fy.md`](references/cicd-fy.md)                       |  2,412 |
-| [`references/community.md`](references/community.md)                   |  1,088 |
-| [`references/docs.md`](references/docs.md)                             |    805 |
-| [`references/hygiene.md`](references/hygiene.md)                       |  1,842 |
-| [`references/platforms/github.md`](references/platforms/github.md)     |  1,438 |
-| [`references/publish.md`](references/publish.md)                       |    630 |
-| [`references/releases.md`](references/releases.md)                     |  1,304 |
-| [`references/security.md`](references/security.md)                     |    814 |
+| File                                                                   |  Tokens |
+| ---------------------------------------------------------------------- | ------: |
+| [`SKILL.md`](SKILL.md)                                                 | `1,408` |
+| [`assets/CONTRIBUTING.md`](assets/CONTRIBUTING.md)                     |   `454` |
+| [`references/artifacts/docker.md`](references/artifacts/docker.md)     | `1,118` |
+| [`references/artifacts/go.md`](references/artifacts/go.md)             |   `928` |
+| [`references/artifacts/packaged.md`](references/artifacts/packaged.md) |   `659` |
+| [`references/checks.md`](references/checks.md)                         |   `709` |
+| [`references/cicd-fy.md`](references/cicd-fy.md)                       | `2,412` |
+| [`references/community.md`](references/community.md)                   | `1,088` |
+| [`references/docs.md`](references/docs.md)                             |   `805` |
+| [`references/hygiene.md`](references/hygiene.md)                       | `1,842` |
+| [`references/platforms/github.md`](references/platforms/github.md)     | `1,438` |
+| [`references/publish.md`](references/publish.md)                       |   `630` |
+| [`references/releases.md`](references/releases.md)                     | `1,304` |
+| [`references/security.md`](references/security.md)                     |   `814` |
 
 <!-- token-estimates:end -->
 

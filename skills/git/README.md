@@ -11,16 +11,16 @@ Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry pr
 other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
 than read, so they are left out.
 
-| File                                                               | Tokens |
-| ------------------------------------------------------------------ | -----: |
-| [`SKILL.md`](SKILL.md)                                             |  2,374 |
-| [`references/branches.md`](references/branches.md)                 |  1,772 |
-| [`references/commits.md`](references/commits.md)                   |    567 |
-| [`references/pull-requests.md`](references/pull-requests.md)       |  3,244 |
-| [`references/rebase.md`](references/rebase.md)                     |    643 |
-| [`references/review-responses.md`](references/review-responses.md) |  1,485 |
-| [`references/reviewing.md`](references/reviewing.md)               |    229 |
-| [`references/watch.md`](references/watch.md)                       |  2,070 |
+| File                                                               |  Tokens |
+| ------------------------------------------------------------------ | ------: |
+| [`SKILL.md`](SKILL.md)                                             | `2,374` |
+| [`references/branches.md`](references/branches.md)                 | `1,772` |
+| [`references/commits.md`](references/commits.md)                   |   `567` |
+| [`references/pull-requests.md`](references/pull-requests.md)       | `3,244` |
+| [`references/rebase.md`](references/rebase.md)                     |   `643` |
+| [`references/review-responses.md`](references/review-responses.md) | `1,485` |
+| [`references/reviewing.md`](references/reviewing.md)               |   `229` |
+| [`references/watch.md`](references/watch.md)                       | `2,070` |
 
 <!-- token-estimates:end -->
 

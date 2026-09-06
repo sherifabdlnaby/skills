@@ -13,7 +13,7 @@ than read, so they are left out.
 
 | File                   | Tokens |
 | ---------------------- | -----: |
-| [`SKILL.md`](SKILL.md) |     61 |
+| [`SKILL.md`](SKILL.md) |   `61` |
 
 <!-- token-estimates:end -->
 

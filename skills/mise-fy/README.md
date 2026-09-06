@@ -11,23 +11,23 @@ Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry pr
 other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
 than read, so they are left out.
 
-| File                                                                                       | Tokens |
-| ------------------------------------------------------------------------------------------ | -----: |
-| [`SKILL.md`](SKILL.md)                                                                     |  2,187 |
-| [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |    487 |
-| [`assets/README.md`](assets/README.md)                                                     |    594 |
-| [`references/ci/github.md`](references/ci/github.md)                                       |  1,974 |
-| [`references/ci.md`](references/ci.md)                                                     |  1,847 |
-| [`references/docs.md`](references/docs.md)                                                 |    994 |
-| [`references/env.md`](references/env.md)                                                   |  1,661 |
-| [`references/hk.md`](references/hk.md)                                                     |  5,396 |
-| [`references/hooks.md`](references/hooks.md)                                               |    487 |
-| [`references/install.md`](references/install.md)                                           |    354 |
-| [`references/mise-fy.md`](references/mise-fy.md)                                           |  1,972 |
-| [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) |  1,918 |
-| [`references/runtimes/node.md`](references/runtimes/node.md)                               |  1,383 |
-| [`references/tasks.md`](references/tasks.md)                                               |  4,063 |
-| [`references/tools.md`](references/tools.md)                                               |  3,254 |
+| File                                                                                       |  Tokens |
+| ------------------------------------------------------------------------------------------ | ------: |
+| [`SKILL.md`](SKILL.md)                                                                     | `2,187` |
+| [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `487` |
+| [`assets/README.md`](assets/README.md)                                                     |   `594` |
+| [`references/ci/github.md`](references/ci/github.md)                                       | `1,974` |
+| [`references/ci.md`](references/ci.md)                                                     | `1,847` |
+| [`references/docs.md`](references/docs.md)                                                 |   `994` |
+| [`references/env.md`](references/env.md)                                                   | `1,661` |
+| [`references/hk.md`](references/hk.md)                                                     | `5,396` |
+| [`references/hooks.md`](references/hooks.md)                                               |   `487` |
+| [`references/install.md`](references/install.md)                                           |   `354` |
+| [`references/mise-fy.md`](references/mise-fy.md)                                           | `1,972` |
+| [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | `1,918` |
+| [`references/runtimes/node.md`](references/runtimes/node.md)                               | `1,383` |
+| [`references/tasks.md`](references/tasks.md)                                               | `4,063` |
+| [`references/tools.md`](references/tools.md)                                               | `3,254` |
 
 <!-- token-estimates:end -->
 
