@@ -21,7 +21,7 @@ means redoing it. Several actions, several references.
 here, mechanics via the gh-stack skill), the gh-stack/manual path probe, cascade conflicts and verification, manual restacking fallback (after merge, chain of 3+, mid-stack push), force-pushing.
 
 **Committing** -> [`references/commits.md`](references/commits.md)
-Pre-staging walk, file confirmation, message style, hook-failure handling, scoping, empty commits, CI refresh.
+Pre-staging walk, file confirmation, message style, hook-failure handling, scoping, editor-free squash, empty commits, CI refresh.
 
 **Pull Requests** (open, update) -> [`references/pull-requests.md`](references/pull-requests.md) Pre-flight survey, title format (including the stacked `[n/N]` marker), body skeleton and how to write
 descriptions, AI footers, post-create flow, finishing PRs after `gh stack submit`, linking PRs, updating a body without clobbering it.
@@ -30,8 +30,8 @@ descriptions, AI footers, post-create flow, finishing PRs after `gh stack submit
 behind a human account, or a human), then fix / push back / escalate; in-thread replies, thread resolution, re-requesting review, batching a round into one GraphQL query and one aliased mutation,
 where a PR stands.
 
-**Rebasing, squashing, resolving conflicts** -> [`references/rebase.md`](references/rebase.md)
-Conflict-time snapshot (`ORIG_HEAD`), force-with-lease, unconditional range-diff verification, editor-free squash recipes.
+**Rebasing, resolving conflicts** -> [`references/rebase.md`](references/rebase.md)
+Conflict-time snapshot (`ORIG_HEAD`), force-with-lease, unconditional range-diff verification.
 Stacked-PR restack mechanics and `--onto` (drop intermediate commits) live in [`references/branches.md`](references/branches.md), read that too.
 
 **Reviewing someone else's PR** -> [`references/reviewing.md`](references/reviewing.md)
@@ -69,7 +69,7 @@ your call when a one-off is cheaper:
 - **Same-shape mutations ride one request.** GraphQL aliases: every reply, resolve, or title edit of a round in one `gh api graphql`. Aliases fail independently, so read the per-alias `errors[].path`,
   not the exit code.
 - **Bodies travel by file.** PR body or GraphQL query to a file, then `--body-file` / `-F query=@file`. (why: shell quoting eats backticks and `$`, and a file stays editable for the next update.) The
-  disclosure guard denies a body it cannot read, so `--fill`, `--template`, `--editor`, a piped `--body-file -`, and `--body "$VAR"` are all refused.
+  disclosure guard refuses a body it cannot read from a file.
 
 **Resolve once per session, reuse everywhere.** One line for all three:
 
@@ -97,7 +97,7 @@ line copied verbatim from the templates below. The PR-**body** variants live in
 
 Placeholders, the same in every footer:
 
-- `<Claude|Cursor|OpenCode>`: the tool you're running as.
+- `<TOOL>`: the tool you're running as, e.g. Claude, Cursor.
 - `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
 - `<GITHUB_USERNAME>`: resolve once per session with `gh api user --jq '.login'`.
 
@@ -110,7 +110,7 @@ carry a word grading the degree; picking it is your call.
 **🤖 Agent Decided.** You chose the change, position, or wording. Nobody has vetted it.
 
 ```markdown
-_<sub>🤖 Agent Decided: Posted by <Claude|Cursor|OpenCode> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤖 Agent Decided: Posted by <TOOL> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 **🧍‍♂️👍 Human Approved (glanced | read | tested).** The user had the real thing in front of them and
@@ -118,7 +118,7 @@ said yes. The word grades how closely they looked: `glanced` is a fast yes, `tes
 it themselves. A yes on something they would have had to go open is 🤖.
 
 ```markdown
-_<sub>🧍‍♂️👍 Human Approved (<glanced|read|tested>): Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🧍‍♂️👍 Human Approved (<glanced|read|tested>): Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 **🤝 Human Guided (nudged | steered | dictated).** A back and forth on a technical decision happened,
@@ -126,7 +126,7 @@ and its outcome is in this post. The word grades how much came from them: `nudge
 changed your direction, `dictated` is them naming exactly what to do.
 
 ```markdown
-_<sub>🤝 Human Guided (<nudged|steered|dictated>): Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided (<nudged|steered|dictated>): Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 Still 🤖, however it feels:
@@ -136,6 +136,7 @@ Still 🤖, however it feels:
 - Delegation. "Do whatever you think is best" is the opposite of direction.
 - Approval from anyone but the user. The post goes out under their name, so the tier reports what they did.
 - A Human Note. It is context in the body, not a decision about the change.
+- A reply posted from a watch loop. The user was not in it.
 
 Already 🤝, even though every word is yours:
 

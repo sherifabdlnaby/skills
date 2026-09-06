@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-2%2C484%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,484 tokens" />
-  <img src="https://img.shields.io/badge/Total-12%2C831%20tokens-2ea44f?style=flat-square" alt="Total: 12,831 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-2%2C457%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,457 tokens" />
+  <img src="https://img.shields.io/badge/Total-12%2C679%20tokens-2ea44f?style=flat-square" alt="Total: 12,679 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,15 +13,15 @@ than read, so they are left out.
 
 | File                                                               |  Tokens |
 | ------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                             | `2,484` |
+| [`SKILL.md`](SKILL.md)                                             | `2,457` |
 | [`references/branches.md`](references/branches.md)                 | `1,772` |
-| [`references/commits.md`](references/commits.md)                   |   `567` |
-| [`references/pull-requests.md`](references/pull-requests.md)       | `3,244` |
-| [`references/rebase.md`](references/rebase.md)                     |   `643` |
-| [`references/review-responses.md`](references/review-responses.md) | `1,474` |
+| [`references/commits.md`](references/commits.md)                   |   `691` |
+| [`references/pull-requests.md`](references/pull-requests.md)       | `3,228` |
+| [`references/rebase.md`](references/rebase.md)                     |   `517` |
+| [`references/review-responses.md`](references/review-responses.md) | `1,362` |
 | [`references/reviewing.md`](references/reviewing.md)               |   `229` |
 | [`references/watch-flags.md`](references/watch-flags.md)           |   `665` |
-| [`references/watch.md`](references/watch.md)                       | `1,753` |
+| [`references/watch.md`](references/watch.md)                       | `1,758` |
 
 <!-- token-estimates:end -->
 

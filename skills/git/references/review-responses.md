@@ -33,17 +33,12 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
    the thread** (`addPullRequestReviewThreadReply`). `gh pr comment` posts to the PR-level
    conversation, which leaves the thread looking unanswered.
 6. Resolve a thread only after its fix is pushed and the reply is posted; leave threads you pushed
-   back on unresolved, the reviewer closes those. Skip resolving when it's more trouble than it's
-   worth, an unresolved-but-answered thread is fine.
+   back on unresolved, the reviewer closes those.
 7. After a round is fully addressed (fix pushed, replies posted), re-request review so it lands
    back in the reviewer's queue: `gh pr edit <num> --add-reviewer <login>`.
    Skip for bots; they re-review on push.
-8. End every reply with the AI footer ([SKILL.md AI Disclosure](../SKILL.md#ai-disclosure)),
-   picked per reply and not per round, since one round routinely mixes all three: **🤖 Agent
-   Decided** when you fixed or pushed back on your own (so the reviewer knows nobody has vetted it),
-   **🧍‍♂️👍 Human Approved** when the user had the fix or the drafted reply in front of them and said yes, **🤝
-   Human Guided** when the position you're posting is the user's. A reply sent from a watch loop is
-   Agent Decided by definition.
+8. End every reply with the AI footer, its tier picked per reply by
+   [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure), since one round routinely mixes all three.
 
 ## Batching
 
