@@ -35,10 +35,8 @@ When the total becomes known, edit prior titles (`gh pr edit --title`) to replac
 
 ## Body: Human Note
 
-Ask on the first PR of the conversation, when the user requests one, or when you judge the PR needs a human voice. Ask before drafting the body, with the Ask User tool, default `No`, and an option for
-the user to enter their note verbatim:
-
-> Want to add a Human Note?
+The user brings this one. They either hand you a note or ask for the PR to carry one, so you never open a question about it and drafting the body never waits on an answer. If you are already asking
+the user something else, offering the note as one more option is fine.
 
 When given:
 
