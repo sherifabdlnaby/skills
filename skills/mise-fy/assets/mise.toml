@@ -1,3 +1,7 @@
+# Canonical reference mise.toml. copy and adapt. See references/reference-setup-and-patterns.md.
+# Start of file below this line.
+# ----------------------------------------------------------------------------------------------------------------------
+
 # Minimum `mise` version. If not matched, will guide user to update.
 # -> Remember to update when relying on newly introduced setting.
 min_version = "2026.8.0" # oldest mise that supports everything in this file
