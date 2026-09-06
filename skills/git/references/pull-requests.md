@@ -35,8 +35,8 @@ When the total becomes known, edit prior titles (`gh pr edit --title`) to replac
 
 ## Body: Human Note
 
-The user brings this one. They either hand you a note or ask for the PR to carry one, so you never open a question about it and drafting the body never waits on an answer. If you are already asking
-the user something else, offering the note as one more option is fine.
+A **Human Note** is the user's own words at the top of the PR body, in their voice instead of yours. It is opt-in, and the user is the one who opens it: they either hand you a note or ask for the PR
+to carry one. You never open a question about it, so drafting the body never waits on an answer. If you are already asking the user something else, offering the note as one more option is fine.
 
 When given:
 
