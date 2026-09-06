@@ -4,6 +4,7 @@ description: Grill the user relentlessly about a plan, decision, or idea. Use wh
 license: MIT
 metadata:
   author: sherifabdlnaby
+  forked-from: mattpocock/skills
   version: "0.1.0"
 ---
 
@@ -19,8 +20,7 @@ question cap goes out as back-to-back calls, still one round.
 **Every question stays answerable off-list.** Claude Code and opencode already offer free text beside the options, and Claude Code rejects an explicit "Other", so add nothing there. Cursor accepts
 only the options it is handed, so give it one that invites a custom answer.
 
-**Some harnesses have no such tool. There, ask in the reply itself.** Number the questions, put your recommended answer under each one, and wait for the user before the next round. This is what you
-do when the tool is missing, not a style you pick when you have it.
+**Without such a tool, ask in the reply itself.** Number the questions and put your recommended answer under each one. This is what a missing tool falls back to, not a style to pick when you have one.
 
 Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question
 whose answer depends on another question still open in this round belongs to a _later_ round, not this one.

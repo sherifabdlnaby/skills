@@ -7,8 +7,11 @@ Forked from **Matt Pocock**'s [`grilling`](https://github.com/mattpocock/skills/
 
 ## What I changed
 
-A round of questions goes through the harness's ask-the-user tool. Upstream writes the round out as a numbered markdown list, and the fork asks with the tool instead, so an agent has nothing to
-override and nothing to forget. A harness without such a tool still gets the written list. Where a harness accepts only the options it is handed, the skill adds one that invites a custom answer.
+Three paragraphs in the middle of `SKILL.md`, the ones about how a round of questions reaches the user. Upstream writes the round out as a numbered markdown list. The fork asks through the harness's
+ask-the-user tool instead, keeps every question answerable off the list of options, and falls back to writing the round out when the harness has no such tool. An agent then has nothing to override
+and nothing to forget.
+
+Everything else in the file is Matt's text as it stands upstream: the design tree, the frontier and its rounds, sub-agents for facts, and the empty frontier that ends the session.
 
 ## Usage
 
