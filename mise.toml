@@ -96,6 +96,51 @@ done
 exit "$fail"
 '''
 
+# Vendored skills. The `skills` CLI owns skills-lock.json; each task edits it, then re-runs
+# skills:sync to make skills/vendor match. Unlike every other tool here, it needs node on PATH:
+# it ships as an npm package only.
+
+[tasks."skills:update"]
+description = "Refetch vendored skills from upstream"
+usage = '''
+    arg "[skill]" var=#true help="Skills to refetch; omit for all of them"
+    complete "skill" run="ls skills/vendor"
+'''
+run = [
+  'npx -y skills@latest update{% for s in usage.skill %} "{{s}}"{% endfor %} --project --yes',
+  { task = "skills:sync" },
+]
+
+[tasks."skills:remove"]
+# `-a universal` keeps the blast radius at .agents/skills. Unpinned, remove targets every agent the
+# CLI knows, installed or not, and one of them (openclaw) keeps project skills in `skills/` — so a
+# vendored name that also names a skill of ours takes ours down with it. The pin only drops the lock
+# entry while .agents/skills/<skill> is absent, hence the teardown first: with it present the CLI
+# reads the skill as still in use by a sibling universal agent and leaves the lock untouched.
+description = "Drop vendored skills"
+usage = '''
+    arg "<skill>" var=#true help="Skills to drop"
+    complete "skill" run="ls skills/vendor"
+'''
+run = [
+  'rm -rf .agents .claude/skills',
+  'npx -y skills@latest remove{% for s in usage.skill %} -s "{{s}}"{% endfor %} -a universal --yes',
+  { task = "skills:sync" },
+]
+
+[tasks."skills:sync"]
+# The CLI installs into agent dirs and takes no flag to aim elsewhere, so the output is moved and
+# those dirs thrown away. Left behind they load every vendored skill a second time, as project
+# skills beside the copy the plugin ships.
+description = "Make skills/vendor match skills-lock.json"
+run = '''
+set -eu
+npx -y skills@latest experimental_install
+rm -rf skills/vendor                 # replace wholesale: a dropped entry has to leave the tree too
+cp -R .agents/skills skills/vendor
+rm -rf .agents .claude/skills
+'''
+
 [tasks.test]
 description = "Run tests (no automated tests yet — no-op placeholder)"
 depends = [

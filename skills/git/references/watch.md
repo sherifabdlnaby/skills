@@ -15,14 +15,18 @@ surface. `queued -> running` churn updates the snapshot silently and never wakes
 point: the noisy opening burst stays quiet. State lives per `--watcher`, so several watchers can
 follow the same PR without clobbering each other.
 
-The script paces itself: it polls hot (every 10-30s) while things are changing, cools to once a
-minute after ~5 quiet minutes, and snaps back to hot on any change (a push counts: it surfaces as
-the checks it re-triggers). The pace is saved per `--watcher` and survives re-runs; there are no
-cadence flags to manage.
+The script paces itself: it polls hot while things are changing, cools after a quiet stretch, and
+snaps back to hot on any change (a push counts: it surfaces as the checks it re-triggers). The pace
+is saved per `--watcher` and survives re-runs; there are no cadence flags to manage.
 
 Two subcommands: `watch` (the workhorse: blocks until a real event or a stop condition) and `poll`
 (one-shot "status right now"). Both self-baseline, the first run on a fresh `--watcher` records
 current state and reports nothing as new, so there's no separate setup step.
+
+`poll` is for watching: it baselines against a `--watcher` and reports what changed since. For a
+plain look at where a PR stands, outside any watch, the one-liner in
+[`review-responses.md`](./review-responses.md#where-the-pr-stands) answers it without touching
+watcher state.
 
 Two filters stack: the script surfaces only real events (mechanical); the watcher sub-agent judges
 which are worth interrupting you for and reconciles the rest into a final digest (semantic).
@@ -85,14 +89,8 @@ Keep polling off your own turn: never `sleep`+re-run, never hold a blocking `wat
 
 **Preferred, background sub-agent.** Spawn a _cheap_ background watcher: an explore-style read-only
 agent on an explicit fast/cheap model (Haiku, Composer, nano, …). It only reads, judges, and relays,
-so a cheap model suffices. It pings you only when something needs action.
-
-**Anti-patterns (common mistakes):**
-
-- inheriting the parent session's model -> always pick a cheap one for the watcher
-- running `watch` inline or `sleep`+re-run on your own turn
-- using a general-purpose agent for a read-only relay loop
-- skipping the sub-agent and polling yourself when spawning one is available
+so a cheap model suffices; name the model, or it inherits the parent's. It pings you only when
+something needs action.
 
 **Tell it what to ignore.** Paste this conversation's relevant context into the prompt's Hold list:
 known-flaky checks, expected noise, a reviewer you'll handle yourself.

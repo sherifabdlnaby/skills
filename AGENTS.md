@@ -35,6 +35,37 @@ Changing tools, tasks, env, or hooks? Edit the config, don't bolt on scripts, th
 - **`.config/hk.pkl`**: the pre-commit and `check` pipeline (linters and formatters, in Pkl). Add or edit a lint step here.
 - **`.config/mise/`**: project-local mise state (the setup stamp is gitignored). File tasks can live in `.config/mise/tasks/`.
 
+## Vendored skills
+
+`skills/vendor/` holds other people's skills; `skills-lock.json` says which. Both are machine-owned. Adding names a repo outside this one, so it stays a plain CLI call followed by a sync:
+
+```sh
+npx skills add <owner>/<repo> -l              # what does it carry?
+npx skills add <owner>/<repo> -s <skill> -y   # one -s per skill; it does not split on commas
+mise run skills:sync
+```
+
+The rest are tasks, and each re-syncs itself:
+
+| Intent                | Command                           |
+| --------------------- | --------------------------------- |
+| update one, or all    | `mise run skills:update [skill…]` |
+| remove                | `mise run skills:remove <skill>…` |
+| rebuild from the lock | `mise run skills:sync`            |
+
+Afterwards bump both manifest versions, since the plugin's content moved.
+
+The sync replaces `skills/vendor/` wholesale, which is why editing the lock or the directory by hand does not survive one. A skill you want to own belongs in `skills/` as yours.
+
+Run the removal through the task, never as a bare `npx skills remove`. Unpinned, the CLI deletes the named skill from every agent layout it knows, and one of those layouts puts project skills in
+`skills/` — the directory our own skills live in. The task pins the agent so only `.agents/skills` is in reach; a bare call silently deletes `skills/<name>` when a vendored name matches one of ours.
+
+The lock names a source, not a version: no entry carries a ref, and `computedHash` is recorded but never checked. Every sync therefore fetches the upstream default branch, so treat one as an
+upgrade and read `git diff skills/vendor` before committing it.
+
+Linters skip the directory (`**/vendor/**` in `.config/hk.pkl`), which is what lets upstream formatting survive a sync. The CLI installs into agent dirs and takes no flag to aim elsewhere, so the
+sync moves its output out of `.agents/` and `.claude/skills/` and deletes both; they stay gitignored because in the tree they load every vendored skill a second time, as project skills.
+
 ## CI not visible in the tree
 
 Beyond `.github/workflows/`: CodeQL default setup, Dependabot alerts + security updates, secret

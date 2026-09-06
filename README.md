@@ -27,7 +27,17 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
    - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
 7. [review](skills/review/) | WIP: Review patterns.
 8. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
-9. [grill](skills/grill/) | [Matt Pocock](https://github.com/mattpocock/skills) skill extended to ask through the `AskUserQuestion` tool.
+9. [grilling](skills/grilling/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool instead of markdown.
+   - [grill-me](skills/grill-me/) | Start the interview by hand.
+
+### Vendored
+
+Skills I didn't write but use daily, vendored under [`skills/vendor/`](skills/vendor/) so the plugin ships one set instead of asking you to install them separately. Thanks to
+[mattpocock/skills](https://github.com/mattpocock/skills), [humanlayer/skills](https://github.com/humanlayer/skills), [blader/humanizer](https://github.com/blader/humanizer), and
+[github/gh-stack](https://github.com/github/gh-stack).
+
+[`skills-lock.json`](skills-lock.json) is the list, and `mise run skills:sync` rebuilds the directory from it. It records where each skill comes from, not which version, so a sync takes whatever
+upstream has now.
 
 ## Models
 
