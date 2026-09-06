@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C884%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,884 tokens" />
-  <img src="https://img.shields.io/badge/Total-11%2C769%20tokens-2ea44f?style=flat-square" alt="Total: 11,769 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-2%2C374%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,374 tokens" />
+  <img src="https://img.shields.io/badge/Total-12%2C384%20tokens-2ea44f?style=flat-square" alt="Total: 12,384 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,12 +13,12 @@ than read, so they are left out.
 
 | File                                                               | Tokens |
 | ------------------------------------------------------------------ | -----: |
-| [`SKILL.md`](SKILL.md)                                             |  1,884 |
+| [`SKILL.md`](SKILL.md)                                             |  2,374 |
 | [`references/branches.md`](references/branches.md)                 |  1,772 |
 | [`references/commits.md`](references/commits.md)                   |    567 |
-| [`references/pull-requests.md`](references/pull-requests.md)       |  3,154 |
+| [`references/pull-requests.md`](references/pull-requests.md)       |  3,244 |
 | [`references/rebase.md`](references/rebase.md)                     |    643 |
-| [`references/review-responses.md`](references/review-responses.md) |  1,450 |
+| [`references/review-responses.md`](references/review-responses.md) |  1,485 |
 | [`references/reviewing.md`](references/reviewing.md)               |    229 |
 | [`references/watch.md`](references/watch.md)                       |  2,070 |
 

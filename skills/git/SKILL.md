@@ -7,7 +7,7 @@ license: MIT
 argument-hint: "[commit|branch|pr|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Git
@@ -44,8 +44,8 @@ relay vs hold, auto-addressing bot reviews, the final digest. Uses `scripts/pr-w
 
 **Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**.
 The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md);
-the post templates, chosen by who made the specific decision (Agent Decided vs Human Guided),
-live in [AI Disclosure](#ai-disclosure) below.
+the post templates, one per tier of human judgment behind the post (Agent Decided, Human Approved,
+Human Guided), live in [AI Disclosure](#ai-disclosure) below.
 Use them as verbatim as possible, do not write from memory.
 
 **Reach for `gh` first.** Every GitHub action goes through the `gh` CLI; the GitHub MCP server is
@@ -88,10 +88,9 @@ Carry `<OWNER/REPO>`, `<trunk>` and `<GITHUB_USERNAME>` through the session from
 
 ## AI Disclosure
 
-Every post on the user's behalf (comment, reply, issue) ends with this footer, after a `---`. Pick
-the variant by who made the specific decision behind the post. A request to handle a task, fix an
-issue, or open a PR does not count as guidance on the decisions the agent makes while doing it.
-The PR-body variant in [`references/pull-requests.md`](references/pull-requests.md) follows the same rule.
+Every post on the user's behalf (comment, reply, issue) ends with an AI footer: a `---`, then one
+line copied verbatim from the templates below. The PR-**body** variants live in
+[`references/pull-requests.md`](references/pull-requests.md) and follow the same rule.
 
 Placeholders, the same in every footer:
 
@@ -99,23 +98,53 @@ Placeholders, the same in every footer:
 - `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
 - `<GITHUB_USERNAME>`: resolve once per session with `gh api user --jq '.login'`.
 
-**Agent Decided** (🤖): the agent chose the position, change, or response without the user's
-direction on that specific decision. A PR is Agent Decided unless the user and you went back and
-forth on the implementation.
+### Picking the variant
+
+The footer answers one question for whoever reads the post: how much human judgment stands behind
+it? Judge the decisions the post carries, not the request that produced them. The two human tiers
+carry a word grading the degree; picking it is your call.
+
+**🤖 Agent Decided.** You chose the change, position, or wording. Nobody has vetted it.
 
 ```markdown
----
-
 _<sub>🤖 Agent Decided: Posted by <Claude|Cursor|OpenCode> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-**Human Guided** (🤝): the user chose or materially directed the specific decision. This does not
-mean they reviewed the final wording or implementation.
+**🧍‍♂️👍 Human Approved (glanced | read | tested).** The user had the real thing in front of them and
+said yes. The word grades how closely they looked: `glanced` is a fast yes, `tested` means they ran
+it themselves. A yes on something they would have had to go open is 🤖.
 
 ```markdown
----
-
-_<sub>🤝 Human Guided Response: Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🧍‍♂️👍 Human Approved (<glanced|read|tested>): Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-When unsure, use Agent Decided.
+**🤝 Human Guided (nudged | steered | dictated).** A back and forth on a technical decision happened,
+and its outcome is in this post. The word grades how much came from them: `nudged` is one remark that
+changed your direction, `dictated` is them naming exactly what to do.
+
+```markdown
+_<sub>🤝 Human Guided (<nudged|steered|dictated>): Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+```
+
+Still 🤖, however it feels:
+
+- A task, however specific. "Fix the flaky test", "file an issue about X": naming what to work on is not deciding what it says.
+- A rule the user wrote earlier, in a skill, in CLAUDE.md, in memory. Their instruction set is not a call on this post.
+- Delegation. "Do whatever you think is best" is the opposite of direction.
+- Approval from anyone but the user. The post goes out under their name, so the tier reports what they did.
+- A Human Note. It is context in the body, not a decision about the change.
+
+Already 🤝, even though every word is yours:
+
+- They approved a written plan and the post carries out what it named.
+- They picked one of the options you laid out, or answered the question that settled the design.
+
+**Late approval** upgrades a PR body, piggybacked on the next body edit rather than a round-trip of
+its own; a posted comment or reply keeps the footer it went out with. The user's own GitHub approval
+of the PR counts as approval.
+
+**Direction does not reach what they never saw.** On a long run, a post about a part the user was
+never in is 🤖, and a push after approval drops back to 🤖 once it changes what they endorsed.
+
+**Understate, never overstate.** Torn between two tiers, or two words, take the lower one. A footer
+claiming human judgment that never happened is the failure that matters.

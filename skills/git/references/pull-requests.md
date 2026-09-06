@@ -182,7 +182,7 @@ tried xxxx, didn't work because yyy.
 ---
 
 _<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
-<!-- footer emoji by decision source: 🤖 Agent Decided, 🤝 Human Guided; see AI footers -->
+<!-- footer emoji by how much human judgment is behind the PR: 🤖 Agent Decided, 🧍‍♂️👍 Human Approved, 🤝 Human Guided; see AI footers -->
 ```
 
 ### Body: linking
@@ -195,17 +195,22 @@ _<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on 
 
 ### AI footers
 
-This is the PR-**body** footer. The decision rule (Agent Decided vs Human Guided), the placeholders,
-and the comment and reply footers all live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
-Append it at the very end, after a `---` separator. Where the disclosure hook that ships beside this
-skill is installed, a post without a footer is denied, so it goes in before the first `gh pr create`.
+These are the PR-**body** footers, one per tier. Which tier to pick, the placeholders, and the
+comment and reply footers all live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure). Append at
+the very end, after a `---` separator. Where the disclosure hook that ships beside this skill is
+installed, a post is denied when the footer is missing, and when a human tier is missing its
+degree word, so it goes in before the first `gh pr create`.
 
 ```markdown
 _<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ```markdown
-_<sub>🤝 Human Guided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+```
+
+```markdown
+_<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ## Running `gh pr create`
