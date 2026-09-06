@@ -23,7 +23,7 @@ subcommand is the authority when the two disagree.
 
 State lives under `$WATCH_STATE_DIR`, else the system temp dir, one file per watcher.
 
-## `poke`
+## `flick`
 
 | flag             | default  | what it does                    |
 | ---------------- | -------- | ------------------------------- |
@@ -32,4 +32,4 @@ State lives under `$WATCH_STATE_DIR`, else the system temp dir, one file per wat
 | `--dry-run`      | off      | print the plan, change nothing  |
 
 The marker file sits beside the watcher state; a leftover one is reverted by the next `watch` or
-`poke` run on that PR.
+`flick` run on that PR.

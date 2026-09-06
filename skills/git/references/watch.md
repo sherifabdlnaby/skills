@@ -19,7 +19,7 @@ Every run ends with one `>>` line. Four kinds, four reactions:
 
 Event lines above the verdict are self-evident tags: `PUSH`, `FAIL`, `FIXED`, `DONE` (all checks
 finished), `BOTREVIEW` (an automated code review), `REVIEW` (human), `COMMENT`, `STATE`, `REVERT`
-(a leftover poke undone). Each review or comment is a self-contained block with author, `(bot|human)`,
+(a leftover flick undone). Each review or comment is a self-contained block with author, `(bot|human)`,
 id, URL, and body lines. Trailing `pending:` and `review pending:` lines say what is still expected.
 
 **`BOTREVIEW`: address it by default**, unless the user said not to, per
@@ -72,22 +72,22 @@ The parent reacts, then relaunches the same watcher, same `--watcher` id.
 
 ## Draft PRs and review bots
 
-Review bots skip drafts. On the user's word that this repo has one (said in the chat, or `poke` in
-the skill's arguments), flick the draft, alongside the watch rather than before it:
+Review bots skip drafts. In a mode that answers bot reviews, a draft is always flicked, alongside
+the watch rather than before it:
 
 ```
-python3 scripts/pr-watch.py poke --pr <N> --repo <OWNER/REPO>
+python3 scripts/pr-watch.py flick --pr <N> --repo <OWNER/REPO>
 ```
 
 Mechanical, no judgment: `[WIP]` on the title, mark ready, ten seconds, back to draft with the
 original title and the human review requests the flip caused removed. One flick per head commit. A
-marker file records the flip, and any later `watch` or `poke` run reverts a leftover one first, so a
-killed process never leaves a PR ready.
+marker file records the flip, and any later `watch` or `flick` run reverts a leftover one first, so
+a killed process never leaves a PR ready.
 
 The flick is assumed to be enough: the review, if one comes, lands as `BOTREVIEW` on the watch.
-Never infer a bot from the repo's history or go looking for one; without the user's word, a draft
-stays a draft and silence is the expected outcome. Marking ready notifies reviewers once, and the
-`[WIP]` title is what tells them to wait.
+Anything beyond it is chasing (holding the PR open, flicking again, waiting on a bot that has not
+shown up), and chasing happens only on the user's word that the repo has a bot, never inferred from
+its history. Marking ready notifies reviewers once, and the `[WIP]` title is what tells them to wait.
 
 ## The stale nudge
 

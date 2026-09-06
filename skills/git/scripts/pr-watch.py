@@ -11,7 +11,7 @@ against a saved snapshot, and report only the delta. The agent does the thinking
 Subcommands
   watch   Block until something worth reacting to happens (or a stop condition),
           print it, exit. The one a watcher runs in a loop.
-  poke    Draft PR: flick it to ready under a [WIP] title so review bots start,
+  flick   Draft PR: flick it to ready under a [WIP] title so review bots start,
           then back to draft with the original title.
 Every run ends with one `>>` line, of four kinds:
   EVENT   ongoing: act on the lines above, then run watch again
@@ -537,8 +537,8 @@ def state_path(repo: str, pr: int, watcher: str, override: str | None) -> Path:
     return state_dir() / f"{repo.replace('/', '_')}-pr{pr}-{watcher}.json"
 
 
-def poke_marker(repo: str, pr: int) -> Path:
-    return state_dir() / f"{repo.replace('/', '_')}-pr{pr}-poke.json"
+def flick_marker(repo: str, pr: int) -> Path:
+    return state_dir() / f"{repo.replace('/', '_')}-pr{pr}-flick.json"
 
 
 def load_json(p: Path) -> dict | None:
@@ -577,7 +577,7 @@ def red_key(snap: dict) -> str:
     return snap["head_sha"] + ":" + ",".join(sorted(red_checks(snap)))
 
 
-# ------------------------------------------------------------------------ poke
+# ------------------------------------------------------------------------ flick
 
 
 def bot_items_on_head(snap: dict) -> int:
@@ -590,8 +590,8 @@ def bot_items_on_head(snap: dict) -> int:
     return n + sum(1 for c in snap["review_comments"].values() if c.get("is_bot"))
 
 
-def revert_poke(pr: int, repo: str, marker: dict) -> list[str]:
-    """Undo a poke: back to draft, original title, review requests it caused removed.
+def revert_flick(pr: int, repo: str, marker: dict) -> list[str]:
+    """Undo a flick: back to draft, original title, review requests it caused removed.
     Best effort per step; what could not be undone is named on stderr."""
     head = f"PR #{pr} {repo}"
     done = []
@@ -644,30 +644,30 @@ def revert_poke(pr: int, repo: str, marker: dict) -> list[str]:
     return done
 
 
-def load_poke(repo: str, pr: int) -> dict:
-    return load_json(poke_marker(repo, pr)) or {"poked": []}
+def load_flick(repo: str, pr: int) -> dict:
+    return load_json(flick_marker(repo, pr)) or {"flickd": []}
 
 
-def save_poke(repo: str, pr: int, data: dict) -> None:
-    save_json(poke_marker(repo, pr), data)
+def save_flick(repo: str, pr: int, data: dict) -> None:
+    save_json(flick_marker(repo, pr), data)
 
 
-def revert_leftover_poke(pr: int, repo: str, snap: dict) -> list[str]:
-    """A poke that died mid-way leaves its flip in the marker; any later run puts
+def revert_leftover_flick(pr: int, repo: str, snap: dict) -> list[str]:
+    """A flick that died mid-way leaves its flip in the marker; any later run puts
     the PR back before doing its own work, so a flip never outlives its process."""
-    data = load_poke(repo, pr)
+    data = load_flick(repo, pr)
     inflight = data.pop("inflight", None)
     if not inflight:
         return []
     lines = []
     if not snap["draft"] and snap["title"].startswith(WIP):
-        done = revert_poke(pr, repo, inflight)
-        lines.append(f"  REVERT  leftover poke undone: {', '.join(done) or 'nothing'}")
-    save_poke(repo, pr, data)
+        done = revert_flick(pr, repo, inflight)
+        lines.append(f"  REVERT  leftover flick undone: {', '.join(done) or 'nothing'}")
+    save_flick(repo, pr, data)
     return lines
 
 
-def cmd_poke(a) -> int:
+def cmd_flick(a) -> int:
     """Flick a draft: ready under a [WIP] title, --hold seconds, back to draft.
     Whether a review bot picked it up is the watcher's call, not this command's.
     The marker file makes the revert survive a killed process and keeps the
@@ -675,24 +675,26 @@ def cmd_poke(a) -> int:
     pr, repo, url = resolve(a.pr, a.repo)
     before = fetch_snapshot(pr, repo, url)
     head = f"PR #{pr} {repo}"
-    for ln in revert_leftover_poke(pr, repo, before):
+    for ln in revert_leftover_flick(pr, repo, before):
         print(ln)
         before = fetch_snapshot(pr, repo, url)
-    data = load_poke(repo, pr)
+    data = load_flick(repo, pr)
 
-    def nopoke(why: str) -> int:
+    def noflick(why: str) -> int:
         print(head)
-        print(verdict("NOPOKE", True, why))
+        print(verdict("NOFLICK", True, why))
         return 0
 
     if is_closed(before):
-        return nopoke("PR merged/closed. nothing to poke.")
+        return noflick("PR merged/closed. nothing to flick.")
     if not before["draft"]:
-        return nopoke("not a draft; review bots already had their chance.")
+        return noflick("not a draft; review bots already had their chance.")
     if bot_items_on_head(before) or pending_bot_reviews(before):
-        return nopoke("a bot review already exists or is pending on this head.")
-    if before["head_sha"] in data["poked"]:
-        return nopoke("this head was flicked already.")
+        return noflick("a bot review already exists or is pending on this head.")
+    if before["head_sha"] in data["flickd"]:
+        return noflick(
+            "this head was flicked already; chasing further is the user's call."
+        )
 
     title = before["title"]
     wip = title if title.startswith(WIP) else f"{WIP} {title}"
@@ -709,23 +711,23 @@ def cmd_poke(a) -> int:
         "reviewers_before": [r["login"] for r in before["review_requests"]],
     }
     data["inflight"] = inflight
-    data["poked"] = sorted(set(data["poked"]) | {before["head_sha"]})
-    save_poke(repo, pr, data)
+    data["flickd"] = sorted(set(data["flickd"]) | {before["head_sha"]})
+    save_flick(repo, pr, data)
     gh(["pr", "edit", str(pr), "--repo", repo, "--title", wip])
     gh(["pr", "ready", str(pr), "--repo", repo])
     print(f"{head} ready as {wip!r} for {int(a.hold)}s")
     try:
         time.sleep(a.hold)
     finally:
-        done = revert_poke(pr, repo, inflight)
+        done = revert_flick(pr, repo, inflight)
         data.pop("inflight", None)
-        save_poke(repo, pr, data)
+        save_flick(repo, pr, data)
         print(f"{head} reverted: {', '.join(done) or 'nothing'}")
     print(
         verdict(
-            "POKED",
+            "FLICKED",
             True,
-            "flicked. a bot review, if any, lands as BOTREVIEW on the watch.",
+            "a bot review, if any, lands as BOTREVIEW on the watch.",
         )
     )
     return 0
@@ -787,7 +789,7 @@ def cmd_watch(a) -> int:
     polls = 0
 
     snap = old or fetch_snapshot(pr, repo, url)
-    extra = revert_leftover_poke(pr, repo, snap)
+    extra = revert_leftover_flick(pr, repo, snap)
     d = empty_delta() if old else standing(snap)
     no_checks_since = None if snap["checks"] else start
 
@@ -979,7 +981,7 @@ def build_parser() -> argparse.ArgumentParser:
     w.set_defaults(func=cmd_watch)
 
     pk = sub.add_parser(
-        "poke", help="draft PR: flick it to ready under [WIP], then back to draft"
+        "flick", help="draft PR: flick it to ready under [WIP], then back to draft"
     )
     target(pk)
     pk.add_argument(
@@ -988,7 +990,7 @@ def build_parser() -> argparse.ArgumentParser:
     pk.add_argument(
         "--dry-run", action="store_true", help="print what would happen, change nothing"
     )
-    pk.set_defaults(func=cmd_poke)
+    pk.set_defaults(func=cmd_flick)
     return p
 
 

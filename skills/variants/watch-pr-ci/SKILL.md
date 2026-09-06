@@ -12,7 +12,7 @@ metadata:
 # watch-pr-ci
 
 Same contract as [watch-pr](../watch-pr/SKILL.md) (target PR, time budget, the sub-agent, the
-verdict reactions), narrowed to CI. Skip the poke and the existing-threads pass; reviews do not wake
+verdict reactions), narrowed to CI. Skip the flick and the existing-threads pass; reviews do not wake
 you and are not addressed.
 
 ```

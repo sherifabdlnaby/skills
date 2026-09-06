@@ -41,7 +41,7 @@ Procedure: gather context, check out locally, trace the change, deliver a summar
 sub-agent that runs the loop, poking a draft so review bots run, the stale nudge. Uses `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
 
 **Draft PR that review bots ignore** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
-`pr-watch.py poke`: a mechanical flick to ready and back so Copilot, Bugbot, and their kind review a draft; only on the user's word that a bot exists.
+`pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft; chasing beyond it only on the user's word that a bot exists.
 
 ## Always
 
