@@ -16,7 +16,7 @@ existing-threads pass, the sub-agent, the `humans` word), narrowed to reviews. C
 a red check does not wake you, and green is not a stop.
 
 ```
-python3 scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> --until closed --on review,comment,state --max-total <s>
+python3 <git-skill-dir>/scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> --until closed --on review,comment,state --max-total <s>
 ```
 
 Address `BOTREVIEW` items as they land, human comments per the watch-pr rule. On `DONE`: digest of

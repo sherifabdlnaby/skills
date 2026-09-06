@@ -12,6 +12,7 @@ metadata:
 # watch-pr
 
 Load the **git** skill, then read its watch and review-responses references before acting.
+`<git-skill-dir>` below is the base directory the harness printed when the git skill loaded.
 
 Goal: get the PR to green with every review answered, without blocking your turn. Fix CI failures,
 address bot reviews, answer human comments per review-responses, and escalate only what needs my
@@ -28,10 +29,10 @@ The sibling skills narrow this: `watch-pr-ci` (CI only) and `watch-pr-comments` 
 gh pr view --json number,url,headRefName,state,isDraft
 ```
 
-## Before the first watch
+## Start
 
-1. **Draft PR:** run `flick` once, alongside the watch. Chase beyond that (hold it open, flick again)
-   only if I told you this repo has a review bot.
+1. **Draft PR:** run `flick` once, alongside the watch, not before it. Chase beyond that (hold it
+   open, flick again) only if I told you this repo has a review bot; me naming the bot counts.
 2. **Existing review threads:** unresolved threads already on the PR are not news to the watch.
    Fetch them per review-responses [Batching](../../git/references/review-responses.md#batching)
    and address them first.
@@ -39,18 +40,20 @@ gh pr view --json number,url,headRefName,state,isDraft
 ## The watch
 
 ```
-python3 scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> --until quiet --max-total <s>
+python3 <git-skill-dir>/scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> --until quiet --max-total <s>
 ```
 
 Run it through the cheap sub-agent the watch reference describes. React per the verdict: `EVENT`
-means act and relaunch, `STALE` means one ⚠️ line for me and relaunch, `DONE` means digest and stop.
+means act and relaunch, `STALE` means one ⚠️ line for me and relaunch, `QUIET` means relaunch, `DONE`
+means digest and stop.
 
 ## Time Budget
 
 `$ARGUMENTS` may include a duration (`30m`, `1h`, `2h`, …) or `forever` / `indefinitely`.
 
 - **Duration** -> `--max-total <seconds>`. Default **30m** when neither a duration nor `forever` is given.
-- **`forever`** -> `--until closed` and no `--max-total`; only a merge or close ends it.
+- **`forever`** -> no `--max-total`, and for this skill `--until closed`, so settling does not end it;
+  the siblings keep their own `--until`.
 
 ## Human comments
 

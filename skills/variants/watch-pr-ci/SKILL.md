@@ -12,11 +12,12 @@ metadata:
 # watch-pr-ci
 
 Same contract as [watch-pr](../watch-pr/SKILL.md) (target PR, time budget, the sub-agent, the
-verdict reactions), narrowed to CI. Skip the flick and the existing-threads pass; reviews do not wake
-you and are not addressed.
+verdict reactions), narrowed to CI: load the git skill and its watch reference, skip review-responses,
+the flick and the existing-threads pass; reviews do not wake you and are not addressed. `forever`
+here drops the budget and keeps `--until green`.
 
 ```
-python3 scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> --until green --on fail,done,state --max-total <s>
+python3 <git-skill-dir>/scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> --until green --on fail,done,state --max-total <s>
 ```
 
 On a red check: debug from its link, fix, push, relaunch. On `DONE`: a one-line digest, what went
