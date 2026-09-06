@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-28%2C026%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 28,026 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-94%2C672%20tokens-2ea44f?style=flat-square" alt="All Markdown: 94,672 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-28%2C732%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 28,732 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-95%2C271%20tokens-2ea44f?style=flat-square" alt="All Markdown: 95,271 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -34,7 +34,7 @@ than read, so they are left out.
 | [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,408` | `15,609` |
 | [`coding`](skills/coding/)                                                             |  `1,048` |  `1,048` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
-| [`git`](skills/git/)                                                                   |  `2,374` | `12,384` |
+| [`git`](skills/git/)                                                                   |  `2,474` | `12,377` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
@@ -44,7 +44,9 @@ than read, so they are left out.
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
 | [`variants/afk-soon`](skills/variants/afk-soon/)                                       |    `166` |    `166` |
 | [`variants/afk-yolo`](skills/variants/afk-yolo/)                                       |    `114` |    `114` |
-| [`variants/watch-pr`](skills/variants/watch-pr/)                                       |    `477` |    `477` |
+| [`variants/watch-pr`](skills/variants/watch-pr/)                                       |    `605` |    `605` |
+| [`variants/watch-pr-ci`](skills/variants/watch-pr-ci/)                                 |    `228` |    `228` |
+| [`variants/watch-pr-comments`](skills/variants/watch-pr-comments/)                     |    `250` |    `250` |
 | [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |    `766` |  `1,917` |
 | [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,070` |  `6,873` |
 | [`vendor/handoff`](skills/vendor/handoff/)                                             |    `182` |    `182` |
@@ -66,7 +68,9 @@ than read, so they are left out.
 2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
 3. [cicd-fy](skills/cicd-fy/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
 4. [git](skills/git/) | My git conventions and PR workflow.
-   - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: respond to reviews and fix CI, until green (or `forever`).
+   - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: fix CI and answer reviews, until green and quiet (or `forever`).
+   - [watch-pr-ci](skills/variants/watch-pr-ci/) | CI only: fix what goes red, stop at green.
+   - [watch-pr-comments](skills/variants/watch-pr-comments/) | Reviews only: answer them as they land.
 5. [kubernetes-debug](skills/kubernetes-debug/) | WIP: Failure mode when debugging k8s
 6. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
    - [afk-careful](skills/variants/afk-careful/) | Conservative with its autonomy.

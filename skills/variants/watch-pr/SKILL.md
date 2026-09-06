@@ -1,41 +1,59 @@
 ---
 name: watch-pr
-description: Watch a PR's CI/reviews and respond as they land.
+description: Watch a PR until CI is green and its reviews are answered.
 license: MIT
-argument-hint: "[PR number or URL] [duration|forever] (defaults to current branch's PR, 30m)"
+argument-hint: "[PR number or URL] [duration|forever] [humans] (defaults to current branch's PR, 30m)"
 disable-model-invocation: true
 metadata:
   author: sherifabdlnaby
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # watch-pr
 
 Load the **git** skill, then read its watch and review-responses references before acting.
 
-Goal: keep the PR under watch without blocking your turn, respond to review comments as they arrive, and debug and fix CI failures. Get the PR to green and respond most bot comments automatically;
-defer decisions that need my input so you keep making progress on everything else. Only after CI is green and bot reviews are addressed may you block waiting on me.
+Goal: get the PR to green with every review answered, without blocking your turn. Fix CI failures,
+address bot reviews, answer human comments per review-responses, and escalate only what needs my
+input while you keep making progress on everything else. Block waiting on me only once CI is green
+and every bot review is addressed.
+
+The sibling skills narrow this: `watch-pr-ci` (CI only) and `watch-pr-comments` (reviews only).
 
 ## Target PR
 
 `$ARGUMENTS` may name the PR (number or URL). If empty, resolve the PR for the current branch:
 
 ```
-gh pr view --json number,url,headRefName,state
+gh pr view --json number,url,headRefName,state,isDraft
 ```
+
+## Before the first watch
+
+1. **Draft PR:** run `flick` once, alongside the watch. Chase beyond that (hold it open, flick again)
+   only if I told you this repo has a review bot.
+2. **Existing review threads:** unresolved threads already on the PR are not news to the watch.
+   Fetch them per review-responses [Batching](../../git/references/review-responses.md#batching)
+   and address them first.
+
+## The watch
+
+```
+python3 scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> --until quiet --max-total <s>
+```
+
+Run it through the cheap sub-agent the watch reference describes. React per the verdict: `EVENT`
+means act and relaunch, `STALE` means one ⚠️ line for me and relaunch, `DONE` means digest and stop.
 
 ## Time Budget
 
 `$ARGUMENTS` may include a duration (`30m`, `1h`, `2h`, …) or `forever` / `indefinitely`.
 
-- **Duration** → pass `--max-total <seconds>` (`s` / `m` / `h` / `d`). Default **30m** when neither a duration nor `forever` is given.
-- On `BUDGET SPENT`, send the digest and stop.
-- After you push a fix on a budgeted watch, re-run with `--reset-budget` so the new CI gets a full window.
+- **Duration** -> `--max-total <seconds>`. Default **30m** when neither a duration nor `forever` is given.
+- **`forever`** -> `--until closed` and no `--max-total`; only a merge or close ends it.
 
-## Indefinite Mode
+## Human comments
 
-When `$ARGUMENTS` contains `forever` (or `indefinitely`), watch until the PR merges or closes:
-
-- Run with **no `--max-total`**, so the watch never returns `BUDGET SPENT`.
-- `SETTLED` is **not** a stop condition here: checks finishing and activity dying down still means the PR is open. Relaunch and keep watching for the next review or push.
-- The **only** stop condition is `CLOSED` (merged or closed). When it fires, send the final digest and stop.
+Human reviews and comments are answered per review-responses: fix what is clearly right, push back
+on what is not, and bring the real trade-offs to me instead of deciding them. With `humans` in
+`$ARGUMENTS`, decide those too and post the reply as Agent Decided.

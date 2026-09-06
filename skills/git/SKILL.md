@@ -1,7 +1,7 @@
 ---
 name: git
 description: >
-  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open PR, stack PRs (also when gh-stack drives the stack), or write/update the description of a Pull Request (PR / stacked diff), respond to review comments, review a PR, or watch/babysit a PR's CI.
+  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open PR, stack PRs (also when gh-stack drives the stack), or write/update the description of a Pull Request (PR / stacked diff), respond to review comments, review a PR, watch/babysit a PR's CI or reviews, or get a review bot (Copilot, Bugbot) to run on a draft PR.
   Carries the user's git conventions and style you are expected to match. Load as early as possible, the moment git or GitHub work is anywhere in the chat's future.
 license: MIT
 argument-hint: "[commit|branch|pr|rebase|review|watch]"
@@ -37,8 +37,11 @@ Stacked-PR restack mechanics and `--onto` (drop intermediate commits) live in [`
 **Reviewing someone else's PR** -> [`references/reviewing.md`](references/reviewing.md)
 Procedure: gather context, check out locally, trace the change, deliver a summary and review guide.
 
-**Watch a PR's CI and automated reviews** -> [`references/watch.md`](references/watch.md) Spawning the cheap background watcher sub-agent (and the background-task fallback), hot/cold polling, what to
-relay vs hold, auto-addressing bot reviews, the final digest. Uses `scripts/pr-watch.py`, never a sleep loop.
+**Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and answered / reviews only), the cheap
+sub-agent that runs the loop, the stale nudge. Uses `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
+
+**Draft PR that review bots ignore** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
+`pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft; chasing beyond it only on the user's word that a bot exists.
 
 ## Always
 
