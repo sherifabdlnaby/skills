@@ -41,7 +41,7 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 8. End every reply with the AI footer ([SKILL.md AI Disclosure](../SKILL.md#ai-disclosure)),
    picked per reply and not per round, since one round routinely mixes all three: **🤖 Agent
    Decided** when you fixed or pushed back on your own (so the reviewer knows nobody has vetted it),
-   **🧍‍♂️👍 Human Approved** when the user read the fix or the drafted reply and said yes, **🤝
+   **🧍‍♂️👍 Human Approved** when the user had the fix or the drafted reply in front of them and said yes, **🤝
    Human Guided** when the position you're posting is the user's. A reply sent from a watch loop is
    Agent Decided by definition.
 

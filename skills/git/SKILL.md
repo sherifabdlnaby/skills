@@ -101,8 +101,8 @@ Placeholders, the same in every footer:
 ### Picking the variant
 
 The footer answers one question for whoever reads the post: how much human judgment stands behind
-it? Judge the decisions this post carries, not the request that produced them. Asking you to fix a
-bug, handle a review round, or open a PR is a task, not a decision.
+it? Judge the decisions the post carries, not the request that produced them. The two human tiers
+carry a word grading the degree; picking it is your call.
 
 **🤖 Agent Decided.** You chose the change, position, or wording. Nobody has vetted it.
 
@@ -110,31 +110,41 @@ bug, handle a review round, or open a PR is a task, not a decision.
 _<sub>🤖 Agent Decided: Posted by <Claude|Cursor|OpenCode> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-**🧍‍♂️👍 Human Approved.** You chose it, the user saw the real thing and said yes. A clear yes on what
-actually ships, not a nod at a sketch you then departed from.
+**🧍‍♂️👍 Human Approved (glanced | read | tested).** The user had the real thing in front of them and
+said yes. The word grades how closely they looked: `glanced` is a fast yes, `tested` means they ran
+it themselves. A yes on something they would have had to go open is 🤖.
 
 ```markdown
-_<sub>🧍‍♂️👍 Human Approved: Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🧍‍♂️👍 Human Approved (<glanced|read|tested>): Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-**🤝 Human Guided.** The user chose or directed it, you carried it out. They need not have read your
-final wording.
+**🤝 Human Guided (nudged | steered | dictated).** A back and forth on a technical decision happened,
+and its outcome is in this post. The word grades how much came from them: `nudged` is one remark that
+changed your direction, `dictated` is them naming exactly what to do.
 
 ```markdown
-_<sub>🤝 Human Guided: Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided (<nudged|steered|dictated>): Posted by <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-Where the line falls:
+Still 🤖, however it feels:
 
-- "Fix the flaky test, then open a PR" -> 🤖. You picked the fix.
-- You and the user settled the approach together, the smaller calls were yours -> 🤝. The core decision sets the footer, details riding along don't lower it.
-- The user said yes, then you changed the substance -> back to 🤖, or ask again.
+- A task, however specific. "Fix the flaky test", "file an issue about X": naming what to work on is not deciding what it says.
+- A rule the user wrote earlier, in a skill, in CLAUDE.md, in memory. Their instruction set is not a call on this post.
+- Delegation. "Do whatever you think is best" is the opposite of direction.
+- Approval from anyone but the user. The post goes out under their name, so the tier reports what they did.
+- A Human Note. It is context in the body, not a decision about the change.
 
-**Approval that arrives late** upgrades a PR body, which you edit anyway: bump the footer on the
-next body edit, never on a round-trip of its own. A comment or reply keeps the footer it went out with.
+Already 🤝, even though every word is yours:
 
-**Pushing more after approval** is your call: judge whether what you added is still what the user
-endorsed. A PR whose whole idea is theirs stays 🤝 regardless.
+- They approved a written plan and the post carries out what it named.
+- They picked one of the options you laid out, or answered the question that settled the design.
 
-**Understate, never overstate.** Torn between two? Take the lower one. A footer claiming human
-judgment that never happened is the failure that matters.
+**Late approval** upgrades a PR body, piggybacked on the next body edit rather than a round-trip of
+its own; a posted comment or reply keeps the footer it went out with. The user's own GitHub approval
+of the PR counts as approval.
+
+**Direction does not reach what they never saw.** On a long run, a post about a part the user was
+never in is 🤖, and a push after approval drops back to 🤖 once it changes what they endorsed.
+
+**Understate, never overstate.** Torn between two tiers, or two words, take the lower one. A footer
+claiming human judgment that never happened is the failure that matters.

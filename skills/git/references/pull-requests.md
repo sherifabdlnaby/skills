@@ -205,11 +205,11 @@ _<sub>🤖 Agent Decided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on 
 ```
 
 ```markdown
-_<sub>🧍‍♂️👍 Human Approved PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ```markdown
-_<sub>🤝 Human Guided PR: Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <Claude|Cursor|OpenCode> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ## Running `gh pr create`
