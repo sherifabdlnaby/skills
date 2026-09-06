@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-27%2C491%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 27,491 tokens" />
-  <img src="https://img.shields.io/badge/All%20files-123%2C730%20tokens-2ea44f?style=flat-square" alt="All files: 123,730 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-27%2C536%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 27,536 tokens" />
+  <img src="https://img.shields.io/badge/All%20files-123%2C775%20tokens-2ea44f?style=flat-square" alt="All files: 123,775 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; total includes every
@@ -33,7 +33,7 @@ UTF-8 text file in the skill package except its generated `README.md`. Binary fi
 | [`cicd-fy`](skills/cicd-fy/)                                                           |    1,408 | 30,288 |
 | [`coding`](skills/coding/)                                                             |    1,048 |  1,048 |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |      394 |    394 |
-| [`git`](skills/git/)                                                                   |    1,839 | 19,252 |
+| [`git`](skills/git/)                                                                   |    1,884 | 19,297 |
 | [`grill-me`](skills/grill-me/)                                                         |       61 |     61 |
 | [`grilling`](skills/grilling/)                                                         |      578 |    578 |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |      240 |  1,513 |
@@ -89,7 +89,7 @@ UTF-8 text file in the skill package except its generated `README.md`. Binary fi
 | `coding`                               | [`SKILL.md`](skills/coding/SKILL.md)                                                                              |  1,048 |
 | `fast-feedback-mode`                   | [`SKILL.md`](skills/fast-feedback-mode/SKILL.md)                                                                  |    394 |
 | `git`                                  | [`.gitignore`](skills/git/.gitignore)                                                                             |      9 |
-| `git`                                  | [`SKILL.md`](skills/git/SKILL.md)                                                                                 |  1,839 |
+| `git`                                  | [`SKILL.md`](skills/git/SKILL.md)                                                                                 |  1,884 |
 | `git`                                  | [`references/branches.md`](skills/git/references/branches.md)                                                     |  1,772 |
 | `git`                                  | [`references/commits.md`](skills/git/references/commits.md)                                                       |    567 |
 | `git`                                  | [`references/pull-requests.md`](skills/git/references/pull-requests.md)                                           |  3,154 |

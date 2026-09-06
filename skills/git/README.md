@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C839%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,839 tokens" />
-  <img src="https://img.shields.io/badge/Total-19%2C252%20tokens-2ea44f?style=flat-square" alt="Total: 19,252 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-1%2C884%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,884 tokens" />
+  <img src="https://img.shields.io/badge/Total-19%2C297%20tokens-2ea44f?style=flat-square" alt="Total: 19,297 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; total includes every
@@ -13,7 +13,7 @@ UTF-8 text file in the skill package except its generated `README.md`. Binary fi
 | File                                                               | Tokens |
 | ------------------------------------------------------------------ | -----: |
 | [`.gitignore`](.gitignore)                                         |      9 |
-| [`SKILL.md`](SKILL.md)                                             |  1,839 |
+| [`SKILL.md`](SKILL.md)                                             |  1,884 |
 | [`references/branches.md`](references/branches.md)                 |  1,772 |
 | [`references/commits.md`](references/commits.md)                   |    567 |
 | [`references/pull-requests.md`](references/pull-requests.md)       |  3,154 |
