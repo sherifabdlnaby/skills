@@ -1,7 +1,5 @@
 # Commits
 
-Covers: pre-staging checks, file confirmation, message style, hook failures, scoping, empty commits.
-
 ## Safety rules
 
 - **Never `--no-verify`** unless the user asked. Hooks catch leaks, formatting, and typos at the cheapest moment; skipping just defers them to CI or review.
@@ -24,11 +22,14 @@ For each staged file, articulate why it's there. Can't explain one? Unstage it, 
 
 - Follow the repo's commit style only if already known (stated in this conversation, or set by a skill). Don't infer it from `git log` (wastes time and tokens).
 - None known? Default to conventional commits.
-- Never reference "the user", "as discussed", or the PR itself. Commit messages outlive PRs and chat, so cross-references goes outdated.
+- Never reference "the user", "as discussed", or the PR itself. Commit messages outlive PRs and chat, so cross-references go stale.
 
 ## Scoping
 
-One logical change per commit (exception: a small change sitting beside a big one). Commit as you go, using commits as checkpoints. Prefer several scoped commits over one mega-commit.
+A commit is a coherent set: one milestone of the work, whatever size that turns out to be. Commit as
+you go, using them as checkpoints. Neither extreme is the goal, so don't collapse a branch into one
+mega-commit, and don't split a single change into commits too small to mean anything on their own.
+A PR is not the unit; several commits per PR is normal.
 
 ## Pre-commit hooks
 

@@ -10,9 +10,8 @@ apply; the block instead says why it is not applicable. Informational only, this
 hook never blocks or rewrites.
 
 Escape hatch: a body carrying a `<!-- pr:skeleton-off: <reason> -->` marker
-silences the nudge entirely. Use it when the body deliberately follows a
-different shape, a repo PULL_REQUEST_TEMPLATE or any imposed template, so the
-skeleton doesn't apply. The reason keeps it a conscious choice, not a reflex.
+silences the nudge entirely. Use it when the body merges the skeleton into a
+repo PULL_REQUEST_TEMPLATE or any imposed shape, so the markers may not survive. The reason keeps it a conscious choice, not a reflex.
 
 Body extraction is shared with gh_disclosure (same dir, launcher puts it on
 sys.path). stdlib only. Exit 0 always; "no nudge" is emitting nothing.
@@ -29,6 +28,7 @@ from gh_disclosure import extract_body
 # reformatted marker still counts.
 MARKERS = {
     "pr:summary": "the one-line summary",
+    "pr:why": "the problem being solved or why none was given",
     "pr:changes": "changelog-style bullets or why they do not apply",
     "pr:review-guide": "where the reviewer should start or why no guide is needed",
     "pr:links": "relevant links or why there are none",

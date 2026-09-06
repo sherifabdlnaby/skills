@@ -57,6 +57,9 @@ Afterwards bump both manifest versions, since the plugin's content moved.
 
 The sync replaces `skills/vendor/` wholesale, which is why editing the lock or the directory by hand does not survive one. A skill you want to own belongs in `skills/` as yours.
 
+Run the removal through the task, never as a bare `npx skills remove`. Unpinned, the CLI deletes the named skill from every agent layout it knows, and one of those layouts puts project skills in
+`skills/` — the directory our own skills live in. The task pins the agent so only `.agents/skills` is in reach; a bare call silently deletes `skills/<name>` when a vendored name matches one of ours.
+
 The lock names a source, not a version: no entry carries a ref, and `computedHash` is recorded but never checked. Every sync therefore fetches the upstream default branch, so treat one as an
 upgrade and read `git diff skills/vendor` before committing it.
 

@@ -27,7 +27,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
    - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
 7. [review](skills/review/) | WIP: Review patterns.
 8. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
-9. [grill-me](skills/grill-me/) | [Matt Pocock](https://github.com/mattpocock/skills)'s `grilling`, asked through the `AskUserQuestion` tool instead of markdown.
+9. [grilling](skills/grilling/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool instead of markdown.
+   - [grill-me](skills/grill-me/) | Start the interview by hand.
 
 ### Vendored
 
