@@ -4,15 +4,15 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-1%2C884%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,884 tokens" />
-  <img src="https://img.shields.io/badge/Total-19%2C297%20tokens-2ea44f?style=flat-square" alt="Total: 19,297 tokens" />
+  <img src="https://img.shields.io/badge/Total-11%2C769%20tokens-2ea44f?style=flat-square" alt="Total: 11,769 tokens" />
 </p>
 
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; total includes every
-UTF-8 text file in the skill package except its generated `README.md`. Binary files are omitted.
+Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
+other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
+than read, so they are left out.
 
 | File                                                               | Tokens |
 | ------------------------------------------------------------------ | -----: |
-| [`.gitignore`](.gitignore)                                         |      9 |
 | [`SKILL.md`](SKILL.md)                                             |  1,884 |
 | [`references/branches.md`](references/branches.md)                 |  1,772 |
 | [`references/commits.md`](references/commits.md)                   |    567 |
@@ -21,7 +21,6 @@ UTF-8 text file in the skill package except its generated `README.md`. Binary fi
 | [`references/review-responses.md`](references/review-responses.md) |  1,450 |
 | [`references/reviewing.md`](references/reviewing.md)               |    229 |
 | [`references/watch.md`](references/watch.md)                       |  2,070 |
-| [`scripts/pr-watch.py`](scripts/pr-watch.py)                       |  7,519 |
 
 <!-- token-estimates:end -->
 

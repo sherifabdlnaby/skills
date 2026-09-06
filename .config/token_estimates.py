@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -12,10 +13,17 @@ import tiktoken
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = ROOT / "skills"
-README_SOURCES = ROOT / ".config" / "skill-readmes"
+VENDOR_DIR = SKILLS_DIR / "vendor"
+LOCK = ROOT / "skills-lock.json"
 START_MARKER = "<!-- token-estimates:start -->"
 END_MARKER = "<!-- token-estimates:end -->"
 ENCODING_NAME = "o200k_base"
+
+VENDOR_HEADER = """# Vendored skills
+
+Skills other people wrote, copied in by `mise run skills:sync` from the sources pinned in
+[`skills-lock.json`](../../skills-lock.json). Nothing here is edited or written up by us — each
+skill's own `SKILL.md` is its documentation."""
 
 
 @dataclass(frozen=True)
@@ -28,6 +36,14 @@ class FileEstimate:
 class SkillEstimate:
     directory: Path
     files: tuple[FileEstimate, ...]
+
+    @property
+    def name(self) -> str:
+        return self.directory.relative_to(SKILLS_DIR).as_posix()
+
+    @property
+    def vendored(self) -> bool:
+        return self.directory.is_relative_to(VENDOR_DIR)
 
     @property
     def skill_tokens(self) -> int:
@@ -44,36 +60,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def token_count(path: Path, encoding: tiktoken.Encoding) -> int | None:
-    data = path.read_bytes()
-    if b"\0" in data:
-        return None
-    try:
-        text = data.decode("utf-8")
-    except UnicodeDecodeError:
-        return None
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
+def token_count(path: Path, encoding: tiktoken.Encoding) -> int:
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
     return len(encoding.encode(text, disallowed_special=()))
 
 
 def collect_estimates() -> tuple[SkillEstimate, ...]:
     encoding = tiktoken.get_encoding(ENCODING_NAME)
     skill_directories = {path.parent for path in SKILLS_DIR.rglob("SKILL.md")}
-    source_directories = {
-        SKILLS_DIR / source.relative_to(README_SOURCES).with_suffix("")
-        for source in README_SOURCES.rglob("*.md")
-    }
-    orphan_sources = source_directories - skill_directories
-    if orphan_sources:
-        paths = ", ".join(
-            str(path.relative_to(ROOT)) for path in sorted(orphan_sources)
-        )
-        raise ValueError(f"README sources have no matching skill: {paths}")
     estimates: list[SkillEstimate] = []
 
     for directory in sorted(skill_directories):
         files: list[FileEstimate] = []
-        for path in sorted(directory.rglob("*")):
+        # Markdown only: scripts, assets and config in a skill package are run or parsed by a tool,
+        # so they cost nothing against the context window.
+        for path in sorted(directory.rglob("*.md")):
             if (
                 not path.is_file()
                 or path.is_symlink()
@@ -83,14 +84,16 @@ def collect_estimates() -> tuple[SkillEstimate, ...]:
             owner = next(
                 (parent for parent in path.parents if parent in skill_directories), None
             )
-            if owner != directory:
-                continue
-            tokens = token_count(path, encoding)
-            if tokens is not None:
-                files.append(FileEstimate(path, tokens))
+            if owner == directory:
+                files.append(FileEstimate(path, token_count(path, encoding)))
         estimates.append(SkillEstimate(directory, tuple(files)))
 
     return tuple(estimates)
+
+
+def upstream_sources() -> dict[str, str]:
+    lock = json.loads(LOCK.read_text(encoding="utf-8"))
+    return {name: entry["source"] for name, entry in lock["skills"].items()}
 
 
 def badge(label: str, tokens: int, color: str) -> str:
@@ -124,11 +127,9 @@ def markdown_table(
     )
 
 
-def report_intro(
-    skill_tokens: int, total_tokens: int, *, all_skills: bool = False
-) -> str:
-    skill_label = "All SKILL.md" if all_skills else "SKILL.md"
-    total_label = "All files" if all_skills else "Total"
+def report_intro(skill_tokens: int, total_tokens: int, *, plural: bool = False) -> str:
+    skill_label = "All SKILL.md" if plural else "SKILL.md"
+    total_label = "All Markdown" if plural else "Total"
     return "\n".join(
         (
             "<p>",
@@ -136,8 +137,9 @@ def report_intro(
             badge(total_label, total_tokens, "2ea44f"),
             "</p>",
             "",
-            f"Token estimates use tiktoken's `{ENCODING_NAME}` encoding. `SKILL.md` is the entry prompt; total includes every",
-            "UTF-8 text file in the skill package except its generated `README.md`. Binary files are omitted.",
+            f"Token estimates use tiktoken's `{ENCODING_NAME}` encoding. `SKILL.md` is the entry prompt; the total adds every",
+            "other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather",
+            "than read, so they are left out.",
         )
     )
 
@@ -160,45 +162,72 @@ def skill_block(estimate: SkillEstimate) -> str:
     )
 
 
-def root_block(estimates: tuple[SkillEstimate, ...]) -> str:
-    skill_total = sum(estimate.skill_tokens for estimate in estimates)
-    package_total = sum(estimate.total_tokens for estimate in estimates)
-    summary_rows: list[tuple[str, ...]] = []
-    file_rows: list[tuple[str, ...]] = []
-
+def summary_table(
+    estimates: tuple[SkillEstimate, ...], base: Path, *, sources: dict[str, str] | None
+) -> str:
+    headers = ("Skill", "SKILL.md", "Total")
+    right = {1, 2}
+    if sources is not None:
+        headers = ("Skill", "Upstream", "SKILL.md", "Total")
+        right = {2, 3}
+    rows: list[tuple[str, ...]] = []
     for estimate in estimates:
-        skill_path = estimate.directory.relative_to(ROOT).as_posix()
-        summary_rows.append(
-            (
-                f"[`{skill_path.removeprefix('skills/')}`]({quote(skill_path)}/)",
-                f"{estimate.skill_tokens:,}",
-                f"{estimate.total_tokens:,}",
-            )
-        )
+        link = quote(estimate.directory.relative_to(base).as_posix())
+        cells = [f"[`{estimate.name.removeprefix('vendor/')}`]({link}/)"]
+        if sources is not None:
+            source = sources[estimate.directory.name]
+            cells.append(f"[{source}](https://github.com/{source})")
+        cells.extend((f"{estimate.skill_tokens:,}", f"{estimate.total_tokens:,}"))
+        rows.append(tuple(cells))
+    return markdown_table(headers, rows, right)
+
+
+def files_table(estimates: tuple[SkillEstimate, ...], base: Path) -> str:
+    rows: list[tuple[str, ...]] = []
+    for estimate in estimates:
         for file in estimate.files:
-            file_path = file.path.relative_to(ROOT).as_posix()
-            file_rows.append(
+            link = quote(file.path.relative_to(base).as_posix())
+            name = file.path.relative_to(estimate.directory).as_posix()
+            rows.append(
                 (
-                    f"`{skill_path.removeprefix('skills/')}`",
-                    f"[`{file.path.relative_to(estimate.directory).as_posix()}`]({quote(file_path)})",
+                    f"`{estimate.name.removeprefix('vendor/')}`",
+                    f"[`{name}`]({link})",
                     f"{file.tokens:,}",
                 )
             )
+    return markdown_table(("Skill", "File", "Tokens"), rows, {2})
 
-    summary = markdown_table(("Skill", "SKILL.md", "Total"), summary_rows, {1, 2})
-    files = markdown_table(("Skill", "File", "Tokens"), file_rows, {2})
+
+def collection_report(
+    estimates: tuple[SkillEstimate, ...], base: Path, *, sources: dict[str, str] | None
+) -> tuple[str, ...]:
+    return (
+        report_intro(
+            sum(estimate.skill_tokens for estimate in estimates),
+            sum(estimate.total_tokens for estimate in estimates),
+            plural=True,
+        ),
+        summary_table(estimates, base, sources=sources),
+        "### Files",
+        files_table(estimates, base),
+    )
+
+
+def root_block(estimates: tuple[SkillEstimate, ...]) -> str:
     details = "\n\n".join(
         (
             "<details>",
             "<summary><strong>Token estimates</strong></summary>",
-            report_intro(skill_total, package_total, all_skills=True),
-            summary,
-            "### Files",
-            files,
+            *collection_report(estimates, ROOT, sources=None),
             "</details>",
         )
     )
     return "\n\n".join((START_MARKER, details, END_MARKER))
+
+
+def vendor_readme(estimates: tuple[SkillEstimate, ...]) -> str:
+    body = collection_report(estimates, VENDOR_DIR, sources=upstream_sources())
+    return "\n\n".join((VENDOR_HEADER, *body)) + "\n"
 
 
 def replace_generated_block(content: str, block: str) -> str | None:
@@ -217,37 +246,24 @@ def replace_generated_block(content: str, block: str) -> str | None:
     return f"{content[: match.start()]}{block}{content[match.end() :]}"
 
 
-def skill_readme(estimate: SkillEstimate, block: str) -> str:
-    path = estimate.directory / "README.md"
-    source = README_SOURCES / estimate.directory.relative_to(SKILLS_DIR).with_suffix(
-        ".md"
-    )
-    if source.exists():
-        content = source.read_text(encoding="utf-8")
-        source_skill = (
-            f"../../../{estimate.directory.relative_to(ROOT).as_posix()}/SKILL.md"
-        )
-        content = content.replace(f"]({source_skill})", "](SKILL.md)")
-    else:
-        if not path.exists() or path.is_symlink():
-            raise ValueError(
-                f"{path.relative_to(ROOT)} must be a regular human-facing README"
-            )
-        content = path.read_text(encoding="utf-8")
-
-    replaced = replace_generated_block(content, block)
-    if replaced is not None:
-        return replaced
-
+def insert_after_heading(content: str, block: str) -> str:
     heading = re.search(r"(?m)^# .+\n", content)
     if heading is None:
         return f"{block}\n\n{content.lstrip()}"
     return f"{content[: heading.end()]}\n{block}\n\n{content[heading.end() :].lstrip()}"
 
 
-def root_readme(block: str) -> str:
-    path = ROOT / "README.md"
+def skill_readme(estimate: SkillEstimate, block: str) -> str:
+    path = estimate.directory / "README.md"
+    if not path.exists() or path.is_symlink():
+        raise ValueError(f"{path.relative_to(ROOT)} must be a regular README")
     content = path.read_text(encoding="utf-8")
+    replaced = replace_generated_block(content, block)
+    return replaced if replaced is not None else insert_after_heading(content, block)
+
+
+def root_readme(block: str) -> str:
+    content = (ROOT / "README.md").read_text(encoding="utf-8")
     replaced = replace_generated_block(content, block)
     if replaced is not None:
         return replaced
@@ -261,13 +277,19 @@ def root_readme(block: str) -> str:
 def main() -> int:
     args = parse_args()
     estimates = collect_estimates()
-    expected = {ROOT / "README.md": root_readme(root_block(estimates))}
+    owned = tuple(estimate for estimate in estimates if not estimate.vendored)
+    vendored = tuple(estimate for estimate in estimates if estimate.vendored)
+
+    expected = {
+        ROOT / "README.md": root_readme(root_block(estimates)),
+        VENDOR_DIR / "README.md": vendor_readme(vendored),
+    }
     expected.update(
         {
             estimate.directory / "README.md": skill_readme(
                 estimate, skill_block(estimate)
             )
-            for estimate in estimates
+            for estimate in owned
         }
     )
     stale = [

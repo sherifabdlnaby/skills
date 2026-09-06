@@ -68,11 +68,11 @@ sync moves its output out of `.agents/` and `.claude/skills/` and deletes both; 
 
 ## Skill READMEs
 
-Every skill has a regular `README.md` for humans who are deciding whether and how to use it. Write from the skill and its references, but explain the problem, outcome, operating shape, and important
-tradeoffs instead of copying prompt text or addressing an executing agent. Include a direct link to `SKILL.md`, which remains the canonical agent instructions.
+Every skill of ours has a `README.md` beside it, for humans deciding whether and how to use it. Write from the skill and its references, but explain the problem, outcome, operating shape, and
+important tradeoffs instead of copying prompt text or addressing an executing agent. Include a direct link to `SKILL.md`, which remains the canonical agent instructions.
 
-Owned skills keep that prose beside the skill. Curated pages for vendored skills live under `.config/skill-readmes/vendor/` because `skills:sync` replaces `skills/vendor/`; the generator materializes
-them after each sync. Keep generated token-estimate blocks intact and update them only with `mise run tokens --fix`.
+Vendored skills get none of that: we don't describe work we didn't write. `skills/vendor/README.md` is generated whole — an index of what is vendored, where it came from, and what it costs — and it
+is the only README under `skills/vendor/` that is ours. Keep generated token-estimate blocks intact and update them only with `mise run tokens --fix`.
 
 ## CI not visible in the tree
 

@@ -1,28 +1,5 @@
 # Humanizer
 
-<!-- token-estimates:start -->
-
-<p>
-  <img src="https://img.shields.io/badge/SKILL.md-6%2C633%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 6,633 tokens" />
-  <img src="https://img.shields.io/badge/Total-8%2C727%20tokens-2ea44f?style=flat-square" alt="Total: 8,727 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; total includes every
-UTF-8 text file in the skill package except its generated `README.md`. Binary files are omitted.
-
-| File                                                                 | Tokens |
-| -------------------------------------------------------------------- | -----: |
-| [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) |    150 |
-| [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)           |    159 |
-| [`.github/workflows/validate.yml`](.github/workflows/validate.yml)   |    176 |
-| [`AGENTS.md`](AGENTS.md)                                             |    541 |
-| [`LICENSE`](LICENSE)                                                 |    222 |
-| [`SKILL.md`](SKILL.md)                                               |  6,633 |
-| [`agents/openai.yaml`](agents/openai.yaml)                           |     45 |
-| [`scripts/validate-package.py`](scripts/validate-package.py)         |    801 |
-
-<!-- token-estimates:end -->
-
 [![skills.sh installs](https://skills.sh/b/blader/humanizer)](https://skills.sh/blader/humanizer)
 
 Humanizer rewrites AI-sounding text so it reads like a person wrote it, without changing what it says. Because it is just Markdown, it works with any agent that supports skills.

@@ -4,22 +4,18 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-2%2C187%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,187 tokens" />
-  <img src="https://img.shields.io/badge/Total-34%2C325%20tokens-2ea44f?style=flat-square" alt="Total: 34,325 tokens" />
+  <img src="https://img.shields.io/badge/Total-28%2C571%20tokens-2ea44f?style=flat-square" alt="Total: 28,571 tokens" />
 </p>
 
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; total includes every
-UTF-8 text file in the skill package except its generated `README.md`. Binary files are omitted.
+Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
+other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
+than read, so they are left out.
 
 | File                                                                                       | Tokens |
 | ------------------------------------------------------------------------------------------ | -----: |
 | [`SKILL.md`](SKILL.md)                                                                     |  2,187 |
-| [`assets/.config/hk.pkl`](assets/.config/hk.pkl)                                           |    956 |
-| [`assets/.config/mise/.gitignore`](assets/.config/mise/.gitignore)                         |      2 |
-| [`assets/.github/workflows/check.autofix.yml`](assets/.github/workflows/check.autofix.yml) |  2,155 |
-| [`assets/.github/workflows/check.yml`](assets/.github/workflows/check.yml)                 |  1,286 |
 | [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |    487 |
 | [`assets/README.md`](assets/README.md)                                                     |    594 |
-| [`assets/mise.toml`](assets/mise.toml)                                                     |  1,355 |
 | [`references/ci/github.md`](references/ci/github.md)                                       |  1,974 |
 | [`references/ci.md`](references/ci.md)                                                     |  1,847 |
 | [`references/docs.md`](references/docs.md)                                                 |    994 |

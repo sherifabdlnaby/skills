@@ -7,8 +7,9 @@
   <img src="https://img.shields.io/badge/Total-325%20tokens-2ea44f?style=flat-square" alt="Total: 325 tokens" />
 </p>
 
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; total includes every
-UTF-8 text file in the skill package except its generated `README.md`. Binary files are omitted.
+Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
+other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
+than read, so they are left out.
 
 | File                   | Tokens |
 | ---------------------- | -----: |
