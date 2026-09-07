@@ -60,4 +60,16 @@ GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash <base>
 
 ## Empty commits
 
-Fine for retriggering CI or unsticking a stuck check. Use `--allow-empty` with a clear message (e.g. `Retrigger CI`), and tell the user in chat so it doesn't look accidental.
+An empty commit re-fires every CI trigger, and it is the last resort: it costs a full CI run and puts a new SHA on the branch. Try the check's own retry first. Reach for the empty commit only when
+the check offers no retry (CodeQL and custom CI often don't), or when a webhook or GitHub outage means the run never started, so there is nothing to retry.
+
+Approvals ride on the diff staying identical, so the commit has to change zero files:
+
+- Read the base branch's ruleset in the same batch as the CI-status reads:
+  `gh api repos/<OWNER/REPO>/rules/branches/<base> --jq '.[]|select(.type=="pull_request").parameters.dismiss_stale_reviews_on_push'`.
+  GitHub never defines which commits count as "reviewable", so on `true` the approvals may go anyway: say so and let the user decide before pushing.
+- Commit with `--allow-empty` and let the hooks run. A fix-mode hook can stage a rewrite and make the commit real, so confirm `git show --stat HEAD` names no files before pushing. If it names any,
+  `git reset --soft HEAD~1` and handle the rewrite as its own commit.
+- A pre-push hook that rewrites files dirties the working tree, not the commit already made. The pushed SHA stands; clean the tree after.
+
+Use a clear message (e.g. `Retrigger CI`), and tell the user in chat so it doesn't look accidental.

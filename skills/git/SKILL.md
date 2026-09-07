@@ -21,7 +21,7 @@ means redoing it. Several actions, several references.
 here, mechanics via the gh-stack skill), the gh-stack/manual path probe, cascade conflicts and verification, manual restacking fallback (after merge, chain of 3+, mid-stack push), force-pushing.
 
 **Committing** -> [`references/commits.md`](references/commits.md)
-Pre-staging walk, file confirmation, message style, hook-failure handling, scoping, editor-free squash, empty commits, CI refresh.
+Pre-staging walk, file confirmation, message style, hook-failure handling, scoping, editor-free squash, empty commits.
 
 **Pull Requests** (open, update) -> [`references/pull-requests.md`](references/pull-requests.md) Pre-flight survey, title format (including the stacked `[n/N]` marker), body skeleton and how to write
 descriptions, AI footers, post-create flow, finishing PRs after `gh stack submit`, linking PRs, updating a body without clobbering it.
@@ -42,6 +42,9 @@ sub-agent that runs the loop, the stale nudge. Uses `scripts/pr-watch.py`, never
 
 **Draft PR that review bots ignore** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
 `pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft; chasing beyond it only on the user's word that a bot exists, with `--wip` on the title.
+
+**Stuck CI check with no manual retry** -> [`references/commits.md`, Empty commits](references/commits.md#empty-commits)
+The last-resort empty commit: when it beats retrying the check, and the zero-file-change guards that keep approvals alive.
 
 ## Always
 
