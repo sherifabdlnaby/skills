@@ -69,6 +69,8 @@ Their words go in the skeleton's `[!NOTE]` callout at the very top of the body, 
 The skeleton below is the shape; these are the rules for filling each block.
 
 - **One-line summary of the change**: ALWAYS include.
+- **Screenshots**: media the PR already has, right under the summary so the reviewer sees it first. Unmarked, so the block goes away with no trace when there is no media, and no hook asks for it. Past
+  two pictures, lead with the one that carries the change and put the rest in a collapsible. What is worth attaching at all is [Attaching media](#attaching-media).
 - **Why / big picture / Problem we are solving**: ONLY if User gave you this in the context. NEVER assume or invent a WHY.
 - **User-facing Changelog style bullet points**: Include when we change more than one possibly unrelated things.
 - **Breaking changes**: a `> [!WARNING]` callout naming what breaks and what the reader must do about it.
@@ -119,6 +121,16 @@ other comment and `<...>` placeholder, or remove it with its block:
 <!-- pr:summary -->
 
 [TICKET-123](link) | xxxx yyy zz. <!-- short summary, always; no ticket, no prefix -->
+
+**Screenshots** <!-- unmarked and optional: drop the block, heading included, when there is no media -->
+
+<the one picture that carries the change>
+
+<details><summary>More screenshots</summary>
+
+<the rest, only past two pictures>
+
+</details>
 
 **Why** <!-- pr:why -->
 
@@ -240,6 +252,7 @@ If a code fence, a mermaid graph or anything else says it better, use that.
 
 **The body file decides where it lands.** Write the Markdown reference where you want the media, then
 attach the same path: `gh` swaps the reference for the uploaded URL and keeps the alt text you wrote.
+In a PR body that place is the **Screenshots** block, see [Body and Description](#body-and-description).
 
 ```bash
 gh pr create --draft --assignee @me --body-file /tmp/pr-body.md \

@@ -4,7 +4,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-2%2C506%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,506 tokens" />
-  <img src="https://img.shields.io/badge/Total-13%2C679%20tokens-2ea44f?style=flat-square" alt="Total: 13,679 tokens" />
+  <img src="https://img.shields.io/badge/Total-13%2C845%20tokens-2ea44f?style=flat-square" alt="Total: 13,845 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -16,7 +16,7 @@ than read, so they are left out.
 | [`SKILL.md`](SKILL.md)                                             | `2,506` |
 | [`references/branches.md`](references/branches.md)                 | `1,772` |
 | [`references/commits.md`](references/commits.md)                   |   `962` |
-| [`references/pull-requests.md`](references/pull-requests.md)       | `3,829` |
+| [`references/pull-requests.md`](references/pull-requests.md)       | `3,995` |
 | [`references/rebase.md`](references/rebase.md)                     |   `517` |
 | [`references/review-responses.md`](references/review-responses.md) | `1,441` |
 | [`references/reviewing.md`](references/reviewing.md)               |   `229` |
