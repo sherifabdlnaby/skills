@@ -69,8 +69,10 @@ Their words go in the skeleton's `[!NOTE]` callout at the very top of the body, 
 The skeleton below is the shape; these are the rules for filling each block.
 
 - **One-line summary of the change**: ALWAYS include.
-- **Screenshots**: media the PR already has, right under the summary so the reviewer sees it first. Unmarked, so the block goes away with no trace when there is no media, and no hook asks for it. Past
-  two pictures, lead with the one that carries the change and put the rest in a collapsible. What is worth attaching at all is [Attaching media](#attaching-media).
+- **Screenshots**: media that can help user review the PR, right under the summary so the reviewer sees it first.
+  Past two pictures, lead with the one that carries the change and put the rest in a collapsible. What is
+  worth attaching is [Attaching media](#attaching-media). How `--attach` uploads, and how to frame a
+  screenshot, is [`attach.md`](./attach.md).
 - **Why / big picture / Problem we are solving**: ONLY if User gave you this in the context. NEVER assume or invent a WHY.
 - **User-facing Changelog style bullet points**: Include when we change more than one possibly unrelated things.
 - **Breaking changes**: a `> [!WARNING]` callout naming what breaks and what the reader must do about it.
@@ -227,9 +229,10 @@ _<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <TOOL> (<MO
 
 ## Attaching media
 
-`--attach <file>` uploads a local image or video into the body. Repeatable, and on `gh pr create`,
-`gh pr edit` and `gh pr comment`. Assume it is there. If `gh` says there is no such flag, the `gh` here
-is older than 2.99.0.
+`--attach <file>` is on `gh pr create`, `gh pr edit`, and `gh pr comment`. It uploads a local image or
+video and substitutes the matching Markdown path in the body file with the uploaded URL. Repeatable.
+Use it; a version number is not a preflight. How the swap, alt text, screenshot framing, and a failed
+upload work live in [`attach.md`](./attach.md). Read that when attaching.
 
 **Don't go out of your way to attach media:**
 
@@ -239,7 +242,7 @@ is older than 2.99.0.
   browser for the sole purpose of getting a screenshot.
 - **Unless the user asks.** Then start what you need, take the shot, attach it. The ask holds for the rest of the session.
 
-When to attach? A picture is worth it when the code or prose cannot explain the outcome:
+A picture is worth it when the code or prose cannot explain the outcome:
 
 - UI you changed, before and after. The diff has the CSS, the picture has the result.
 - A UI error or state that shows the problem.
@@ -247,37 +250,6 @@ When to attach? A picture is worth it when the code or prose cannot explain the 
 - A flow, as video or screenshots, when the order or the timing is the point.
 
 If a code fence, a mermaid graph or anything else says it better, use that.
-
-### How it works
-
-**The body file decides where it lands.** Write the Markdown reference where you want the media, then
-attach the same path: `gh` swaps the reference for the uploaded URL and keeps the alt text you wrote.
-In a PR body that place is the **Screenshots** block, see [Body and Description](#body-and-description).
-
-```bash
-gh pr create --draft --assignee @me --body-file /tmp/pr-body.md \
-  --attach ./before.png --attach ./after.png
-```
-
-With `/tmp/pr-body.md` carrying the references, alt text and all:
-
-```markdown
-**Changes** <!-- pr:changes -->
-
-- Empty state now explains what to do next.
-
-| Before                    | After                   |
-| ------------------------- | ----------------------- |
-| ![Bare empty list](./before.png) | ![Empty list with a call to action](./after.png) |
-```
-
-Outside a body file, alt text follows the path after `#`, as in
-`--attach './login.png#The login error state'`; without it the filename becomes the alt text. Video is a
-player and has no alt text. Alt text is public, so [SKILL.md](../SKILL.md) voice applies.
-
-**A failed upload does not fail the PR.** Partial success still creates the PR and prints its URL, then
-exits non-zero. Read the URL. Read that exit code as "nothing happened" and run create again, and the
-user has two PRs. Add what failed with `gh pr edit --attach`.
 
 ## Running `gh pr create`
 
