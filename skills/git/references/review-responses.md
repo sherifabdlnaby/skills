@@ -42,7 +42,7 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 
 **A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply
 mutation takes no file. So a picture goes on the PR-level comment or in the body, and the thread reply
-links to it. When to attach at all is [Attaching media](./pull-requests.md#attaching-media).
+links to it. When to attach at all is [Attaching media](./pull-requests.md#attaching-media). How `--attach` uploads is [`attach.md`](./attach.md).
 
 ## Batching
 
