@@ -213,6 +213,59 @@ _<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with 
 _<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
+## Attaching media
+
+`--attach <file>` uploads a local image or video into the body. Repeatable, and on `gh pr create`,
+`gh pr edit` and `gh pr comment`. Assume it is there. If `gh` says there is no such flag, the `gh` here
+is older than 2.99.0.
+
+**Don't go out of your way to attach media:**
+
+- **A file on disk.** A screenshot from your own debugging, a recording the user gave you, an image a
+  test or build wrote out. Attach it when it fits and helps understanding.
+- **A dev env already running.** Take the before and after from it. Do not start a server, an app or a
+  browser for the sole purpose of getting a screenshot.
+- **Unless the user asks.** Then start what you need, take the shot, attach it. The ask holds for the rest of the session.
+
+When to attach? A picture is worth it when the code or prose cannot explain the outcome:
+
+- UI you changed, before and after. The diff has the CSS, the picture has the result.
+- A UI error or state that shows the problem.
+- Rendered output: a report, or a chart.
+- A flow, as video or screenshots, when the order or the timing is the point.
+
+If a code fence, a mermaid graph or anything else says it better, use that.
+
+### How it works
+
+**The body file decides where it lands.** Write the Markdown reference where you want the media, then
+attach the same path: `gh` swaps the reference for the uploaded URL and keeps the alt text you wrote.
+
+```bash
+gh pr create --draft --assignee @me --body-file /tmp/pr-body.md \
+  --attach ./before.png --attach ./after.png
+```
+
+With `/tmp/pr-body.md` carrying the references, alt text and all:
+
+```markdown
+**Changes** <!-- pr:changes -->
+
+- Empty state now explains what to do next.
+
+| Before                    | After                   |
+| ------------------------- | ----------------------- |
+| ![Bare empty list](./before.png) | ![Empty list with a call to action](./after.png) |
+```
+
+Outside a body file, alt text follows the path after `#`, as in
+`--attach './login.png#The login error state'`; without it the filename becomes the alt text. Video is a
+player and has no alt text. Alt text is public, so [SKILL.md](../SKILL.md) voice applies.
+
+**A failed upload does not fail the PR.** Partial success still creates the PR and prints its URL, then
+exits non-zero. Read the URL. Read that exit code as "nothing happened" and run create again, and the
+user has two PRs. Add what failed with `gh pr edit --attach`.
+
 ## Running `gh pr create`
 
 - Body via `--body-file`, so quoting never eats backticks or `$`, and the file stays editable for the next update.
