@@ -81,6 +81,7 @@ PENDING_STATUS = {
 
 HOT_WINDOW = 300.0  # seconds since the last change before the cadence cools down
 NO_CHECKS_GRACE = 120.0  # a PR with no checks at all counts as green after this
+FLICK_GRACE = 30.0  # past its hold, an in-flight flick counts as abandoned
 WIP = "[WIP]"
 
 
@@ -476,6 +477,22 @@ def render_item(tag: str, head_extra: str, item: dict) -> list[str]:
     return out
 
 
+def flick_hint(snap: dict) -> list[str]:
+    """A draft nobody flicked is a PR no bot will review, and the watch is where
+    that becomes visible. Same conditions cmd_flick would accept, so the hint
+    never points at a flick that would answer NOFLICK."""
+    if not snap.get("draft") or is_closed(snap):
+        return []
+    if bot_items_on_head(snap) or pending_bot_reviews(snap):
+        return []
+    if snap["head_sha"] in load_flick(snap["repo"], snap["pr"])["flicked"]:
+        return []
+    return [
+        "  FLICK   review bots skip drafts. alongside this watch, run: "
+        f"python3 {sys.argv[0]} flick --pr {snap['pr']} --repo {snap['repo']}"
+    ]
+
+
 def render(snap: dict, d: dict, note: str = "", extra: list[str] | None = None) -> str:
     head = f"PR #{snap['pr']} {snap['repo']} {snap['pr_state']}"
     if snap["merged"] and snap["pr_state"] != "MERGED":
@@ -484,6 +501,7 @@ def render(snap: dict, d: dict, note: str = "", extra: list[str] | None = None) 
         head += " DRAFT"
     lines = [head + (f"  {note}" if note else "")]
     lines += extra or []
+    lines += flick_hint(snap)
     if d["pushed"]:
         lines.append(f"  PUSH    head is now {snap['head_sha'][:7]}, checks restarted")
     for f in d["new_fails"]:
@@ -671,6 +689,11 @@ def revert_leftover_flick(pr: int, repo: str, live) -> list[str]:
     inflight = data["inflight"]
     if not inflight:
         return []
+    # Still inside its hold: another process is running that flick right now, and
+    # reverting here would cut the window short. Watch and flick run side by side.
+    ends = inflight.get("started", 0) + inflight.get("hold", 0) + FLICK_GRACE
+    if time.time() < ends:
+        return []
     snap = live()
     if not snap["draft"]:
         done = revert_flick(pr, repo, inflight, ready=True)
@@ -724,6 +747,7 @@ def cmd_flick(a) -> int:
         "title": title,
         "retitled": wip != title,
         "started": time.time(),
+        "hold": a.hold,
         "reviewers_before": [r["login"] for r in before["review_requests"]],
     }
     data["inflight"] = inflight

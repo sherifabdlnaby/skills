@@ -1,69 +1,72 @@
 # Watching a PR
 
 Watch a PR's CI, reviews, and comments and react when something happens, no sleep loop.
-[`scripts/pr-watch.py`](../scripts/pr-watch.py) (stdlib only, `python3`; `<git-skill-dir>` below is the base
-directory the harness printed when this skill loaded) polls, diffs against a per-watcher snapshot, and prints only what changed. Don't read
-its source. The defaults are the contract; every flag is in [`watch-flags.md`](./watch-flags.md),
-open it only when the commands below do not fit.
+[`scripts/pr-watch.py`](../scripts/pr-watch.py) (stdlib only, `python3`; `<git-skill-dir>` below is the
+base directory the harness printed when this skill loaded) polls, diffs against a per-watcher
+snapshot, and prints only what changed. Don't read its source. Every run ends in one `>>` line that
+names the next action, and that line is the contract; `--help` has the rest.
 
-## The contract
+## Steps
 
-Every run ends with one `>>` line, of four kinds:
+1. **Launch the watch and the flick in one batch:**
 
+   ```bash
+   python3 <git-skill-dir>/scripts/pr-watch.py watch --pr <PR_URL> --watcher <id>
+   python3 <git-skill-dir>/scripts/pr-watch.py flick --pr <PR_URL>
+   ```
+
+   Name the PR by its URL, which carries the repo with it, and coin a fresh `--watcher` id for every
+   watch you start: an id reaches an existing snapshot, with that watcher's baseline and its spent
+   budget.
+
+   The flick is what gets a draft looked at, since review bots skip drafts. Anywhere it is not
+   wanted it answers `NOFLICK` in a second, so it is cheaper to send than to reason about. One per
+   head commit: a push earns the pair again.
+
+2. **Do what the `>>` line says.** Every run ends in exactly one, `EVENT`, `STALE`, `QUIET` or
+   `DONE`, carrying the next action. What it refers to sits above it, one tagged line each: `PUSH`,
+   `FAIL`, `FIXED`, `DONE` (checks finished, not the verdict), `BOTREVIEW` (automated) and `REVIEW`
+   (human), `COMMENT`, `STATE`, `FLICK`, `REVERT`, closing with `pending:` and `review pending:` for
+   what has yet to arrive. Review and comment lines come as self-contained blocks (author,
+   `(bot|human)`, id, URL, body), so acting on one rarely needs a fetch.
+
+3. **Run the same watch command again**, same `--watcher`, until a `>>` line says to stop.
+
+Reviews already on the PR when the first watch starts are history and stay silent. Whatever among
+them still needs an answer is work to do before step 1, per
+[review-responses.md, Batching](./review-responses.md#batching).
+
+## Other modes
+
+The default (`--until quiet`) ends on green CI with nothing pending. Two others earn their flag:
+
+```bash
+--until green --on fail,done,state          # CI only, done when it is green
+--until closed --on review,comment,state    # reviews only, CI is somebody else's
 ```
->> EVENT: ongoing. <what to do>, then run watch again.
->> STALE: ongoing. nothing changed for 22m, 40m of budget left. tell the user ..., then run watch again.
->> DONE: done. <reason>. stop.
->> QUIET: ongoing. no event within this episode; run the same watch again.
-```
 
-Event lines above the verdict are self-evident tags: `PUSH`, `FAIL`, `FIXED`, `DONE` (all checks
-finished), `BOTREVIEW` (an automated code review), `REVIEW` (human), `COMMENT`, `STATE`, `REVERT`
-(a leftover flick undone). Each review or comment is a self-contained block with author, `(bot|human)`,
-id, URL, and body lines. Trailing `pending:` and `review pending:` lines say what is still expected.
-
-**`BOTREVIEW`: address it by default**, unless the user said not to, per
-[review-responses.md](./review-responses.md). `FAIL`: fix, push, run the same watch again; the push
-resets the check baseline, the budget, and the stale clock by itself.
-
-The first run on a fresh `--watcher` reports the standing (red checks now). Reviews already on the
-PR are history and stay silent: what still needs an answer among them comes from
-[review-responses.md, Batching](./review-responses.md#batching), before the first watch.
-
-## Modes
-
-```
-python3 <git-skill-dir>/scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO> --watcher <id> [--max-total <s>] \
-    --until green --on fail,done,state          # green CI, nothing else
-    --until quiet                               # green CI, nothing pending, then quiet (default)
-    --until closed --on review,comment,state    # reviews, CI is not mine
-```
-
-`--pr` and `--repo` default to the current branch's PR. `--until quiet` waits for pending review-bot
-requests (Copilot shows up as one) and then for a short silence, so a bot review landing right after
-the last check is not missed. No mode waits for review threads to be answered; answering them is
-your work as the `EVENT`s arrive. `--max-total` is the budget; without it the watch runs until
-`--until` or a merge/close.
+`--max-total <s>` puts a budget on the whole watch. Every other flag is in
+[`watch-flags.md`](./watch-flags.md).
 
 ## Who runs the loop
 
-Two harness facts (verified 2026-09 on Claude Code and Cursor): a background shell wakes the agent that
-started it when it exits; a background shell started by a sub-agent does not survive the
-sub-agent's turn. So a sub-agent runs `watch` in the **foreground** and its return is the ping.
+**A cheap sub-agent** (Haiku, Composer, the cheapest the harness offers) runs the loop. It relays
+rather than reviews: it never reads the PR or the diff, holds noise, and fetches one review item only
+when a comment is not obvious on its face.
 
-**A cheap sub-agent** (Haiku, Composer, the cheapest the harness offers) runs the loop. It does not
-read the PR or the diff; it relays. It holds noise, judges nothing it cannot judge from the lines
-themselves, and fetches one review item only when a comment is not obvious on its face. Two things
-are foreground or not: the shell call inside the sub-agent is always foreground, under the tool
-timeout (Claude Code caps a call at 10 minutes; the 540s default `--max-wait` already fits, so set
-the tool's timeout at its maximum). The sub-agent itself runs in the background in Claude Code, so
-the parent keeps working, and in the foreground in Cursor, where the parent waits on it; that is the
-price of a clean context there.
+**Dispatch it in the background**, so the parent keeps working and the sub-agent's return is the
+ping. On Cursor, foreground: the parent waits on it, which is the price of a clean context there.
+
+Inside the sub-agent the shell call is **foreground**, with the tool timeout at its maximum (Claude
+Code caps a call at 10 minutes, which the 540s default `--max-wait` fits). Two harness facts behind
+that (verified 2026-09 on Claude Code and Cursor): a background shell wakes the agent that started
+it when it exits, and a background shell started by a sub-agent does not survive the sub-agent's
+turn.
 
 The brief, short: the Hold list from this conversation (known-flaky checks, expected noise, a
 reviewer the user handles), and:
 
-> From `<git-skill-dir>`, run `python3 scripts/pr-watch.py watch --pr <N> --repo <OWNER/REPO>
+> From `<git-skill-dir>`, run `python3 scripts/pr-watch.py watch --pr <PR_URL>
 > --watcher <id> [--max-total <s>]` in the foreground, tool timeout at its maximum, same
 > `WATCH_STATE_DIR` as mine if I set one. The `>>` line's "run watch again" is written for me; you:
 > on `QUIET` run it again (the budget or the PR's close is what ends this); on `EVENT` return with
@@ -78,38 +81,23 @@ The parent reacts, then relaunches the same watcher, same `--watcher` id.
 
 **Fallback:** run `watch` as your own background command; the harness wakes you with the verdict.
 
-## Draft PRs and review bots
+## Chasing
 
-Review bots skip drafts. In a mode that answers bot reviews, a draft is always flicked, alongside
-the watch rather than before it:
+One flick is the whole invitation. Holding the PR open, flicking the same head again, waiting on a
+bot that has not shown up: that is **chasing**, and it happens only on the user's word that the repo
+has a bot, never inferred from its history. The user naming the bot, in any sentence, is that word.
+Marking ready notifies reviewers once, which is the cost being spent each time.
 
-```
-python3 <git-skill-dir>/scripts/pr-watch.py flick --pr <N> --repo <OWNER/REPO>
-```
-
-Mechanical, no judgment: mark ready, ten seconds, back to draft with the human review requests the
-flip caused removed. One flick per head commit. A marker file records the flip, and any later `watch`
-or `flick` run reverts a leftover one first, so a killed process never leaves a PR ready. A flick you
-run on the user's nudge, where a human may notice the PR, takes `--wip` to carry `[WIP]` on the title
-for the duration. Its own `>>` line: `FLICKED` (done, nothing more to do), `NOFLICK` with the reason
-(not a draft, merged, a bot review already there or pending on this head, or this head flicked
-already: nothing to do, the review came or is coming), `DRYRUN`.
-
-The flick is assumed to be enough: the review, if one comes, lands as `BOTREVIEW` on the watch, and
-outside a watch it arrives on GitHub like any other review; `--until closed --on review,comment,state`
-picks it up when the user wants it answered. Anything beyond the flick is chasing (holding the PR
-open, flicking again, waiting on a bot that has not shown up), and chasing happens only on the user's
-word that the repo has a bot, never inferred from its history. The user naming the bot, in any
-sentence, is that word. Marking ready notifies reviewers once.
+A flick the user asked for, where a human may notice the PR mid-flip, takes `--wip` to carry `[WIP]`
+on the title for the ten seconds it is ready.
 
 ## The stale nudge
 
-`STALE` comes at the first poll past each 30% of the budget without any change (every 30 minutes
-without a budget) and resets on activity. Print one line for the user and keep watching:
+`STALE` says nothing has changed for a while. Print one line for the user and keep watching:
 
-```
+```text
 ⚠️ PR #42 quiet 22m, 40m of budget left. pending: e2e (queued), review by Copilot. My call: keep.
 ```
 
-The facts are in the verdict and the pending lines; the call is yours: stop, keep, or extend.
+The facts are in the verdict and the `pending:` lines; the call is yours: stop, keep, or extend.
 Never block on a question here; the user answers when they look.
