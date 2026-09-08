@@ -46,8 +46,9 @@ Procedure: gather context, check out locally, trace the change, deliver a summar
 **Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and quiet / reviews only), the cheap
 sub-agent that runs the loop, the stale nudge. Uses `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
 
-**Draft PR that review bots ignore** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
-`pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft; chasing beyond it only on the user's word that a bot exists, with `--wip` on the title.
+**Draft PR, opened or pushed to** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
+`pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft they would otherwise skip. Your own command, once per head
+commit; no watch does it for you. Chasing beyond it only on the user's word that a bot exists, with `--wip` on the title.
 
 **Stuck CI check with no manual retry** -> [`references/commits.md`, Empty commits](references/commits.md#empty-commits)
 The last-resort empty commit: when it beats retrying the check, and the zero-file-change guards that keep approvals alive.

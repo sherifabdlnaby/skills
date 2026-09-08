@@ -80,8 +80,10 @@ The parent reacts, then relaunches the same watcher, same `--watcher` id.
 
 ## Draft PRs and review bots
 
-Review bots skip drafts. In a mode that answers bot reviews, a draft is always flicked, alongside
-the watch rather than before it:
+Review bots skip drafts, so a draft PR gets a flick: on opening one, and again on every head commit
+you push to it. `watch` never does this for you. It is a second command you run yourself, and the
+only flick state `watch` touches is a leftover one it reverts. Run it alongside the watch rather
+than before it:
 
 ```
 python3 <git-skill-dir>/scripts/pr-watch.py flick --pr <N> --repo <OWNER/REPO>

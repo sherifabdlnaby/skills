@@ -270,6 +270,9 @@ The number and URL come from the create command's output; carry them forward.
    ```
    [<PR_Title>](<PR_URL>)
    ```
+3. **Flick it, if it is a draft**, and again after every later push to it, per
+   [`watch.md`](./watch.md#draft-prs-and-review-bots). Review bots skip drafts and nothing else does
+   this for you, so a skipped flick is a PR nobody reviews.
 
 ## After `gh stack submit`
 
@@ -287,13 +290,13 @@ per PR:
 Ask the mutation for `pullRequest { updatedAt }` and keep what it returns; that is the value
 [Updating an open PR](#updating-an-open-pr) compares against.
 
-Drafts, like `gh pr create`. `--open` marks new *and existing* PRs ready for review, so it flips
-drafts you meant to keep.
+Drafts, like `gh pr create`, so each one gets its own flick, step 3 above.
+`--open` marks new *and existing* PRs ready for review, so it flips drafts you meant to keep.
 
 ## Updating an open PR
 
 **New commits during review:** address feedback with new commits, not amends or history-rewriting force-pushes; reviewers read incremental changes more easily. The scoping rule from
-[`commits.md`](./commits.md) still applies. A restack force-pushes the layers above by design; this rule is about the layer you edited.
+[`commits.md`](./commits.md) still applies. A restack force-pushes the layers above by design; this rule is about the layer you edited. A push to a draft earns another flick, one per head commit.
 
 **`gh pr edit --body` is destructive:** the flag replaces the whole body, so anything missing from your payload (Human Note, AI footer, links, collapsibles) is erased. Always:
 
