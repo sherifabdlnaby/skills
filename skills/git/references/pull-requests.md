@@ -69,6 +69,8 @@ Their words go in the skeleton's `[!NOTE]` callout at the very top of the body, 
 The skeleton below is the shape; these are the rules for filling each block.
 
 - **One-line summary of the change**: ALWAYS include.
+- **Screenshots**: media the PR already has, right under the summary so the reviewer sees it first. Unmarked, so the block goes away with no trace when there is no media, and no hook asks for it. Past
+  two pictures, lead with the one that carries the change and put the rest in a collapsible. What is worth attaching at all is [Attaching media](#attaching-media).
 - **Why / big picture / Problem we are solving**: ONLY if User gave you this in the context. NEVER assume or invent a WHY.
 - **User-facing Changelog style bullet points**: Include when we change more than one possibly unrelated things.
 - **Breaking changes**: a `> [!WARNING]` callout naming what breaks and what the reader must do about it.
@@ -119,6 +121,16 @@ other comment and `<...>` placeholder, or remove it with its block:
 <!-- pr:summary -->
 
 [TICKET-123](link) | xxxx yyy zz. <!-- short summary, always; no ticket, no prefix -->
+
+**Screenshots** <!-- unmarked and optional: drop the block, heading included, when there is no media -->
+
+<the one picture that carries the change>
+
+<details><summary>More screenshots</summary>
+
+<the rest, only past two pictures>
+
+</details>
 
 **Why** <!-- pr:why -->
 
@@ -212,6 +224,60 @@ _<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with 
 ```markdown
 _<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
+
+## Attaching media
+
+`--attach <file>` uploads a local image or video into the body. Repeatable, and on `gh pr create`,
+`gh pr edit` and `gh pr comment`. Assume it is there. If `gh` says there is no such flag, the `gh` here
+is older than 2.99.0.
+
+**Don't go out of your way to attach media:**
+
+- **A file on disk.** A screenshot from your own debugging, a recording the user gave you, an image a
+  test or build wrote out. Attach it when it fits and helps understanding.
+- **A dev env already running.** Take the before and after from it. Do not start a server, an app or a
+  browser for the sole purpose of getting a screenshot.
+- **Unless the user asks.** Then start what you need, take the shot, attach it. The ask holds for the rest of the session.
+
+When to attach? A picture is worth it when the code or prose cannot explain the outcome:
+
+- UI you changed, before and after. The diff has the CSS, the picture has the result.
+- A UI error or state that shows the problem.
+- Rendered output: a report, or a chart.
+- A flow, as video or screenshots, when the order or the timing is the point.
+
+If a code fence, a mermaid graph or anything else says it better, use that.
+
+### How it works
+
+**The body file decides where it lands.** Write the Markdown reference where you want the media, then
+attach the same path: `gh` swaps the reference for the uploaded URL and keeps the alt text you wrote.
+In a PR body that place is the **Screenshots** block, see [Body and Description](#body-and-description).
+
+```bash
+gh pr create --draft --assignee @me --body-file /tmp/pr-body.md \
+  --attach ./before.png --attach ./after.png
+```
+
+With `/tmp/pr-body.md` carrying the references, alt text and all:
+
+```markdown
+**Changes** <!-- pr:changes -->
+
+- Empty state now explains what to do next.
+
+| Before                    | After                   |
+| ------------------------- | ----------------------- |
+| ![Bare empty list](./before.png) | ![Empty list with a call to action](./after.png) |
+```
+
+Outside a body file, alt text follows the path after `#`, as in
+`--attach './login.png#The login error state'`; without it the filename becomes the alt text. Video is a
+player and has no alt text. Alt text is public, so [SKILL.md](../SKILL.md) voice applies.
+
+**A failed upload does not fail the PR.** Partial success still creates the PR and prints its URL, then
+exits non-zero. Read the URL. Read that exit code as "nothing happened" and run create again, and the
+user has two PRs. Add what failed with `gh pr edit --attach`.
 
 ## Running `gh pr create`
 

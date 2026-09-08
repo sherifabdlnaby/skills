@@ -40,6 +40,10 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 8. End every reply with the AI footer, its tier picked per reply by
    [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure), since one round routinely mixes all three.
 
+**A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply
+mutation takes no file. So a picture goes on the PR-level comment or in the body, and the thread reply
+links to it. When to attach at all is [Attaching media](./pull-requests.md#attaching-media).
+
 ## Batching
 
 A review round is one query in and one mutation out. `gh pr view --json` has no `reviewThreads`

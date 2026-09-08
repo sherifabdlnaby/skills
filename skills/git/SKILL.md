@@ -1,13 +1,15 @@
 ---
 name: git
 description: >
-  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open PR, stack PRs (also when gh-stack drives the stack), or write/update the description of a Pull Request (PR / stacked diff), respond to review comments, review a PR, watch/babysit a PR's CI or reviews, or get a review bot (Copilot, Bugbot) to run on a draft PR.
+  Load when planning or about to git commit, branch, push, rebase, resolve a merge conflict, open PR, stack PRs (even when gh-stack drives the stack),
+  or write/update the description of a Pull Request (PR),
+  attach a screenshot or video to a PR, respond to review comments, review a PR, watch/babysit a PR's CI or reviews.
   Carries the user's git conventions and style you are expected to match. Load as early as possible, the moment git or GitHub work is anywhere in the chat's future.
 license: MIT
 argument-hint: "[commit|branch|pr|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Git
@@ -24,7 +26,7 @@ here, mechanics via the gh-stack skill), the gh-stack/manual path probe, cascade
 Pre-staging walk, file confirmation, message style, hook-failure handling, scoping, editor-free squash, empty commits.
 
 **Pull Requests** (open, update) -> [`references/pull-requests.md`](references/pull-requests.md) Pre-flight survey, title format (including the stacked `[n/N]` marker), body skeleton and how to write
-descriptions, AI footers, post-create flow, finishing PRs after `gh stack submit`, linking PRs, updating a body without clobbering it.
+descriptions, attaching screenshots and video, AI footers, post-create flow, finishing PRs after `gh stack submit`, linking PRs, updating a body without clobbering it.
 
 **Responding to review comments** (on your own/target PR) -> [`references/review-responses.md`](references/review-responses.md) Classify the reviewer (automated bot/AI tool, an AI-disclosed agent
 behind a human account, or a human), then fix / push back / escalate; in-thread replies, thread resolution, re-requesting review, batching a round into one GraphQL query and one aliased mutation,
