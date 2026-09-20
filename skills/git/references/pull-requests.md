@@ -1,6 +1,9 @@
 # Pull Requests
 
-Operational mechanics for opening and updating PRs.
+Covers: pre-flight, title (with the stacked `[n/N]` marker), `gh pr create` flags, post-create lines, finishing PRs after `gh stack submit`, updating an open PR.
+
+Operational mechanics for opening and updating PRs. The body itself (voice, blocks, visuals,
+receipts, skeleton, footers) is [`pr-body.md`](./pr-body.md): read it before drafting.
 
 Apply [SKILL.md](../SKILL.md) voice rules to every title, body, and comment.
 
@@ -25,7 +28,7 @@ Two more, batched with it:
 
 - `gh api user --jq '.login'`: cache as `<GITHUB_USERNAME>` for the AI footer.
 - Repo template or PR instructions? `PULL_REQUEST_TEMPLATE*` under `.github/` or the root, and the repo's own agent
-  instructions. Either one changes the body shape: see the **Repo template** rule under [Notes](#notes).
+  instructions. Either one changes the body shape: see **Repo template** under [Receipts](./pr-body.md#receipts).
 
 ## Title
 
@@ -57,203 +60,11 @@ Picking this up in a later session: a real number in the existing titles means t
 so keep it. A literal `N` stays literal. A merged stack keeps `[2/N]` forever
 (why: a real number would claim a plan the user never made).
 
-## Body: Human Note
-
-A **Human Note** is the user's own words at the top of the PR body, in their voice instead of yours. It is opt-in, and the user is the one who opens it: they either hand you a note or ask for the PR
-to carry one. You never open a question about it, so drafting the body never waits on an answer. If you are already asking the user something else, offering the note as one more option is fine.
-
-Their words go in the skeleton's `[!NOTE]` callout at the very top of the body, exactly as written: no paraphrasing, typo fixes, punctuation changes, or voice normalization.
-
-## Body and Description
-
-The skeleton below is the shape; these are the rules for filling each block.
-
-- **One-line summary of the change**: ALWAYS include.
-- **Screenshots**: media that can help user review the PR, right under the summary so the reviewer sees it first.
-  Past two pictures, lead with the one that carries the change and put the rest in a collapsible. What is
-  worth attaching is [Attaching media](#attaching-media). How `--attach` uploads, and how to frame a
-  screenshot, is [`attach.md`](./attach.md).
-- **Why / big picture / Problem we are solving**: ONLY if User gave you this in the context. NEVER assume or invent a WHY.
-- **User-facing Changelog style bullet points**: Include when we change more than one possibly unrelated things.
-- **Breaking changes**: a `> [!WARNING]` callout naming what breaks and what the reader must do about it.
-- **Per-change narration**: NEVER. Let the code diff speak for itself.
-- **Review guide**: where to start and what deserves a close look; a diff that reads linearly says so instead.
-- **Collapsible: How to test locally**: how the reader runs this themselves. Written for them, not a record of what you did.
-- **Collapsible: rationale**: the back and forth with the user that shaped the PR, when there was one.
-- **Collapsible: things that didn't work**: when dead ends shaped the solution, what was tried and why it failed.
-- **Collapsible: Tests & Validation**: what you actually ran, and what it showed. ALWAYS when meaningful manual or automated validation happened. Never a plan, never something you did not run.
-- **Collapsible: examples**: when examples genuinely clarify the diff.
-- **Collapsible: Follow-ups / out of scope**: what was seen and deliberately left for later, so the reviewer does not ask for it here.
-- **Clickable links** (parent ticket or epic, related PRs, docs used): ALWAYS when they exist. The ticket itself prefixes the summary line.
-
-### Notes
-
-- Use GitHub alerts/callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) to surface information the reviewer must not miss.
-- The `<!-- pr:x -->` markers are structure receipts, invisible on GitHub; every PR body keeps all of
-  them, hook or no hook (the hook that nudges about missing ones ships beside this skill, may not be
-  installed, and only prints an informational note). A marked block that does not apply keeps its
-  marker and says `Not applicable: <reason>.` in its place, the reason four or five words long. An
-  unmarked block (Human Note, the Breaking warning, every collapsible) is dropped when it does not apply.
-- **Markdown inside `<details>` needs a blank line after `</summary>`**, as in the skeleton. Without
-  it a fenced code block renders as literal backticks (verified against GitHub's own renderer).
-- **Repo template** (`<!-- pr:skeleton-off: <reason> -->`): when the repo ships a
-  `PULL_REQUEST_TEMPLATE` or its own instructions say how a PR body reads, theirs is the shape
-  and ours is the content. Keep every heading and checkbox of theirs, in their order, and fold
-  our blocks into the sections they fit: summary and why into their description, changes and
-  review guide under the nearest matching heading, our collapsibles and Relevant Links after
-  their last section, the AI footer last. `gh pr create --body-file` does not apply the template
-  for you: read the file and merge by hand. Drop this one hidden marker anywhere in the body
-  with a reason (e.g. `merged with the repo PR template`); it silences the missing-marker
-  nudge where that hook runs, since `pr:x` markers may not survive the merge. Without a
-  template or repo instruction, the skeleton is the shape. Invisible on GitHub, like the
-  other markers.
-
-Skeleton. The `<!-- pr:x -->` comments are the only ones that survive into the body; replace every
-other comment and `<...>` placeholder, or remove it with its block:
-
-```markdown
-> [!NOTE]
->
-> ### 🧍🏻 Human Note
->
-> xxxx yyy zz <!-- verbatim, only if user gave one -->
-
-### Summary
-
-<!-- pr:summary -->
-
-[TICKET-123](link) | xxxx yyy zz. <!-- short summary, always; no ticket, no prefix -->
-
-**Screenshots** <!-- unmarked and optional: drop the block, heading included, when there is no media -->
-
-<the one picture that carries the change>
-
-<details><summary>More screenshots</summary>
-
-<the rest, only past two pictures>
-
-</details>
-
-**Why** <!-- pr:why -->
-
-<the problem being solved, as the user gave it, or `Not applicable: user gave no why.`>
-
-**Changes** <!-- pr:changes -->
-
-<user-facing changelog bullets, or `Not applicable: this PR contains one focused change.`>
-
-> [!WARNING]
-> **Breaking:** what breaks, and what the reader must do about it.
-
-**Review guide** <!-- pr:review-guide -->
-
-<where to start, or `Not applicable: the diff is small and can be reviewed linearly.`>
-
----
-
-<details><summary>How to test locally</summary>
-
-<!-- commands and steps for the reader, when there are any -->
-
-</details>
-
-<details><summary>Rationale</summary>
-
-<!-- the back and forth that shaped the PR, when there was one -->
-
-</details>
-
-<details><summary>Things that didn't work</summary>
-
-tried xxxx, didn't work because yyy.
-
-</details>
-
-<details><summary>Tests & Validation</summary>
-
-<!-- what you ran, and what it showed -->
-
-</details>
-
-<details><summary>Examples</summary>
-
-<!-- only when an example clarifies the diff -->
-
-</details>
-
-<details><summary>Follow-ups / out of scope</summary>
-
-<!-- seen and deliberately left for later -->
-
-</details>
-
-### Relevant Links
-
-<!-- pr:links -->
-
-<parent ticket or epic, docs, related PRs, prev/next PR (manual stacks only; gh-stack renders the stack); otherwise `Not applicable: no relevant external links.`>
-
----
-
-_<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
-<!-- footer emoji by how much human judgment is behind the PR: 🤖 Agent Decided, 🧍‍♂️👍 Human Approved, 🤝 Human Guided; see AI footers -->
-```
-
-### Body: linking
-
-- The ticket prefixes the summary line; parent ticket or epic go in the `### Relevant Links` block.
-- Ticket URL: from the user, a repo config, or an earlier PR in the repo. None known means plain `TICKET-123` with no link, never a guessed base URL.
-- Related PR, same repo: `#<num>` (GitHub auto-links). Another repo: `org/repo#<num>`.
-- Docs (Notion, Confluence, RFC, README): clickable Markdown links, avoid raw URLs.
-- Stacked PRs, manual path only: previous and next PR in `### Relevant Links`; return to edit once the next PR's URL exists. Under gh-stack, GitHub renders the stack itself.
-
-### AI footers
-
-These are the PR-**body** footers, one per tier. Which tier to pick, the placeholders, and the
-comment and reply footers all live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure). Append at
-the very end, after a `---` separator. Where the disclosure hook that ships beside this skill is
-installed, a post is denied when the footer is missing, and when a human tier is missing its
-degree word, so it goes in before the first `gh pr create`.
-
-```markdown
-_<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
-```
-
-```markdown
-_<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
-```
-
-```markdown
-_<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
-```
-
-## Attaching media
-
-`--attach <file>` is on `gh pr create`, `gh pr edit`, and `gh pr comment`. It uploads a local image or
-video and substitutes the matching Markdown path in the body file with the uploaded URL. Repeatable.
-Use it; a version number is not a preflight. How the swap, alt text, screenshot framing, and a failed
-upload work live in [`attach.md`](./attach.md). Read that when attaching.
-
-**Don't go out of your way to attach media:**
-
-- **A file on disk.** A screenshot from your own debugging, a recording the user gave you, an image a
-  test or build wrote out. Attach it when it fits and helps understanding.
-- **A dev env already running.** Take the before and after from it. Do not start a server, an app or a
-  browser for the sole purpose of getting a screenshot.
-- **Unless the user asks.** Then start what you need, take the shot, attach it. The ask holds for the rest of the session.
-
-A picture is worth it when the code or prose cannot explain the outcome:
-
-- UI you changed, before and after. The diff has the CSS, the picture has the result.
-- A UI error or state that shows the problem.
-- Rendered output: a report, or a chart.
-- A flow, as video or screenshots, when the order or the timing is the point.
-
-If a code fence, a mermaid graph or anything else says it better, use that.
-
 ## Running `gh pr create`
 
 - Body via `--body-file`, so quoting never eats backticks or `$`, and the file stays editable for the next update.
+- `--attach <file>` uploads a picture or video into the body; repeatable, also on `gh pr edit` and `gh pr comment`. Use it; a version number is not a preflight.
+  When a picture is due is [Visuals](./pr-body.md#visuals); how the upload works is [`attach.md`](./attach.md).
 - `--assignee @me`, so PRs land in the user's assigned queue.
 - `--draft` by default unless told otherwise; prevents premature reviewer pings and lets the user inspect first.
 - `--base <branch>` for any PR above the bottom of a stack. The stack relationship lives in `--base`; without it the PR targets `<trunk>` and the stack collapses.
@@ -281,8 +92,8 @@ Finish all of them in one aliased mutation (see [Batching](./review-responses.md
 per PR:
 
 - **title**: per [Title](#title), marker included.
-- **body**: the skeleton, written straight over the generated one. That body is the commit message
-  from seconds ago, so there is nothing in it to preserve and no read to do first.
+- **body**: the [skeleton](./pr-body.md#skeleton), written straight over the generated one. That body
+  is the commit message from seconds ago, so there is nothing in it to preserve and no read to do first.
 
 Ask the mutation for `pullRequest { updatedAt }` and keep what it returns; that is the value
 [Updating an open PR](#updating-an-open-pr) compares against.
@@ -295,7 +106,7 @@ drafts you meant to keep.
 **New commits during review:** address feedback with new commits, not amends or history-rewriting force-pushes; reviewers read incremental changes more easily. The scoping rule from
 [`commits.md`](./commits.md) still applies. A restack force-pushes the layers above by design; this rule is about the layer you edited.
 
-**`gh pr edit --body` is destructive:** the flag replaces the whole body, so anything missing from your payload (Human Note, AI footer, links, collapsibles) is erased. Always:
+**`gh pr edit --body` is destructive:** the flag replaces the whole body, so anything missing from your payload (Human Note, AI footer, receipts, links, collapsibles) is erased. Always:
 
 1. Read the current body: `gh pr view <num> --json body --jq .body`. Skip this read when `updatedAt` still matches what your last edit returned; nothing has changed since. A mismatch means re-read,
    not that the body itself changed (comments, labels and pushes move it too).
