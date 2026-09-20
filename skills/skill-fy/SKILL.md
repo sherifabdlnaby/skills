@@ -1,5 +1,5 @@
 ---
-name: scaffold-skill
+name: skill-fy
 description: >
   Load when creating a new skill, scaffolding a SKILL.md, adding a reference page to a skill, writing or tuning a skill's description, or restyling/auditing an existing skill.
   Carries the authoring patterns (progressive disclosure, router, voice, triggering) a skill is shaped with.
@@ -10,7 +10,7 @@ metadata:
   version: "0.1.0"
 ---
 
-# scaffold-skill
+# skill-fy
 
 A skill encodes ideas and patterns, not specific prescriptions. Everything below is a default with an intent behind it;
 deviate when you can state what following it would cost the skill at hand. Don't copy an example's shape verbatim into a skill it doesn't fit just to follow.

@@ -1,4 +1,4 @@
-# scaffold-skill
+# skill-fy
 
 <!-- token-estimates:start -->
 
@@ -20,7 +20,7 @@ than read, so they are left out.
 
 <!-- token-estimates:end -->
 
-`scaffold-skill` helps create or restructure an AI skill that is concise, easy to trigger correctly, and organized so only relevant guidance is loaded for a task. It is useful when a skill has become
+`skill-fy` helps create or restructure an AI skill that is concise, easy to trigger correctly, and organized so only relevant guidance is loaded for a task. It is useful when a skill has become
 a tool manual, has unclear activation rules, or needs references and reusable templates.
 
 [Read the canonical skill instructions.](SKILL.md)

@@ -40,7 +40,7 @@ than read, so they are left out.
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
 | [`mise-fy`](skills/mise-fy/)                                                           |  `2,209` | `27,567` |
 | [`review`](skills/review/)                                                             |    `325` |    `325` |
-| [`scaffold-skill`](skills/scaffold-skill/)                                             |  `1,532` |  `2,890` |
+| [`skill-fy`](skills/skill-fy/)                                                         |  `1,532` |  `2,890` |
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
 | [`variants/afk-soon`](skills/variants/afk-soon/)                                       |    `166` |    `166` |
 | [`variants/afk-yolo`](skills/variants/afk-yolo/)                                       |    `114` |    `114` |
@@ -77,7 +77,7 @@ than read, so they are left out.
    - [afk-yolo](skills/variants/afk-yolo/) | Max non-destructive autonomy.
    - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
 7. [review](skills/review/) | WIP: Review patterns.
-8. [scaffold-skill](skills/scaffold-skill/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
+8. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
 9. [grilling](skills/grilling/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool instead of markdown.
    - [grill-me](skills/grill-me/) | Start the interview by hand.
 
