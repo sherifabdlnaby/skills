@@ -2,7 +2,8 @@
 
 Covers: intake, invocation decision, layout, assets and the starter skeletons, frontmatter, build order, reference-page patterns, hand-off.
 
-Build it talking with the user: the calls that shape the skill (what it encodes, who fires it, how it splits) are theirs, ask instead of assuming.
+Build it talking with the user: the calls that shape the skill (what it encodes, who fires it, how it splits) are theirs. Ask in rounds through the ask-user tool, a recommended option
+first; their picks are the spec. Before writing, hand back an objective read of the plan, including where you'd decide differently, as one more round.
 
 ## Intake
 

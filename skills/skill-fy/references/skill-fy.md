@@ -54,8 +54,12 @@ Symptom -> mechanism -> fix. Cite the file and line for each finding.
 
 ### 3. Plan the cuts with the owner
 
-Group the findings: cheap, structural, needs the owner. Lead with what you'd cut first and the tokens it saves. Ask which ones are wanted; the owner may keep a "smell" on purpose, and that
-decision is the skill's taste, not a defect. A rule of this page never overrides a stated preference.
+The owner is the eval: there are no sample outputs to test against, so their picks are the spec. Run it as a design session:
+
+1. **Rounds.** Group the findings (cheap, structural, needs the owner) and put them as questions through the ask-user tool, a recommended option first. Lead with what you'd cut first and the
+   tokens it saves. The owner may keep a "smell" on purpose; that decision is the skill's taste, not a defect, and a rule of this page never overrides it.
+2. **Audit.** Before converting, hand over an objective read of the whole plan, including where you'd decide differently from their picks, as one more round.
+3. **Convert** only after that round.
 
 ### 4. Convert
 

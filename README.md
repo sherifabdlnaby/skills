@@ -21,7 +21,7 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 
 <p>
   <img src="https://img.shields.io/badge/All%20SKILL.md-29%2C202%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 29,202 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-99%2C236%20tokens-2ea44f?style=flat-square" alt="All Markdown: 99,236 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-99%2C362%20tokens-2ea44f?style=flat-square" alt="All Markdown: 99,362 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -40,7 +40,7 @@ than read, so they are left out.
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
 | [`mise-fy`](skills/mise-fy/)                                                           |  `2,209` | `27,567` |
 | [`review`](skills/review/)                                                             |    `325` |    `325` |
-| [`skill-fy`](skills/skill-fy/)                                                         |  `1,801` |  `5,955` |
+| [`skill-fy`](skills/skill-fy/)                                                         |  `1,801` |  `6,081` |
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
 | [`variants/afk-soon`](skills/variants/afk-soon/)                                       |    `166` |    `166` |
 | [`variants/afk-yolo`](skills/variants/afk-yolo/)                                       |    `114` |    `114` |
