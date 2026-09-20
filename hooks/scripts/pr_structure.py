@@ -6,8 +6,7 @@ there leaves a receipt. A written block keeps its hidden `<!-- pr:x -->` marker;
 dropped one is named, with a reason, in a single `<!-- pr:dropped x: why | y: why -->`
 line. Wired to the pre-shell hook (PreToolUse:Bash / beforeShellExecution): a
 `gh pr create` or `gh pr edit` whose body lacks a receipt for any block is denied,
-and the denial names the blocks. A skip is then a decision with a reason, never an
-oversight.
+and the denial names the blocks.
 
 Escape hatch: a body carrying a `<!-- pr:skeleton-off: <reason> -->` marker passes
 untouched. For a body merged into a repo PULL_REQUEST_TEMPLATE or any imposed

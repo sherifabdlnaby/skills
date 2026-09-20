@@ -6,7 +6,7 @@ Covers: `--attach` on create/edit/comment, body-file placement and alt text, scr
 `gh pr edit` and `gh pr comment`. Use it. A version number is not a preflight. Only if `gh` rejects
 the flag as unknown is this `gh` older than 2.99.0.
 
-When a picture is due, and where in the body it sits, is [`pr-body.md`](./pr-body.md#visuals).
+When to attach a picture, and where it sits in the body: [`pr-body.md`](./pr-body.md#visuals).
 
 A thread reply cannot take a file; put the picture on the PR-level comment or in the body, and link it
 from the thread. That constraint is [`review-responses.md`](./review-responses.md).
@@ -15,8 +15,8 @@ from the thread. That constraint is [`review-responses.md`](./review-responses.m
 
 **The body file decides where it lands.** Write the Markdown reference where you want the media, then
 attach the same path: `gh` swaps the reference for the uploaded URL and keeps the alt text you wrote.
-In a PR body that place is the **Visuals** block, or the changelog bullet or review guide stop the
-picture supports.
+In a PR body that place is the **Visuals** block, or the changelog bullet or review guide stop that
+the picture supports.
 
 ```bash
 gh pr create --draft --assignee @me --body-file /tmp/pr-body.md \

@@ -2,8 +2,8 @@
 
 Covers: pre-flight, title (with the stacked `[n/N]` marker), `gh pr create` flags, post-create lines, finishing PRs after `gh stack submit`, updating an open PR.
 
-Operational mechanics for opening and updating PRs. The body itself (voice, blocks, visuals,
-receipts, skeleton, footers) is [`pr-body.md`](./pr-body.md): read it before drafting.
+Mechanics for opening and updating PRs. The body has its own page, [`pr-body.md`](./pr-body.md).
+Read it before you draft.
 
 Apply [SKILL.md](../SKILL.md) voice rules to every title, body, and comment.
 
@@ -63,8 +63,8 @@ so keep it. A literal `N` stays literal. A merged stack keeps `[2/N]` forever
 ## Running `gh pr create`
 
 - Body via `--body-file`, so quoting never eats backticks or `$`, and the file stays editable for the next update.
-- `--attach <file>` uploads a picture or video into the body; repeatable, also on `gh pr edit` and `gh pr comment`. Use it; a version number is not a preflight.
-  When a picture is due is [Visuals](./pr-body.md#visuals); how the upload works is [`attach.md`](./attach.md).
+- `--attach <file>` uploads a picture or video into the body. Repeatable, also on `gh pr edit` and `gh pr comment`. Use it; a version number is not a preflight.
+  When to attach: [Visuals](./pr-body.md#visuals). How the upload works: [`attach.md`](./attach.md).
 - `--assignee @me`, so PRs land in the user's assigned queue.
 - `--draft` by default unless told otherwise; prevents premature reviewer pings and lets the user inspect first.
 - `--base <branch>` for any PR above the bottom of a stack. The stack relationship lives in `--base`; without it the PR targets `<trunk>` and the stack collapses.
