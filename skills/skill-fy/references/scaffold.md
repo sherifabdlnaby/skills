@@ -1,6 +1,6 @@
-# Scaffold or Restructure a Skill
+# Scaffold a New Skill
 
-Covers: intake, invocation decision, layout, assets, frontmatter, build order, reference-page patterns and cross-linking, variants, optional shapes.
+Covers: intake, layout, frontmatter, build order, reference pages (commands, inventory, on-failure), cross-linking.
 
 ## Intake
 
@@ -12,6 +12,7 @@ Settle before touching files, with the user (ask, don't assume):
    verified version.
 2. **Who fires it.** The agent on its own, or only the user typing its name. Decision rules in [SKILL.md#descriptions](../SKILL.md#descriptions).
 3. **How many distinct tasks.** One task fits a single SKILL.md; several want a router.
+4. **What it needs from the environment.** Walk the three axes in [SKILL.md#environment](../SKILL.md#environment); the answer is the Compatibility section, or its absence.
 
 ## Layout
 
@@ -20,9 +21,12 @@ One shape this commonly takes (keep only what the skill needs):
 ```
 <name>/
   SKILL.md
-  references/   # per-task rule pages; nest a dir when an axis has variants, e.g. references/ci/github.md
-  assets/       # known-good files the skill copies out, instead of retyping them from prose
-  scripts/      # executables the skill runs (long scripts live here, not inline in prose)
+  README.md                     # the human home: what it is, when to use it; not read by the agent
+  references/                   # per-task rule pages; nest a dir when an axis has variants, e.g. references/ci/github.md
+    setup.md                    # slow path, one-time: install, auth, config; reached only from an On failure block
+    troubleshooting.md          # slow path, diagnose; reached only from an On failure block
+  assets/                       # known-good files the skill copies out, instead of retyping them from prose
+  scripts/                      # executables the skill runs (long scripts live here, not inline in prose)
 ```
 
 **Assets** are for anything the skill installs or starts from: a CI workflow a cicd skill drops into
@@ -30,6 +34,8 @@ One shape this commonly takes (keep only what the skill needs):
 template, a PR-body skeleton. Copy the asset then adjust; an agent retyping a file from prose
 drifts, a copied file doesn't. This skill eats its own cooking:
 [`../assets/SKILL-skeleton.md`](../assets/SKILL-skeleton.md) is the starting file for a new skill.
+
+**Slow-path pages** exist only when the skill has a slow path. Nothing in a workflow links to them; only an `On failure` block does.
 
 ## Frontmatter
 
@@ -47,12 +53,14 @@ metadata:
 
 ## Build order
 
-1. **Copy [`../assets/SKILL-skeleton.md`](../assets/SKILL-skeleton.md)** in as SKILL.md; fill the cross-cutting doctrine, then the router with planned entries.
+1. **Copy [`../assets/SKILL-skeleton.md`](../assets/SKILL-skeleton.md)** in as SKILL.md; fill the cross-cutting doctrine, then the router with planned entries. Keep or delete the Compatibility section
+   by the intake answer.
 2. **Reference pages one at a time**, each starting from [`../assets/reference-skeleton.md`](../assets/reference-skeleton.md); keep each router entry's contents line current as its page lands, and
    link pages sideways as their rules touch.
 3. **Voice strip pass** over everything (the Voice doctrine in SKILL.md).
 4. **Description last**, once the tasks are real. (why: written first, it bakes in branches the body ends up not having.)
-5. **Hand off as a draft.** Tell the user what you'd cut first; the distilling is theirs to do.
+5. **Trace the draft**: one walk per task the description names, per [`skill-fy.md#2-trace`](skill-fy.md#2-trace). Fix orphans, dead links, and a performative split before handoff.
+6. **Hand off as a draft.** Tell the user what you'd cut first; the distilling is theirs to do.
 
 ## Reference pages
 
@@ -64,8 +72,25 @@ Start a page from [`../assets/reference-skeleton.md`](../assets/reference-skelet
   in `branches.md#restacking`, read that too"). A hub page (a `-fy`/audit flow) references every
   other doc; a topic page links down into its variant pages (`ci.md` -> `ci/github.md`). This web
   is what lets an agent land on one page and still find the rest of the skill.
-- **Fix discovery gaps in place.** When one route never finds a rule living on another page, add a small conditional cross-link at every entry point, anchored to the exact `#section` — not a
+- **Fix discovery gaps in place.** When one route never finds a rule living on another page, add a small conditional cross-link at every entry point, anchored to the exact `#section`, not a
   restructure.
 - **Covers line.** Open with `Covers: ...` naming the page's sections; it doubles as the router's contents line.
 - **Safety first.** Rules that prevent damage lead the page, before workflow.
+- **Commands are a fenced block**: synopsis with the flags that matter, then the usual call. No prose walkthrough; the cache line in SKILL.md sends the agent to `--help` for the rest.
+
+  ```sh
+  gh pr create [--fill] [--base <branch>] [--draft]   # synopsis
+  gh pr create --fill --base main                     # usual call
+  ```
+
+- **Inventory block** when the task consumes a lot of state: one wide read into a temp file, then local `jq` queries. It runs because the task needs the data, never as a pre-check.
+
+  ```sh
+  state=$(mktemp) && gh pr view --json number,title,state,reviews,statusCheckRollup,files > "$state"
+  jq '.reviews[] | {author: .author.login, state}' "$state"
+  jq '.statusCheckRollup[] | select(.conclusion != "SUCCESS") | .name' "$state"
+  ```
+
+- **On failure block** closes the page: symptom, quick fix, then the slow-path page by scenario (`setup.md` for one-time install/auth/config, `troubleshooting.md` for diagnosis). The workflow above it
+  never mentions prerequisites.
 - **Gotcha catalogs.** Symptom -> mechanism -> discriminator -> fix. The discriminator (how to tell this case from its lookalike) is the valuable part.
