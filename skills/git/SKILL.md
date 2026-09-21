@@ -25,9 +25,11 @@ here, mechanics via the gh-stack skill), the gh-stack/manual path probe, cascade
 **Committing** -> [`references/commits.md`](references/commits.md)
 Pre-staging walk, file confirmation, message style, hook-failure handling, scoping, editor-free squash, empty commits.
 
-**Pull Requests** (open, update) -> [`references/pull-requests.md`](references/pull-requests.md) Pre-flight survey, title format (including the stacked `[n/N]` marker), body skeleton and how to write
-descriptions, `--attach` exists on create/edit/comment, when a screenshot or video is worth attaching, AI
-footers, post-create flow, finishing PRs after `gh stack submit`, linking PRs, updating a body without clobbering it.
+**Pull Requests** (open, update) -> [`references/pull-requests.md`](references/pull-requests.md) Pre-flight survey, title format (including the stacked `[n/N]` marker), `gh pr create` flags,
+post-create lines, finishing PRs after `gh stack submit`, updating a body without clobbering it.
+
+**PR body** (write or rewrite a description) -> [`references/pr-body.md`](references/pr-body.md) Voice for the product and engineer blocks, each block's rule in body order, where a visual
+sits and when to take a screenshot, receipts and the structure hook, the skeleton, linking, AI footers.
 
 **Attach a screenshot or video** -> [`references/attach.md`](references/attach.md)
 `--attach` on create/edit/comment, body-file placement, screenshot framing guidance.
@@ -55,7 +57,7 @@ The last-resort empty commit: when it beats retrying the check, and the zero-fil
 ## Always
 
 **Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**.
-The PR-body template lives in [`references/pull-requests.md`](references/pull-requests.md);
+The PR-body template lives in [`references/pr-body.md`](references/pr-body.md);
 the post templates, one per tier of human judgment behind the post (Agent Decided, Human Approved,
 Human Guided), live in [AI Disclosure](#ai-disclosure) below.
 Use them as verbatim as possible, do not write from memory.
@@ -102,7 +104,7 @@ Carry `<OWNER/REPO>`, `<trunk>` and `<GITHUB_USERNAME>` through the session from
 
 Every post on the user's behalf (comment, reply, issue) ends with an AI footer: a `---`, then one
 line copied verbatim from the templates below. The PR-**body** variants live in
-[`references/pull-requests.md`](references/pull-requests.md) and follow the same rule.
+[`references/pr-body.md`](references/pr-body.md) and follow the same rule.
 
 Placeholders, the same in every footer:
 

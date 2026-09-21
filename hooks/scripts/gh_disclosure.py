@@ -103,7 +103,7 @@ REASON = (
     "A general request to handle the task is not human judgment on the decisions inside it. "
     "The two human tiers also carry a degree in parentheses, so `Human Approved (read):` "
     "passes where `Human Approved:` does not. For a PR body use the `Created with ...` "
-    "footer in references/pull-requests.md. Add it, then retry."
+    "footer in references/pr-body.md. Add it, then retry."
 )
 
 # Distinct from REASON on purpose: "I cannot see your body" and "your footer is
