@@ -60,6 +60,7 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
+          version: "2026.9.13" # pin mise itself, not just the action
           install: true
           install_args: "--locked" # honor mise.lock
           cache: true
@@ -78,7 +79,7 @@ jobs:
           [ "$EVENT" = pull_request ] && scope="pr" || scope="${SCOPE_INPUT:-all}"
           echo "scope=$scope" >> "$GITHUB_OUTPUT"
           # hk's --pr resolves the base via origin/HEAD, which the Actions checkout never sets; point it
-          # at the default branch so hk diffs origin/<default>...HEAD (else it finds 0 files and passes).
+          # at the default branch so hk diffs origin/<default>...HEAD (else it checks every file).
           [ "$scope" = pr ] && git remote set-head origin "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
           # Apply fixes across every step (no --fail-fast); keep the exit code, don't abort.
           rc=0; mise run check --fix "--$scope" || rc=$?

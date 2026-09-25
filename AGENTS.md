@@ -29,7 +29,7 @@ mean they're absent.
 Changing tools, tasks, env, or hooks? Edit the config, don't bolt on scripts, then run `mise run check`. Where things live:
 
 - **`mise.toml`**: the source of truth for `[tools]`, `[tasks]`, `[env]`/`[vars]`, `[settings]`, and `[hooks]`.
-- **`mise.lock`**: resolved versions plus checksums. Commit it; regenerate with `mise install` after a `[tools]` change.
+- **`mise.lock`**: resolved versions plus checksums. Commit it; regenerate with `mise lock` after a `[tools]` change.
 - **`.config/`**: everything that would otherwise clutter the root — `hk.pkl` plus each linter's config (`typos.toml`, `lychee.toml`, `rumdl.toml`, `yamllint.yml`, `betterleaks.toml`). Tools that
   can't find a config there are pointed at it from `.config/hk.pkl`.
 - **`.config/hk.pkl`**: the pre-commit and `check` pipeline (linters and formatters, in Pkl). Add or edit a lint step here.

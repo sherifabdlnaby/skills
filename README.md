@@ -160,13 +160,14 @@ mise trust && mise run setup   # trust config, install tools, self-install the p
 Linters, formatters, and validators run via [hk](https://hk.jdx.dev):
 
 ```bash
-mise run check          # report on staged files (alias: mise run lint)
+mise run check          # report on uncommitted changes (alias: mise run lint)
 mise run check --fix    # apply fixes
 mise run check --all    # whole repo
 mise tasks              # discover every task
 ```
 
-The same `check` task runs in the pre-commit hook and in CI. lychee checks local/relative links only by default (see `.config/lychee.toml`).
+Commits run the fast commit gates on staged files, a push runs the slower push gates, and CI runs both as `mise run check`. lychee checks local/relative links only by default (see
+`.config/lychee.toml`).
 
 ## Releases
 
