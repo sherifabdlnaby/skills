@@ -4,7 +4,7 @@
 
 # Minimum `mise` version. If not matched, will guide user to update.
 # -> Remember to update when relying on newly introduced setting.
-min_version = "2026.8.0" # oldest mise that supports everything in this file
+min_version = "2026.9.13" # oldest mise that supports everything in this file
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
@@ -12,13 +12,16 @@ min_version = "2026.8.0" # oldest mise that supports everything in this file
 # runtimes
 node = "24"
 
+# on first use only (not every contributor needs these)
+# terraform = { version = "1", lazy = true }
+
 # linters & formatters
 actionlint = "1"
-pinact = "3"   # pin GitHub Actions to SHAs; needs a GitHub token for the API (see hk.pkl pinact step)
+pinact = "4"   # pin GitHub Actions to SHAs; needs a GitHub token for the API (see hk.pkl pinact step)
 # rumdl = "0.2"  # markdown lint/format (disabled by default; config in rumdl.toml)
 
 # pre-commit
-hk = "1.54.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs
+hk = "2.2.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
@@ -56,9 +59,9 @@ depends = ["lint"]                                    # ordering only; depends r
 run = "node --test {{vars.test_args}}"
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
-description = "One-time, idempotent project bootstrap: install tools, then runtime deps"
+description = "One-time, idempotent project bootstrap: check prerequisites, install tools, then runtime deps"
 depends_post = ["deps", "setup:stamp"]               # deps after `mise install`; stamp last (see setup:stamp wait_for)
-run = "mise install"                                 # installs tools; runtime deps live in the deps task
+run = "mise doctor project && mise install"          # stop early on a missing prerequisite (see [doctor.checks]); runtime deps live in the deps task
 
 [tasks.deps] # install runtime/project dependencies; runnable on its own after a lockfile change
 # alt engine: experimental [deps] providers can auto-install before every `mise run` instead
@@ -82,6 +85,13 @@ run = '[ "$(cat .config/mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] ||
 [hooks]
 enter = "MISE_OFFLINE=1 mise run setup:check"  # nudge when setup is stale (see vars.setup_version). MISE_OFFLINE stops this `mise run` re-resolving tools online on every `cd`, which hangs the shell offline
 postinstall = "hk install --mise"     # canonical hook install: runs after every `mise install`, idempotent
+
+# ── 🩺 doctor checks ──────────────────────────────────────────────────────────────────────────────────────────────────
+# Prerequisites mise can't install. `mise doctor project` runs them; setup runs it first.
+# [doctor.checks.docker]
+# description = "Docker engine is running"
+# run = "docker info >/dev/null 2>&1"
+# hint = "Start your Docker engine (Docker Desktop, OrbStack, Colima), then re-run: mise run setup"
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]

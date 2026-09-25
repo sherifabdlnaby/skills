@@ -43,7 +43,7 @@ whenever `mise run check --fix` changes something
 
 **Whether to add it is the user's call** (it grants CI write access):
 
-- **Default to report-only `check.yml`** (`contents: read`, suits any repo).
+- **Default to report-only `check.yml`** (`contents: read` + `pull-requests: write`).
 - **Planning interactively:** offer the variant, let the user pick.
 - **Working autonomously:** install the read-only default, don't block, mention the variant afterward.
 
@@ -67,18 +67,19 @@ Caveats (why it's opt-in):
 
 ## Notes & Gotchas:
 
-- **`mise-action` default `version` defaults to CDN-resolved "latest" which is a supply chain risk.
+- **`mise-action` default `version` defaults to CDN-resolved "latest"**, which is a supply chain risk.
 - **Cache key** should hash `mise.toml` + `mise.lock`; stale keys reinstall silently. `mise-action` does this for you; only set `cache_key` to override.
 - **`persist-credentials: false`** on checkout unless a later step pushes with the checkout token.
-- **`check --pr` silently passes in CI unless you set `origin/HEAD`.**
+- **`check --pr` checks the wrong files in CI unless you set `origin/HEAD`.**
   hk's `--pr` is shorthand for `--from-ref DEFAULT_BRANCH --to-ref HEAD`, and it
   resolves `DEFAULT_BRANCH` from the remote's `origin/HEAD` symbolic ref.
   The Actions checkout never sets `origin/HEAD` (you'll see `fatal: ref
-  refs/remotes/origin/HEAD is not a symbolic ref` in the log), so hk falls back
-  to diffing the branch against its own upstream: **0 files, every check passes
-  green** even with real lint errors, a vacuous green (see [`hk.md`](../hk.md)).
+  refs/remotes/origin/HEAD is not a symbolic ref` in the log). hk 2 then diffs
+  against the empty tree and checks **every file**, so a PR goes red on lint debt
+  it never touched.
   `fetch-depth: 0` doesn't help; neither does materializing a local branch (hk
-  reads `origin/HEAD`, not a local ref).
+  reads `origin/HEAD`, not a local ref). hk.pkl's `default_branch` only helps
+  when that ref was fetched, and is wrong for a PR into a non-default base.
   Fix: when scope is `--pr`, point the symbolic ref at the base right before
   running check: `git remote set-head origin "$BASE_REF" >/dev/null 2>&1 || true`
   with `BASE_REF` from `github.event.pull_request.base.ref ||

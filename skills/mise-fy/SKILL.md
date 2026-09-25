@@ -2,14 +2,14 @@
 name: mise-fy
 description: >
   Use when working with mise (mise-en-place) or planning to update mise.toml.
-  If the project use mise consult it even for one-line edits to mise.toml/hk.pkl, hooks, or CI tool setup, as it has the practices and security defaults you'd otherwise skip.
-  Trigger on the intent even when the user never says "mise" (e.g. "update/pin the node version", "set up pre-commit") as long as project already use mise.
+  If the project uses mise, consult it even for one-line edits to mise.toml/hk.pkl, hooks, or CI tool setup, as it has the practices and security defaults you'd otherwise skip.
+  Trigger on the intent even when the user never says "mise" (e.g. "update/pin the node version", "set up pre-commit") as long as the project already uses mise.
   Don't load for routine mise *use* (run/install/trust) that isn't changing config. Optionally use the skill to transform local development into using mise, aka (mise-fy).
 license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.6.0"
+  version: "0.7.0"
 ---
 
 # mise-fy
@@ -70,7 +70,7 @@ Be eager to load local .md references. Do not load online links/references unles
 Install via package manager, activate the shell, shims for non-interactive shells, completions.
 
 **Dev tools / runtimes** (install, pin, update, backends, lockfile, lazy/uncommon tools) -> [`references/tools.md`](references/tools.md)
-Installing a tool or runtime; lazy-installing **uncommon** tools (task-scoped tools & committed `./bin/` **tool stubs**) instead of `[tools]` for everyone.
+Installing a tool or a runtime.
 
 **Runtime integration** (per-runtime: package managers, dep install) -> [`references/runtimes/`](references/runtimes/).
 
@@ -111,16 +111,17 @@ This skill covers running mise *in* CI; the pipeline's shape is cicd-fy's domain
 ## Always applies (regardless of task)
 
 These hold no matter which reference you loaded; check them even when fixated on one task.
-Unlike the opinionated best practices (scope those to your goal; see top), these are the
+Unlike the opinionated best practices (scope those to your goal), these are the
 safety/correctness floor: apply them even on a one-tool change, not polish you'd defer.
 
 1. **Untrusted config errors out.** A `mise.toml` containing `[env]`, hooks, templates, or
    task logic hard-errors as a *whole file* until `mise trust` (interactive shells prompt to
    trust; non-interactive ones error). Only a bare `min_version` + plain-string
-   `[tools]`/`[tasks]` file loads untrusted (since 2026.6.6). A fresh clone needs `mise trust`
-   (or a `trusted_config_paths` entry).
+   `[tools]`/`[tasks]` file loads untrusted (since 2026.6.6). `mise run`/`install`/`exec` trust the
+   active config on their own (since 2026.8.9); everything else (`mise env`, the shell hook,
+   older clients) still errors, so docs keep an explicit `mise trust` (or a `trusted_config_paths` entry).
 2. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
-3. **Set `min_version`** (root level, not under `[settings]`): the oldest release that supports every feature the config uses, never below the known-vulnerable floor (`2026.6.5`), and never
+3. **Set `min_version`** (root level, not under `[settings]`): the oldest release that supports every feature the config uses, never below the known-vulnerable floor (`2026.8.11`), and never
    above what the author has installed. An old client is then told to update instead of failing on a feature it lacks.
 4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set
    `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`.
@@ -133,3 +134,5 @@ safety/correctness floor: apply them even on a one-tool change, not polish you'd
    A setup is slow-path: allowed to be slow, online, interactive. Never make a fast-path task depend on a slow-path one, nag instead;
    the [lane map](references/reference-setup-and-patterns.md#fast-path-vs-slow-path) is the one list of members.
 8. More Generally, always think of how often a task is going to be run by the user. And never make tasks that belong to different cadences depend on each other.
+9. **Keep `mise.toml` top-level sections in order**, including when adding one for the first time: `min_version` → `[tools]` → `[env]` → `[vars]` → `[tasks]` → `[hooks]` → `[doctor]` →
+   `[settings]`. A section not listed goes before `[settings]`, next to the section it works with.

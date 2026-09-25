@@ -19,14 +19,12 @@ eval "$(mise activate zsh)"
 
 ## 3. Shims for non-interactive shells
 
-Add `mise activate --shims` to the non-interactive shells (scripts, IDEs, CI-like) need the shims dir on `PATH`.
-Run:
+Non-interactive shells (scripts, IDEs, CI-like) need the shims dir on `PATH`. Add this to `~/.zshenv`
+(bash: `~/.bash_profile` or `BASH_ENV`):
 
 ```sh
 eval "$(mise activate zsh --shims)"
 ```
-
-In ~/.zshenv (or what is similar in Bash).
 
 
 ## 4. Install Completions

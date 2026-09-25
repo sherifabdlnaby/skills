@@ -22,7 +22,8 @@ Platform-specific setup lives under [`ci/`](ci/):
 ## Notes & Gotchas:
 
 - **Color is off in CI by default.** Set `CLICOLOR_FORCE: "1"` / `FORCE_COLOR: "1"` to keep linter output readable in the logs.
-- **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise commit a bootstrap script (`mise generate bootstrap`). See [Installing mise in CI](#installing-mise-in-ci).
+- **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise commit an install script (`mise generate install-script`). See
+  [Installing mise in CI](#installing-mise-in-ci).
 - **`mise.lock` is per-platform.** `mise install` records only the platform it
   ran on, so a lockfile grown that way plus `--locked` fails CI on `linux-x64`
   with `No lockfile URL found for <tool>@<ver> on platform linux-x64`, even
@@ -36,10 +37,10 @@ Platform-specific setup lives under [`ci/`](ci/):
 **Prefer the platform's official integration** (e.g. `jdx/mise-action` on GitHub). It installs mise, pins the version, caches, and puts tools on `PATH` for you, so the steps below are already handled.
 Pin the action to a commit SHA **and** pin its mise `version:` input (why: [`ci/github.md`](ci/github.md)).
 
-**No integration / custom image: commit a bootstrap script**, don't hand-roll curl + verify:
+**No integration / custom image: commit an install script**, don't hand-roll curl + verify:
 
 ```bash
-mise generate bootstrap -V <version> -w ./bin/mise   # commit the result
+mise generate install-script -V <version> -w ./bin/mise   # commit the result
 ```
 
 CI (and contributors without mise) then call `./bin/mise install --locked`, `./bin/mise run check`, … — the script downloads the pinned version on first use, verifies it, and executes it.
@@ -74,7 +75,7 @@ The mise binary on `PATH` only gives you the `mise` command; the *managed* tools
 Two independent layers
 
 **1. The mise binary** — covered by [Installing mise in CI](#installing-mise-in-ci)
-(bootstrap script: embedded checksums; `mise-action`: minisign-verified release
+(install script: embedded checksums; `mise-action`: minisign-verified release
 checksums, see [`ci/github.md`](ci/github.md)). Only a hand-rolled install
 verifies manually: against the release's `SHASUMS256.txt` (GPG `.asc` /
 minisign `.minisig`) or `gh attestation verify <tarball> --repo jdx/mise`;
