@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-29%2C867%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 29,867 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-101%2C059%20tokens-2ea44f?style=flat-square" alt="All Markdown: 101,059 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-31%2C613%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 31,613 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-102%2C805%20tokens-2ea44f?style=flat-square" alt="All Markdown: 102,805 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -51,6 +51,7 @@ than read, so they are left out.
 | [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,070` |  `6,873` |
 | [`vendor/handoff`](skills/vendor/handoff/)                                             |    `182` |    `182` |
 | [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `6,270` |  `6,892` |
+| [`vendor/i-have-adhd`](skills/vendor/i-have-adhd/)                                     |  `1,746` |  `1,746` |
 | [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |  `1,342` |  `2,938` |
 | [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
 | [`vendor/show-me`](skills/vendor/show-me/)                                             |    `783` |    `783` |
