@@ -86,6 +86,11 @@ setup step. With no checks declared the command prints a notice and passes, so s
 call and a new check needs no wiring. Anyone can run `mise doctor project` later to diagnose a
 broken machine.
 
+**Prefer raw commands in a check** (`docker info`, `nc -z host port`, `uname`) over mise tools.
+Checks run with the project's tools, but a missing tool installs on demand first, which puts a
+download ahead of the fail-fast; a check that needs project deps (e.g. `node_modules`) fails on a
+fresh clone, since `deps` runs after it.
+
 #### Setup Check & Versioning
 
 Setup should include a `setup:check` and `setup:stamp` internal hidden commands that we use to check if the user ran the latest version of a setup or not. It's expected to run as a mise enter hook.
