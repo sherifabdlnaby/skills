@@ -38,9 +38,9 @@ sits and when to take a screenshot, receipts and the structure hook, the skeleto
 behind a human account, or a human), then fix / push back / escalate; in-thread replies, thread resolution, re-requesting review, batching a round into one GraphQL query and one aliased mutation,
 where a PR stands.
 
-**Rebasing, resolving conflicts** -> [`references/rebase.md`](references/rebase.md)
-Conflict-time snapshot (`ORIG_HEAD`), force-with-lease, unconditional range-diff verification.
-Stacked-PR restack mechanics and `--onto` (drop intermediate commits) live in [`references/branches.md`](references/branches.md), read that too.
+**Rebasing, merging, pulling, resolving conflicts** -> [`references/rebase.md`](references/rebase.md)
+Rebase vs merge, how to pull, who resolves which hunk, conflict guidance, force-with-lease, verification.
+Stacked-PR restack live in [`references/branches.md`](references/branches.md); read it too when the branch is in a stack.
 
 **Reviewing someone else's PR** -> [`references/reviewing.md`](references/reviewing.md)
 Procedure: gather context, check out locally, trace the change, deliver a summary and review guide.
@@ -48,17 +48,14 @@ Procedure: gather context, check out locally, trace the change, deliver a summar
 **Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and quiet / reviews only), the cheap
 sub-agent that runs the loop, the stale nudge. Uses `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
 
-**Draft PR that review bots ignore** -> [`references/watch.md`, Draft PRs and review bots](references/watch.md#draft-prs-and-review-bots)
-`pr-watch.py flick`: a mechanical toggle to ready and back so Copilot, Bugbot, and their kind review a draft; chasing beyond it only on the user's word that a bot exists, with `--wip` on the title.
-
 **Stuck CI check with no manual retry** -> [`references/commits.md`, Empty commits](references/commits.md#empty-commits)
 The last-resort empty commit: when it beats retrying the check, and the zero-file-change guards that keep approvals alive.
 
 ## Always
 
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**.
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**. Commit messages carry no footer.
 The PR-body template lives in [`references/pr-body.md`](references/pr-body.md);
-the post templates, one per tier of human judgment behind the post (Agent Decided, Human Approved,
+the post templates, one per tier of human judgment behind the post (Agent Decided, Human Planned,
 Human Guided), live in [AI Disclosure](#ai-disclosure) below.
 Use them as verbatim as possible, do not write from memory.
 
@@ -79,8 +76,8 @@ your call when a one-off is cheaper:
   own eyes is a payload.
 - **Same-shape mutations ride one request.** GraphQL aliases: every reply, resolve, or title edit of a round in one `gh api graphql`. Aliases fail independently, so read the per-alias `errors[].path`,
   not the exit code.
-- **Bodies travel by file.** PR body or GraphQL query to a file, then `--body-file` / `-F query=@file`. (why: shell quoting eats backticks and `$`, and a file stays editable for the next update.) The
-  disclosure guard refuses a body it cannot read from a file.
+- **Bodies travel by file.** PR body or GraphQL query to a file, then `--body-file` / `-F query=@file`. (why: shell quoting eats backticks and `$`, and a file stays editable for the next update.)
+  Hooks that ship beside this skill check PR bodies deterministically, and they refuse a body they cannot read from a file.
 
 **Resolve once per session, reuse everywhere.** One line for all three:
 
@@ -115,29 +112,29 @@ Placeholders, the same in every footer:
 ### Picking the variant
 
 The footer answers one question for whoever reads the post: how much human judgment stands behind
-it? Judge the decisions the post carries, not the request that produced them. The two human tiers
-carry a word grading the degree; picking it is your call.
+it? Judge the decisions the post carries, not the request that produced them. The tiers go from
+least to most human judgment.
 
-**🤖 Agent Decided.** You chose the change, position, or wording. Nobody has vetted it.
+**🤖 Agent Decided.** You chose the change, position, or wording. No human guidance on the how of it.
 
 ```markdown
 _<sub>🤖 Agent Decided: Posted by <TOOL> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-**🧍‍♂️👍 Human Approved (glanced | read | tested).** The user had the real thing in front of them and
-said yes. The word grades how closely they looked: `glanced` is a fast yes, `tested` means they ran
-it themselves. A yes on something they would have had to go open is 🤖.
+**📋 Human Planned.** The user worked through the plan with you, in a grill session or a plan that
+covers many decisions, and the post carries it out. The implementation details are yours. A short
+"go do this" is not a plan: that stays 🤖.
 
 ```markdown
-_<sub>🧍‍♂️👍 Human Approved (<glanced|read|tested>): Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>📋 Human Planned: Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
-**🤝 Human Guided (nudged | steered | dictated).** A back and forth on a technical decision happened,
-and its outcome is in this post. The word grades how much came from them: `nudged` is one remark that
-changed your direction, `dictated` is them naming exactly what to do.
+**🤝 Human Guided.** A back and forth on a technical decision happened, and its outcome is in this
+post: the user picked one of the options you laid out, answered the question that settled the
+design, or named what to do.
 
 ```markdown
-_<sub>🤝 Human Guided (<nudged|steered|dictated>): Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided: Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 Still 🤖, however it feels:
@@ -145,21 +142,13 @@ Still 🤖, however it feels:
 - A task, however specific. "Fix the flaky test", "file an issue about X": naming what to work on is not deciding what it says.
 - A rule the user wrote earlier, in a skill, in CLAUDE.md, in memory. Their instruction set is not a call on this post.
 - Delegation. "Do whatever you think is best" is the opposite of direction.
-- Approval from anyone but the user. The post goes out under their name, so the tier reports what they did.
+- A yes on the final post with no other input. They signed off, but shaped nothing.
+- Direction from anyone but the user. The post goes out under their name, so the tier reports what they did.
 - A Human Note. It is context in the body, not a decision about the change.
 - A reply posted from a watch loop. The user was not in it.
 
-Already 🤝, even though every word is yours:
-
-- They approved a written plan and the post carries out what it named.
-- They picked one of the options you laid out, or answered the question that settled the design.
-
-**Late approval** upgrades a PR body, piggybacked on the next body edit rather than a round-trip of
-its own; a posted comment or reply keeps the footer it went out with. The user's own GitHub approval
-of the PR counts as approval.
-
 **Direction does not reach what they never saw.** On a long run, a post about a part the user was
-never in is 🤖, and a push after approval drops back to 🤖 once it changes what they endorsed.
+never in is 🤖, and a push that changes what they planned or guided drops back to 🤖.
 
-**Understate, never overstate.** Torn between two tiers, or two words, take the lower one. A footer
-claiming human judgment that never happened is the failure that matters.
+**Understate, never overstate.** Torn between two tiers, take the lower one. A footer claiming human
+judgment that never happened is the failure that matters.

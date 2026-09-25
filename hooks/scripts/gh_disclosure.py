@@ -33,18 +33,14 @@ import sys
 import hooklib
 
 # A valid footer line per SKILL.md -> AI Disclosure: `_<sub>` + a tier emoji
-# (🤖 Agent Decided / 🧍‍♂️👍 Human Approved / 🤝 Human Guided) + attribution
-# ("on behalf of @user") + `</sub>_`. The two human tiers also grade the degree, so
-# they must carry a `(word)` before the colon; which word is the agent's call and
-# stays out of here.
+# (🤖 Agent Decided / 📋 Human Planned / 🤝 Human Guided) + attribution
+# ("on behalf of @user") + `</sub>_`.
 # We validate the skeleton, not the full template text, so the templates stay owned
-# by SKILL.md and the agent keeps both choices; requiring the emoji and the
-# parenthetical is what forces those choices to be made at all.
+# by SKILL.md and the agent keeps the tier choice; requiring the emoji is what forces
+# that choice to be made at all.
 FOOTER_RE = re.compile(
-    r"_<sub>\s*(?:"
-    r"\U0001f916[^:\n]*"  # 🤖 grades nothing
-    r"|[\U0001f9cd\U0001f91d][^:\n]*\([^()<>\n]+\)[^:\n]*"  # 🧍👍 / 🤝 carry a degree
-    r"):.*?\bon behalf of @[A-Za-z0-9-]+\b.*?</sub>_",
+    r"_<sub>\s*[\U0001f916\U0001f4cb\U0001f91d][^:\n]*:"
+    r".*?\bon behalf of @[A-Za-z0-9-]+\b.*?</sub>_",
     re.DOTALL,
 )
 
@@ -94,15 +90,13 @@ EXEMPT_FLAGS = {"--dry-run", "--delete-last", "--web", "-w"}
 
 REASON = (
     "AI-disclosure guard: this command posts a body to GitHub but the body has no "
-    "valid disclosure footer (`_<sub>\U0001f916|\U0001f9cd\u200d\u2642\ufe0f\U0001f44d|"
-    "\U0001f91d ... on behalf of @user ... </sub>_`). Per the git skill (SKILL.md -> AI "
-    "Disclosure), append the footer after a `---`, picking the tier by how much human "
-    "judgment stands behind this post: \U0001f916 Agent Decided (you chose, nobody vetted "
-    "it), \U0001f9cd\u200d\u2642\ufe0f\U0001f44d Human Approved (you chose, the user saw "
-    "the real thing and said yes), \U0001f91d Human Guided (the user chose or directed it). "
-    "A general request to handle the task is not human judgment on the decisions inside it. "
-    "The two human tiers also carry a degree in parentheses, so `Human Approved (read):` "
-    "passes where `Human Approved:` does not. For a PR body use the `Created with ...` "
+    "valid disclosure footer (`_<sub>\U0001f916|\U0001f4cb|\U0001f91d ... on behalf of "
+    "@user ... </sub>_`). Per the git skill (SKILL.md -> AI Disclosure), append the footer "
+    "after a `---`, picking the tier by how much human judgment stands behind this post: "
+    "\U0001f916 Agent Decided (you chose, no human shaped it), \U0001f4cb Human Planned "
+    "(the user worked through the plan with you, the details are yours), \U0001f91d Human Guided "
+    "(the user shaped the decisions in a back and forth). A general request to handle the "
+    "task is not human judgment on the decisions inside it. For a PR body use the `Created with ...` "
     "footer in references/pr-body.md. Add it, then retry."
 )
 

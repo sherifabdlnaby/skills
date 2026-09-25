@@ -97,7 +97,7 @@ In body order. Write each block, or drop it with a reason ([Receipts](#receipts)
   This marker, with its reason, replaces the receipts and silences the hook. Use the same marker
   for a body you did not shape (another author's PR).
 - **Markdown inside `<details>` needs a blank line after `</summary>`**, as in the skeleton. Without
-  it a fenced code block renders as literal backticks (verified against GitHub's own renderer).
+  it a fenced code block renders as literal backticks.
 
 ## Skeleton
 
@@ -185,7 +185,7 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 ---
 
 _<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
-<!-- footer emoji by how much human judgment is behind the PR: 🤖 Agent Decided, 🧍‍♂️👍 Human Approved, 🤝 Human Guided; see AI footers -->
+<!-- footer emoji by how much human judgment is behind the PR: 🤖 Agent Decided, 📋 Human Planned, 🤝 Human Guided; see AI footers -->
 ```
 
 ## Linking
@@ -201,17 +201,16 @@ _<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB
 These are the PR-**body** footers, one per tier. Which tier to pick, the placeholders, and the
 comment and reply footers all live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure). Append at
 the very end, after a `---` separator. Where the disclosure hook that ships beside this skill is
-installed, a post is denied when the footer is missing, and when a human tier is missing its
-degree word, so it goes in before the first `gh pr create`.
+installed, a post is denied when the footer is missing, so it goes in before the first `gh pr create`.
 
 ```markdown
 _<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ```markdown
-_<sub>🧍‍♂️👍 Human Approved PR (<glanced|read|tested>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>📋 Human Planned PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
 
 ```markdown
-_<sub>🤝 Human Guided PR (<nudged|steered|dictated>): Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
 ```
