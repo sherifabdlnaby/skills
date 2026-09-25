@@ -1,6 +1,6 @@
 # Minimum `mise` version. If not matched, mise guides the user to update.
 # -> Bump when relying on a newly introduced setting.
-min_version = "2026.6.6"
+min_version = "2026.9.13"
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
@@ -9,7 +9,7 @@ min_version = "2026.6.6"
 actionlint = "1"    # GitHub Actions linter
 shellcheck = "0.11" # actionlint uses it to lint workflow run: blocks — 0.x, pin minor
 zizmor = "1"        # GitHub Actions security
-pinact = "3"        # pin GitHub Actions to SHAs
+pinact = "5"        # pin GitHub Actions to SHAs
 lychee = "0.24"     # dead-link checker (offline; see .config/lychee.toml) — 0.x, pin minor
 ruff = "0.15"       # python lint + format (skills/git/scripts/*.py); native binary, no python — 0.x, pin minor
 betterleaks = "1"   # secret scanning (allowlist in .config/betterleaks.toml)
@@ -25,7 +25,7 @@ python = "3.13" # token estimate generator
 uv = "0.12"     # locked Python dependencies
 
 # pre-commit
-hk = "1.54.0" # keep in sync with the pin in .config/hk.pkl
+hk = "2.2.0" # keep in sync with the pin in .config/hk.pkl
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
@@ -176,8 +176,14 @@ depends = [
 run = "echo 'no tests yet'"
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
-depends_post = ["setup:stamp"]                                      # stamp the version only after a successful setup
-run = ["mise install", "uv sync --locked", "mise run tokens:setup"]
+description = "One-time, idempotent project bootstrap: check prerequisites, install tools, then runtime deps"
+depends_post = ["setup:stamp"] # stamp the version only after a successful setup
+run = [
+  "mise doctor project",   # stop early on a missing prerequisite (see [doctor.checks])
+  "mise install",
+  "uv sync --locked",
+  "mise run tokens:setup",
+]
 
 [tasks."setup:stamp"] # write the version of the last run setup to .config/mise/setup
 hide = true
@@ -194,9 +200,15 @@ run = '[ "$(cat .config/mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] ||
 enter = "MISE_OFFLINE=1 mise run setup:check" # nudge when setup is stale; MISE_OFFLINE keeps cd offline-safe
 postinstall = "hk install --mise"             # canonical hook install: runs after every `mise install`, idempotent
 
+# ── 🩺 doctor checks ──────────────────────────────────────────────────────────────────────────────────────────────────
+# Prerequisites mise can't install. `mise doctor project` runs them; setup runs it first.
+# [doctor.checks.docker]
+# description = "Docker engine is running"
+# run = "docker info >/dev/null 2>&1"
+# hint = "Start your Docker engine (Docker Desktop, OrbStack, Colima), then re-run: mise run setup"
+
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]
-experimental = true # to support hooks
 lockfile = true # write/commit mise.lock — REQUIRED before any pin resolves reproducibly
 minimum_release_age = "7d" # ignore releases <7d old (supply-chain cooldown)
 disable_backends = [

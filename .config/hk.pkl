@@ -1,8 +1,8 @@
 // hk.pkl — git hooks for hk. Lives in .config/ (hk discovers it there) so the repo root stays thin;
 // every linter config sits next to it, wired below.
-// Pin matches `hk` in mise.toml; both URLs must match. `hk init` regenerates.
-amends "package://github.com/jdx/hk/releases/download/v1.54.0/hk@1.54.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.54.0/hk@1.54.0#/Builtins.pkl"
+// Both URLs pin the hk version; keep them equal to the hk in mise.toml [tools] and bump them together.
+amends "package://github.com/jdx/hk/releases/download/v2.2.0/hk@2.2.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.2.0/hk@2.2.0#/Builtins.pkl"
 
 // Anchor for branch-scoped checks (--pr and the pushGates' base). Keep in sync with
 // the base default in mise.toml's version:check task.
@@ -21,8 +21,19 @@ local commonIgnores =
 
 // Linter configs live in .config/, not the repo root. Each tool is routed there below by the
 // cheapest available means: native discovery > env var > splicing `--config` into the builtin's
-// own command (`replaceAll`, so the builtin's other flags stay in sync instead of being restated
+// own command (`withFlag`, so the builtin's other flags stay in sync instead of being restated
 // here and silently drifting a release later).
+
+// Adds `flag` right after `bin` in a builtin command, keeping the builtin's own args.
+local function withFlag(spec: CommandSpec, bin: String, flag: String): CommandSpec = (spec) {
+  command =
+    if (spec.command is String)
+      (spec.command as String).replaceAll(bin + " ", bin + " " + flag + " ")
+    else
+      (spec.command as Command) {
+        argv = List(bin, flag) + (spec.command as Command).argv.filter((a) -> a != bin)
+      }
+}
 
 // Commit gates — run on every commit: file-scoped, fast, auto-fixable.
 local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
@@ -40,28 +51,29 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
 
   // spelling — accepted words / excludes live in .config/typos.toml (no env var for it, so splice --config in)
   ["typos"] = (Builtins.typos) {
-    check_diff =
-      Builtins.typos.check_diff.replaceAll("typos ", "typos --config .config/typos.toml ")
-    fix = Builtins.typos.fix.replaceAll("typos ", "typos --config .config/typos.toml ")
+    check_diff = withFlag(Builtins.typos.check_diff, "typos", "--config=.config/typos.toml")
+    fix = withFlag(Builtins.typos.fix, "typos", "--config=.config/typos.toml")
   }
 
   // dead links — offline (local/relative links only); see .config/lychee.toml (no env var either)
   ["lychee"] = (Builtins.lychee) {
-    check = Builtins.lychee.check.replaceAll("lychee ", "lychee --config .config/lychee.toml ")
+    check = withFlag(Builtins.lychee.check, "lychee", "--config=.config/lychee.toml")
   }
 
   // GitHub Actions
   ["actionlint"] = Builtins.actionlint // workflow syntax
   ["zizmor"] = Builtins.zizmor // workflow security
   // pinact needs a GitHub token for tag→SHA resolution (CI: $GITHUB_TOKEN; local: gh auth).
-  // Prepend onto the builtin commands so flags stay in sync. See mise-fy references/hk.md.
+  // hk `env` values are static, so a `sh -c` prefix resolves the token at run time and `exec`s the
+  // builtin's own argv unchanged.
   ["pinact"] = (Builtins.pinact) {
-    check_diff =
-      "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
-        + Builtins.pinact.check_diff
-    fix =
-      "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" "
-        + Builtins.pinact.fix
+    prefix =
+      List(
+        "sh",
+        "-c",
+        #"PINACT_GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}" exec "$@""#,
+        "sh",
+      )
   }
 
   // safety / hygiene
@@ -103,10 +115,10 @@ exclude = commonIgnores
 
 hooks {
   // `hk check` / `mise run check` — the union: everything this repo enforces, and the only
-  // hook CI runs. Read-only; `--fix` applies. (No ["fix"] hook on purpose — `hk fix` errors,
-  // shunting to the one blessed entry point; a fix hook would be a second mapping to keep in sync.)
+  // hook CI runs. Read-only; `--fix` applies to the tree and never stages. (No ["fix"] hook on
+  // purpose — `hk fix` errors, shunting to the one blessed entry point; a fix hook would be a
+  // second mapping to keep in sync.)
   ["check"] {
-    stage = false // `--fix` fixes the tree only; outside a commit, nothing touches the index
     steps {
       ...commitGates
       ...pushGates
