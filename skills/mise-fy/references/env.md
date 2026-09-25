@@ -2,9 +2,6 @@
 
 Guidance on managing project environment and variables via Mise `[env]`.
 
-**Where the block goes in `mise.toml`**: top-level section order (`min_version` -> tools -> env -> vars -> tasks -> hooks -> settings) is in
-[`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#configuration-sorting).
-
 ## Rules and Best Practices:
 
 1. Define project env in `[env]` and let mise load it (on `cd` with `mise activate`, and for `mise run`/`mise exec`). Don't re-export by hand.

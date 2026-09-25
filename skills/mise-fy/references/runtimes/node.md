@@ -6,16 +6,12 @@
 Corepack's on/off state is **global to a Node version, not project-scoped**.
 A project can't force it either way, so the setup must be correct in *both* states.
 Pinning `node` in mise fixes the *runtime* but not the *PM*: Node bundles only `npm`, and Corepack (when on) shadows bundled yarn/pnpm with its own shims.
-Three moves, each covering one failure mode:
+Two moves, each covering one failure mode:
 
 1. **Pin the PM in mise**: add `pnpm`/`yarn` to `[tools]` at the version `packageManager` names. Covers **Corepack off**: without it there is no pnpm/yarn on the machine at all (Node bundles only
    npm).
-2. **Order it *above* `node`** in `[tools]`. Covers **Corepack on**: both mise's real
-   binary and Node's Corepack shim sit on `PATH`, and the dir declared first wins.
-   `mise use` writes tools in call order, so the PM must precede `node/bin` for mise's
-   binary to shadow the shim (not the reverse).
-3. **Set `packageManager` in package.json** to that same version. Covers every invocation that resolves through a Corepack shim instead of the mise shell: non-mise contributors, editors, CI steps that
-   call Node directly, or a future tool misordering.
+2. **Set `packageManager` in package.json** to that same version. Covers every invocation that resolves through a Corepack shim instead of the mise shell: non-mise contributors, editors, CI steps that
+   call Node directly.
 
 **Invariant: the two pins agree.** `packageManager` takes an exact version, so the mise pin is exact too, the one place the major-pin policy in [`tools.md`](../tools.md) yields; when both
 sides accept a major, a shared major is enough.
@@ -25,6 +21,11 @@ The lockfile pins *dependency* versions, never the PM.
 Only `packageManager` does.
 
 ## Notes & Gotchas:
+
+- **Older mise lets Corepack's shim win on order.** Before mise 2026.9.13, both mise's pnpm and Node's Corepack shim sit on
+  `PATH` and the tool listed first in `[tools]` wins, so a PM listed below `node` runs Corepack's version. On an older
+  `min_version`, list the PM above `node` (`mise use` writes in call order). Verified for pnpm; yarn follows the same
+  `PATH` mechanics.
 
 ### Corepack precedence: the reason `packageManager` is mandatory
 
@@ -59,7 +60,7 @@ Only `packageManager` does.
 
 ```toml
 [tools]
-# pnpm/yarn ABOVE node when mise-managed (Corepack shadowing); for plain npm, just node.
+# pnpm/yarn when mise-managed; for plain npm, just node.
 pnpm = "9.12.0"                  # exact, the version packageManager names
 node = "24"
 

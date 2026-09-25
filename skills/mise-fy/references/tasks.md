@@ -61,7 +61,8 @@ How to build or improve mise Tasks.
   `depends`.
 - **No-spec args go to the _last_ `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
 - **Output is line-buffered + label-prefixed.** Change with `--output
-  interleave|keep-order|quiet|silent` (or `MISE_TASK_OUTPUT`). `raw = true` / `--raw`
+  interleave|keep-order|silent` (or `MISE_TASK_OUTPUT`); to hide only mise's own headers and
+  prefixes, set `task.quiet` (the `quiet` output mode is deprecated). `raw = true` / `--raw`
   reads-writes the terminal directly (forces `--jobs=1`) and **bypasses secret
   redaction**; never in env-bearing tasks (see [`env.md`](env.md)). When a task just
   needs stdio, prefer `interactive = true` (targeted stdio lock, no global side
@@ -86,7 +87,7 @@ depends = ["lint"]                        # run first, in parallel
 sources = ["src/**/*.rs", "Cargo.toml"]   # freshness inputs
 outputs = ["target/debug/mycli"]          # explicit output -> also re-runs if deleted (omit to auto-track)
 env = { RUST_BACKTRACE = "1" }            # task-scoped env (NOT seen by depends)
-tools = { rust = "1.82" }                 # task-scoped tool
+tools = { rust = "1" }                    # task-scoped tool
 run = "cargo build"
 ```
 
@@ -115,7 +116,7 @@ from the spec.
 Gotchas:
 
 - **`{{usage.X}}` in `description`** (or any other config-load-time field) throws `Variable 'usage.X' not found` and **breaks the whole config**; every task fails, not just that one. It works
-  in `run`, `confirm`, and `depends`/`wait_for` args.
+  in `run`, `confirm`, `depends`/`wait_for` args, and `sources`/`outputs` (freshness is then tracked per argument value).
 - **File-task bodies are not Tera-rendered.** `{{usage.X}}` prints literally there; read `$usage_X`. Every line of a multi-line `{ choices … }` block needs its own `#USAGE`.
 - **No spec means passthrough.** Extra CLI args append to the last `run` entry (`$@` in a file task). With a spec they are parsed instead, so an explicit passthrough is
   `arg "[a]" var=#true double_dash="automatic"`.
@@ -157,7 +158,7 @@ Before considering a task done:
 - [ ] Right form: TOML for <=5 lines, executable file task for longer logic; file task lives in a discovered dir (`.config/mise/tasks`).
 - [ ] Ordering via `depends`; skip-if-unchanged via `sources` (explicit `outputs` on artifact tasks).
 - [ ] `env`/`tools` scoped to the task, not global, when only it needs them.
-- [ ] Args via `usage` spec (not deprecated `{{arg()}}` etc.); `{{usage.X}}` only inside a TOML `run`, `$usage_X` everywhere else.
+- [ ] Args via `usage` spec (not deprecated `{{arg()}}` etc.); `{{usage.X}}` only in TOML run-time fields (`run`, `sources`/`outputs`, …), `$usage_X` everywhere else.
 - [ ] Completion added where useful: `{ choices … }` for static sets that aren't expected to grow, `complete "name" run="…"` for dynamic (if command is oneliner); handwritten scripts under
       `.config/mise/completion/` only on request.
 - [ ] Destructive tasks gated with `confirm`; internal helpers `hide = true`; CI passes `-y`.

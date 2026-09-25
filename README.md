@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-30%2C330%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 30,330 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-100%2C267%20tokens-2ea44f?style=flat-square" alt="All Markdown: 100,267 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-29%2C867%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 29,867 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-101%2C059%20tokens-2ea44f?style=flat-square" alt="All Markdown: 101,059 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -34,11 +34,11 @@ than read, so they are left out.
 | [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,408` | `15,609` |
 | [`coding`](skills/coding/)                                                             |  `1,048` |  `1,048` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
-| [`git`](skills/git/)                                                                   |  `2,587` | `14,784` |
+| [`git`](skills/git/)                                                                   |  `2,383` | `14,783` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
-| [`mise-fy`](skills/mise-fy/)                                                           |  `2,209` | `27,567` |
+| [`mise-fy`](skills/mise-fy/)                                                           |  `2,305` | `28,634` |
 | [`review`](skills/review/)                                                             |    `325` |    `325` |
 | [`skill-fy`](skills/skill-fy/)                                                         |  `2,901` |  `6,389` |
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
@@ -50,10 +50,10 @@ than read, so they are left out.
 | [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |    `766` |  `1,917` |
 | [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,070` |  `6,873` |
 | [`vendor/handoff`](skills/vendor/handoff/)                                             |    `182` |    `182` |
-| [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `6,633` |  `7,174` |
+| [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `6,270` |  `6,892` |
 | [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |  `1,342` |  `2,938` |
 | [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
-| [`vendor/show-me`](skills/vendor/show-me/)                                             |    `775` |    `775` |
+| [`vendor/show-me`](skills/vendor/show-me/)                                             |    `783` |    `783` |
 | [`vendor/teach`](skills/vendor/teach/)                                                 |  `1,946` |  `3,804` |
 | [`vendor/wait-what`](skills/vendor/wait-what/)                                         |    `100` |    `100` |
 | [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |  `2,349` |  `2,916` |

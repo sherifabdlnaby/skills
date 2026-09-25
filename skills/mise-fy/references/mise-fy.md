@@ -47,6 +47,7 @@ Explore the CI, and Local Validations / Tests / Setup / Linters and identify wha
 For each, we need to identify the path to convert to mise. You need to ask the user how open are we to big-bang changes, vs gradual iterative changes.
 Iterative changes mean we can have interim phase where mise live side by side with other system (e.g asdf, .tool-versions, .ruby-version, whatever) with a plan to migrate.
 You need to converse with the user, and grill them until you reach common understanding of the pros, cons, and what and how you're going to convert each area.
+When there is no user to ask, pick the gradual path, keep the old managers, and list the open decisions at the end.
 
 Depending on user request, you might suggest new additions (like introduction of hk for pre-commit, as well as other linters)
 
@@ -91,8 +92,10 @@ The mise-fy isn't done until every box is accounted for:
 
 - [ ] Inventoried existing tool/env/task/hook/CI mechanisms
 - [ ] `mise.toml` `[tools]` covers all runtimes; old version files removed
-- [ ] Lazy/uncommon tools placed by the decision order in [`tools.md`](tools.md#lazy-install-for-uncommon-tools); lockfile implication noted
-- [ ] Lockfile decision made (`mise.lock` committed if enabled)
+- [ ] Lazy/uncommon tools placed by the decision order in [`tools.md`](tools.md#lazy-install-for-uncommon-tools)
+- [ ] Lockfile decision made (`mise.lock`, plus anything `mise lock` writes beside it, committed if enabled)
+- [ ] Prerequisites mise can't install declared as `[doctor.checks]`, run first by setup
+      ([`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#prerequisite-checks))
 - [ ] `[env]` replaces `.envrc`/manual exports; secrets policy applied; shell `${VAR:-default}` fallbacks converted to `{ default = ... }`.
 - [ ] Secret redaction applied
 - [ ] Tasks migrated; lint/test/build runnable via `mise run`

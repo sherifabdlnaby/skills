@@ -28,6 +28,6 @@ push a commit through; `git commit --no-verify` skips hooks for a WIP commit.
 Changing tools, tasks, env, mise hooks, or pre-commit hooks? This is where things live:
 
 - **`mise.toml`**: the source of truth for `[tools]`, `[tasks]`, `[env]`/`[vars]`, `[settings]`, and `[hooks]`.
-- **`mise.lock`**: resolved versions plus checksums. Commit it; regenerate with `mise install` after a `[tools]` change.
+- **`mise.lock`**: resolved versions plus checksums. Commit it; regenerate with `mise lock` after a `[tools]` change.
 - **`.config/mise/`**: project-local state, like the gitignored setup stamp the `setup`/`enter` hooks read. File tasks can live in `.config/mise/tasks/`.
 - **`.config/hk.pkl`**: the pre-commit and `check` pipeline (linters and formatters, in Pkl). Add or edit a lint step here; linter configs live beside it in `.config/`.

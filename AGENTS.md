@@ -66,6 +66,11 @@ upgrade and read `git diff skills/vendor` before committing it.
 Linters skip the directory (`**/vendor/**` in `.config/hk.pkl`), which is what lets upstream formatting survive a sync. The CLI installs into agent dirs and takes no flag to aim elsewhere, so the
 sync moves its output out of `.agents/` and `.claude/skills/` and deletes both; they stay gitignored because in the tree they load every vendored skill a second time, as project skills.
 
+## Skills stand alone
+
+Users install each skill on its own, not as a plugin. Write every skill as if no other skill and no hook is present. A reference to another skill or a hook is an optional extra, never a step the
+skill needs to finish its job. Raise to the user when hard dependency make sense.
+
 ## Skill READMEs
 
 Every skill of ours has a `README.md` beside it, for humans deciding whether and how to use it. Write from the skill and its references, but explain the problem, outcome, operating shape, and

@@ -17,7 +17,8 @@ files:
 - **Declare external prerequisites mise can't install.** If the project
   needs a daemon/service outside mise's scope (a running Docker engine, a
   database server, a k8s cluster — see [`tools.md`](tools.md)), say so up
-  front: what to install and how to confirm it's running. mise sets up the
+  front: what to install, and point at `mise doctor project` to confirm it's
+  running (each prerequisite is a `[doctor.checks]` probe). mise sets up the
   toolchain; these are the things `mise run setup` can't.
 
 ## Notes & Gotchas:
@@ -29,8 +30,8 @@ files:
 Cover, in order (mirror [assets/README.md](../assets/README.md)):
 
 1. **Declare mise as dependency**, in a collapsible section show install steps (brew preferred), and then link to install steps. Guide user to also activate and confirm with doctor.
-2. **Prerequisites mise can't install** (only if any); external daemons/services like a Docker engine or DB server — what to install and how to confirm it's up. Skip the section entirely when there
-   are none.
+2. **Prerequisites mise can't install** (only if any); external daemons/services like a Docker engine or DB server — what to install, and `mise doctor project` to confirm it's up. Skip the section
+   entirely when there are none.
 3. **Set up the project**; `mise trust` then `mise run setup`, and whatever get the user running.
 4. **Everyday commands**; a tiny list with `check`/`lint` and `test`, and `mise tasks` to find the rest.
 5. **Git hooks** (hk if exists): Give a quick intro that the repo has it, where to find it, how to run locally (e.g mise run check) for example.
@@ -50,6 +51,6 @@ Everything the README covers, plus how to *work in* and *extend* the setup. Keep
 
 - [ ] README: install mise, activate + `mise doctor`, `mise trust` + `mise run setup`, everyday commands.
 - [ ] External prerequisites (Docker engine, DB server, etc.) declared in README/AGENTS when the project depends on them — not stuffed into `[tools]`.
-- [ ] AGENTS.md / CLAUDE.md: setup, run-via-mise + discovery, hk (if used), how to extend (mise skill).
+- [ ] AGENTS.md / CLAUDE.md: setup, run-via-mise + discovery, hk (if used), how to extend (where tools, tasks, and hooks live).
 - [ ] Examples not enumerations; `mise tasks` taught as the discovery path.
 - [ ] hk mentioned only when the repo actually uses it.

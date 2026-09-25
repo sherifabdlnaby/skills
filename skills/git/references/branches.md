@@ -38,7 +38,7 @@ Where the ticket comes from, in order:
 
 1. **Inherit** the current branch's ticket when branching off it, unless the user says it's a different ticket.
 2. **Referenced** ticket the user mentioned this conversation.
-3. Otherwise, ask.
+3. Otherwise, use the no-ticket form. Ask only when the user's words hint that a ticket exists.
 
 ## Switching with a dirty tree
 
@@ -100,7 +100,7 @@ the above.
 
 **Verifying a cascade.** `ORIG_HEAD` holds only the last branch rebased, so check each rebased branch
 against its own reflog: `git range-diff <b>@{1}...<b>`, same `rebase (finish)` check. Reading the
-output is [`rebase.md`](./rebase.md#verify).
+output is [`rebase.md`](./rebase.md#after-a-rebase).
 
 ### Without gh-stack
 

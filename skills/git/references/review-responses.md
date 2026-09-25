@@ -7,8 +7,8 @@ Classify who left each comment first, because it sets how much you defer. Then r
 
 ## Who Left It
 
-1. **Automated review (bot / AI tool).** Copilot, CodeQL, Sonar, Snyk, a review bot. Detected by
-   author: GitHub `user.type == Bot`. `pr-watch.py` tags these `BOTREVIEW`.
+1. **Automated review (bot / AI tool).** Copilot, CodeQL, Sonar, Snyk, and other review bots.
+   2. Signal: author: GitHub `user.type == Bot`, or name says it's a bot/review tool, or CI comment.
 2. **AI-disclosed (an agent behind a human account).** A comment from a person's account whose body
    carries AI authorship: a 🤖 emoji, or an explicit line like "on behalf of @...", "created with
    assistance from", "generated with/by". Agents post under their operator's GitHub identity (the
@@ -17,6 +17,15 @@ Classify who left each comment first, because it sets how much you defer. Then r
 3. **Human.** A person, no AI disclosure in the body.
 
 When you can't tell 2 from 3, treat it as human; a real person is accountable for it either way.
+
+## How much to defer
+
+- **Bot / AI tool and AI-disclosed comments:** judge on merit, never on authority. Machine reviews
+  tend to be right on mechanics (null checks, error paths, API misuse) and wrong on context (they
+  flag impossible edge cases, miss why the code is shaped this way). Push back freely when they're
+  wrong; you don't owe a bot deference.
+- **Human:** same merit test, but give more room on design and taste calls, and escalate a real
+  tradeoff to the user rather than overruling it. A terse dismissal of a person reads badly.
 
 ## Respond (all three)
 
@@ -42,7 +51,7 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 
 **A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply
 mutation takes no file. So a picture goes on the PR-level comment or in the body, and the thread reply
-links to it. When to attach at all is [Attaching media](./pull-requests.md#attaching-media). How `--attach` uploads is [`attach.md`](./attach.md).
+links to it. When to attach at all is [Visuals](./pr-body.md#visuals). How `--attach` uploads is [`attach.md`](./attach.md).
 
 ## Batching
 
@@ -92,13 +101,3 @@ checks   \([.statusCheckRollup[]?|.conclusion//.state]|group_by(.)|map("\(.[0]//
 ```
 
 The rollup collapses to `checks SUCCESS=12 SKIPPED=6` rather than listing every check.
-(verified on gh 2.x.) For watching rather than looking, `pr-watch.py watch` belongs to [`watch.md`](./watch.md).
-
-## How much to defer
-
-- **Bot / AI tool and AI-disclosed comments:** judge on merit, never on authority. Machine reviews
-  tend to be right on mechanics (null checks, error paths, API misuse) and wrong on context (they
-  flag impossible edge cases, miss why the code is shaped this way). Push back freely when they're
-  wrong; you don't owe a bot deference.
-- **Human:** same merit test, but give more room on design and taste calls, and escalate a real
-  tradeoff to the user rather than overruling it. A terse dismissal of a person reads badly.

@@ -40,22 +40,7 @@ A PR is not the unit; several commits per PR is normal.
 
 ## Squash
 
-`git rebase -i` opens an editor and hangs the tool call. Both recipes avoid it. Both rewrite
-history, so [`rebase.md`](./rebase.md#verify) verification applies.
-
-Everything since `<base>` into one commit:
-
-```
-git reset --soft <base> && git commit
-```
-
-Fixups folded into the commits they belong to:
-
-```
-git commit --fixup <sha>
-GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash <base>
-```
-
+`git rebase -i` opens an editor and hangs the tool call.
 `GIT_SEQUENCE_EDITOR=:` accepts the generated plan without opening anything.
 
 ## Empty commits

@@ -21,25 +21,28 @@ Guidance on Installing Tools and Runtimes via Mise.
 6. Use mise's core backends. If you're choosing backends, pick the one with checksums + timestamp support as much as possible.
 7. Group relevant tools categories close to each other in the toml when you have >6 tools. Use a code comment as a title for group.
 8. If a tool existence in a list is not obvious, add a 3~4 words sentence to give a hint in a code comment on the same line.
-9. If the repo doesn't contain `minimum_release_age` always suggest to add it (e.g. `"7d"`; months are `6mo`, not `6m` — `6m` is minutes and filters nothing; exempt fast-moving tools via
-   `minimum_release_age_excludes` if needed).
+9. If the repo doesn't contain `minimum_release_age` always suggest to add it (e.g. `"7d"`, above mise's `24h` default; months are `6mo`, not `6m` — `6m` is minutes and filters nothing; exempt
+   fast-moving tools via `minimum_release_age_excludes` if needed). An exact pin already in `mise.lock` installs regardless of the cutoff.
 10. If a tool/runtime needed **just for a single task** define it just for the task.
-11. Use and enable Lockfile whenever possible, unless the user told you not to.
+11. Use and enable Lockfile whenever possible, unless the user told you not to. Commit everything `mise lock` writes beside `mise.lock` (e.g. a `locks/` dir of per-tool dependency lockfiles), not
+    just the file itself.
 
 ## Notes & Gotchas:
 
 - **Lockfile only updates when enabled.** `mise use`/`install` write `mise.lock` only after `[settings] lockfile = true`. Without it, fuzzy versions resolve fresh each install.
+- **Lockfile format is versioned.** A `mise.lock` written by a newer mise can be unreadable to an older one (it warns and ignores the lock), so keep `min_version` and CI's pinned mise at or above
+  the version that wrote it.
+- **Locked tools keep their locked backend.** When the registry moves a short name to a new backend, a tool already in `mise.lock` stays on the old one and mise warns; `mise backends switch` moves it.
 - **`mise use` edits the closest config**. It may not be the one you expect in a nested/monorepo tree.
 - **A backend spec goes in the KEY, never the value.** `ripgrep = "aqua:BurntSushi/ripgrep"` is a parse error (`invalid tool: invalid prefix: aqua`) that breaks the whole config; write
   `"aqua:BurntSushi/ripgrep" = "15"` (see Syntax Reminder).
-- **`prefix:`/fuzzy/`latest` need version listing**. They work on backends that enumerate versions (core, aqua, github/gitlab, cargo, go, npm, pipx) but not on fixed-artifact specifiers (direct URLs,
+- **`prefix:`/fuzzy/`latest` need version listing**. They work on backends that enumerate versions (core, aqua, github/gitlab, cargo, go, npm, pypi) but not on fixed-artifact specifiers (direct URLs,
   git `ref:`).
 - **Per-tool options exist** (`os`, `depends`, `install_env`, `postinstall` via the `name = { ... }` table form) reach for them only when you actually need them; plain `name = "version"` is the norm.
 - **`.tool-versions` is read hierarchically** like any config (a `~/.tool-versions` applies to everything under `$HOME`); mise's canonical global config is `~/.config/mise/config.toml`.
 - **Idiomatic version files are OFF by default.** `.nvmrc`/`.python-version`/`.ruby-version` are ignored until enabled per-tool (`idiomatic_version_file_enable_tools`). If a version "isn't being
   picked up," this is usually why.
-- **Tools are lazy by default; `mise install` is the eager step.** To make a *specific* tool lazy and not in everyone's install, scope it to its task or use a tool stub see
-  [Lazy-install for uncommon tools](#lazy-install-for-uncommon-tools).
+- **`mise install` is the eager step.** To keep a *specific* tool out of everyone's install, see [Lazy-install for uncommon tools](#lazy-install-for-uncommon-tools).
 
 ## Backends
 
@@ -48,11 +51,14 @@ Verifications are: checksums, attestation, and release timestamp (to support min
 
 Safety, high -> low:
 
+- **`packslip`**; the vendor's own release workflow signs a manifest of every artifact (Sigstore, transparency log), and mise pins that signer on first install. Few tools publish one; the registry
+  short name picks it when they do, so write the short name, not `packslip:`.
 - **`core`**; runtimes built into mise (node/python/go/ruby/...). Use for these. `node = "22"`.
 - **`aqua`**; preferred for everything else: checksums + cosign + SLSA + attestations, no plugin code. `aqua:BurntSushi/ripgrep`.
 - **`github`/`gitlab`**; release binaries with provenance when not in aqua. (`ubi` is deprecated, use `github`.)
 - **`http`**; a direct URL plus a checksum you record yourself (what tool stubs use). Only as safe as the checksum you pin.
-- **`cargo`/`npm`/`pipx`/`go`/`gem`**; language ecosystems. ⚠️ **No checksums/provenance** and need the runtime installed. Use only when the tool ships nowhere else.
+- **`cargo`/`npm`/`pypi`/`go`/`gem`**; language ecosystems (`pypi:` is the current name; `pipx:` still works but is a separate tool identity). ⚠️ **No checksums/provenance** and need the runtime
+  installed. Use only when the tool ships nowhere else.
 - **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter).
   ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise
   *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts
@@ -100,8 +106,8 @@ mise owns **user-space client binaries**, not **system daemons/services**. The l
 
 **If the project depends on an out-of-scope service, the docs must declare it as
 a prerequisite** (see [`docs.md`](docs.md)) — README/AGENTS, not `[tools]`.
-Optionally add a task that fails fast with a helpful message when the service is
-unreachable (e.g. `docker info` before `docker compose up`).
+Declare it as a `[doctor.checks.<name>]` probe too, so setup fails fast with the fix when the service is
+unreachable (see [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#prerequisite-checks)).
 
 ## Syntax Reminder
 
@@ -125,6 +131,9 @@ some-tool = { version = "3", install_env = { CC = "clang" } }  # env at install
 patched = { version = "1", postinstall = "./fix.sh" }       # run after install
 
 
+# --- lazy: skipped by `mise install`, installed on first use, still locked ---
+terraform = { version = "1", lazy = true }
+
 # --- scope a tool to ONE task: lazy-installed, not seen by `depends` ---
 [tasks.build]
 tools.rust = "1"
@@ -132,51 +141,40 @@ run = "cargo build"
 
 
 [settings]
-lockfile = true                          # write mise.lock (required for pinning)
+lockfile = true                          # write mise.lock (records exact versions + checksums)
 minimum_release_age = "7d"               # skip releases newer than 7 days
 ```
 
 ## Lazy-install for uncommon tools
 
-Not every tool belongs in the shared `[tools]` block that installs it for **everyone** on `mise install` (e.g devs with weak internet connection).
-A tool only _some_ workflows touch should be installed **lazily** (only when first used) and **not** for everyone. Two mechanisms; pick in this order:
+Not every tool belongs in everyone's `mise install` (e.g. devs on a weak connection). A tool only _some_ workflows touch should install **lazily**, on first use. All three mechanisms below stay
+pinned and land in `mise.lock`; pick in this order:
 
-1. **Task-scoped tool: _prefer this_ when a single task needs the tool.**
-   `[tasks.x] tools.foo = "…"`. Installed only when that task runs,
-   never on `mise install`, and not seen by `depends`. The tool stays declared
-   in `mise.toml`, version-pinned like any other.
-   - **Don't use it when several tasks need the same tool** as you'd repeat the pin per task and they drift. That's the case for option 2.
-2. **Tool stub: use when (1) doesn't fit:** the tool is shared across multiple
-   tasks/`./bin/` scripts or run by path (not from a task), but still shouldn't be
-   in everyone's `mise install`; or it's an off-registry binary with no good
-   `[tools]` home. A committed `./bin/x` that installs-and-runs **one** pinned
-   tool on first run.
+1. **Lazy tool: _prefer this_.** `foo = { version = "1", lazy = true }` in `[tools]`. A bare `mise install` skips it; the first call to its command (shell, `mise x`, a task) installs it from
+   the lockfile, then runs it. It is on `PATH` like any other tool. Non-registry backends name their commands with `lazy_bins = ["foo"]`.
+2. **Task-scoped tool: when exactly one task needs it** and it shouldn't be on anyone's `PATH`. `[tasks.x] tools.foo = "…"`: installed when that task runs, not seen by `depends`.
+   - **Don't use it when several tasks need the same tool**; the pin repeats per task and drifts. That's option 1.
+3. **Tool stub: an off-registry binary, or a tool run by path outside mise.** A committed `./bin/x` that installs-and-runs **one** pinned tool on first run.
    - Append ./bin/ to PATH using [env] _.path = ["./bin"] (ref: [env.md](env.md))
 
-(If the tool _is_ part of the shared toolchain everyone installs and is expected to use then it's neither of these it's a plain `[tools]` entry.
+A tool everyone is expected to use (e.g. every pre-commit linter) is none of these; it's a plain `[tools]` entry.
 
 **Stubs work with any backend, not just http.** The format takes a `tool` field — `tool = "github:cli/cli"`, `"aqua:…"`, `"cargo:…"`, or a core tool like `"python"`, same notation as `[tools]`.
 
 ### Notes & Gotchas
 
-**Lockfile / reproducibility:**
-
-- **Task-scoped tools are NOT written to `mise.lock`** (as of v2026.6.11) even after
-  the task runs. They're pinned by their `mise.toml` version string but get **no
-  locked exact-version/checksum**. If a lazy tool must be lockfile-reproducible,
-  that's a reason to lift it to top-level `[tools]` (and accept it's then in `mise
-  install`) or make it a `--lock`'d stub instead.
-- **Tool stubs don't participate in `mise.lock` at all.** Each stub carries its
-  **own** embedded lock via `mise generate tool-stub … --lock` (exact version +
-  per-platform URLs/checksums baked into the file). So "the repo is locked" via
-  `mise.lock` says nothing about stubs.
+- **First use needs the network.** The deferred download lands in a fast-path moment (the first commit, the first task run); keep anything a hook or a routine task calls out of the lazy set.
+- **Install everything now** (a laptop before going offline, a CI image, a devcontainer): `mise install --include-lazy --include-task-tools`. Naming a tool (`mise install foo`) also installs it.
+- **Stubs lock into the project's `mise.lock`.** `mise generate tool-stub <path> --lock` needs a project config above the stub, records it under `tool-stubs`, and leaves the stub file unpinned
+  beyond its `version`; `--locked` installs then verify it like any other tool.
 
 **Stub mechanics:**
 
 - **Generate, don't hand-author http stubs.** Without `--skip-download` mise fetches once to record checksum/size/bin.
 - **A bare-`url` stub's only guarantee is the checksum it pins**.
 - **Re-running appends platforms**, never overwrites; an existing platform's URL is replaced only if you re-specify that platform.
-- **The stub is just a file you run by path** (`./bin/x`), `chmod +x` and committed. It is **not** added to `PATH` like `[tools]`. ~4ms overhead once cached (cache busts when the file changes).
+- **The stub is just a file you run by path** (`./bin/x`), `chmod +x` and committed. It is not on `PATH` by default; add `./bin` via `_.path` (above) or run it by path. ~4ms overhead once cached
+  (cache busts when the file changes).
 
 ## Docs:
 

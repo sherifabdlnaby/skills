@@ -66,7 +66,7 @@ so keep it. A literal `N` stays literal. A merged stack keeps `[2/N]` forever
 - `--attach <file>` uploads a picture or video into the body. Repeatable, also on `gh pr edit` and `gh pr comment`. Use it; a version number is not a preflight.
   When to attach: [Visuals](./pr-body.md#visuals). How the upload works: [`attach.md`](./attach.md).
 - `--assignee @me`, so PRs land in the user's assigned queue.
-- `--draft` by default unless told otherwise; prevents premature reviewer pings and lets the user inspect first.
+- `--draft` by default unless told otherwise; lets the user inspect first.
 - `--base <branch>` for any PR above the bottom of a stack. The stack relationship lives in `--base`; without it the PR targets `<trunk>` and the stack collapses.
 
 ## After `gh pr create` (in order, no waiting)

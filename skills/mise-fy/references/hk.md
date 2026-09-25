@@ -11,7 +11,7 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
    (exception: the `pkl`/`pkl_format` lint builtins shell out to the `pkl` CLI).
 3. **For custom linters/tests, delegate to a mise task.** Avoid putting logic in `hk.pkl` where possible.
 4. Pin the version in both `amends`/`import` URLs to the hk in `[tools]`. Bump by editing both URLs; `hk init` only creates a file for a repo without one, and `--force` overwrites the tiers.
-5. Always use a linter hk builtin settings.
+5. Prefer hk's builtin linter settings.
 6. **Steps live in tier mappings named by moment** (`commitGates` / `pushGates`, see `assets/.config/hk.pkl`); hooks only compose tiers. The scaffold
    stubs `pushGates` empty to be filled late if no gates defined.
 7. **`check` mounts the union of all tiers** (`steps { ...commitGates; ...pushGates }`) and is the one command CI runs; local hooks mount
@@ -25,7 +25,7 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 
 - **`hk check` and `hk fix` are the same command** the subcommand only sets the default mode;
   `-c/--check` and `-f/--fix` flip it (so `hk check --fix` mutates, `hk fix --check` is dry-run).
-  `check_first = true` runs check before fix; `{{files}}` expands to matched files.
+  `check_first = true` runs check before fix (default `false` since hk 2.2); `{{files}}` expands to matched files.
 - **`fix = true` in pre-commit requires `stash = "git"`** to only check staged files.
 - **Profiles are runtime opt-in** (`profiles = List("slow")` + `--slow`/`--profile`), for expensive steps within a mounted tier — not a
   substitute for tier membership.
@@ -36,12 +36,21 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
   older Git falls back to script shims (`--legacy` forces them). Don't hand-edit
   `.git/hooks`. Beware: a forced per-repo install on top of a global one (`--force-local`)
   fires hooks **twice** per event.
+- **Repo-scoped install stays the default** (`[hooks] postinstall = "hk install --mise"`): every
+  contributor gets hooks from `mise install` with no machine step. hk's docs also offer a
+  once-per-machine `hk install --global --mise` (Git 2.54+, no-op in repos without hk config);
+  mention it, don't require it.
 - **Drive one `check` task off this**, not two: stay on `hk check` and forward an
   opt-in `--fix`, with no branching on subcommand. That `check` task is the repo's
   standard lint contract (same command CI and the pre-commit hook run); see
   [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#check-lint).
 - **`hk check` needs its own `check` hook**; it does _not_ fall back to `pre-commit` (`Hook 'check' not found`). Deliberately define **no**
   `fix` hook — `hk check --fix` covers write mode.
+- **No top-level `steps` block in a tiered config.** hk 2 turns a top-level `steps` map into
+  implicit `check`, `fix`, and `pre-commit` hooks, which brings back the `fix` hook and a
+  second place to mount steps. Keep steps in the tier mappings.
+- **Builtin variants are options, not separate exports** (hk 2): amend the primary builtin,
+  e.g. `(Builtins.pinact) { version = "3" }`, `(Builtins.gitleaks) { scan = "staged" }`.
 - **Manage ignores in one place**: define `local commonIgnores = List(...)` and assign
   top-level `exclude = commonIgnores`, which applies to every step (see `assets/.config/hk.pkl`).
   hk already honors `.gitignore` (`walk_ignore = true`), so this list is only for
@@ -53,12 +62,12 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 - **Introspect with `hk config dump|get|explain|sources`** (and `hk validate`) when a
   setting behaves unexpectedly; `explain` shows the winning source. Precedence: CLI >
   `HK_*` env > git config > project `hk.pkl` > user config (`~/.config/hk/config.pkl`;
-  the old `.hkrc.pkl` is deprecated, removed in hk v2) > defaults;
+  `.hkrc.pkl`, `hk.toml`, and `UserConfig.pkl` are removed in hk 2) > defaults;
   `exclude`/`skip_steps`/`skip_hooks` **union** across sources rather than overriding.
 - **`hk check --plan --json`** prints the resolved plan without running it; feed it to tooling (e.g. completions: `… --json --no-progress | jq -r '.steps[].name'`).
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
-- **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. A partial pin like `hk = "1.54"` resolves to the git tag `v1.54`, which doesn't exist →
-  `404 Not Found` on install. Use `1.54.0`.
+- **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. The URLs need the exact release tag, and hk ships the Pkl package for its own
+  version, so a matching pair validates offline on a cold cache.
 - **The `actionlint` builtin needs `shellcheck` pinned.** actionlint shells out to shellcheck to lint workflow `run:` blocks; missing or unpinned, it fails. Add both to `[tools]`.
 
 ## Setup & Templates.
@@ -210,15 +219,18 @@ reads `PINACT_GITHUB_TOKEN` (its own var, higher priority) then `GITHUB_TOKEN`.
 
 **Recommended**: prefer `$GITHUB_TOKEN` (CI injects it) and fall back to the dev's `gh`
 login locally. hk `env` values are static strings (no command substitution), so the token
-can't come from an `env` entry; instead **prepend it to the builtin's own command** so
-it stays in sync with the builtin (no restating flags):
+can't come from an `env` entry; instead give the step a **`sh -c` prefix** that resolves the
+token and `exec`s the builtin's own argv, so the command stays in sync with the builtin:
 
 ```pkl
 ["pinact"] = (Builtins.pinact) {
-  check_diff = "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" " + Builtins.pinact.check_diff
-  fix        = "PINACT_GITHUB_TOKEN=\"${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}\" " + Builtins.pinact.fix
+  prefix = List("sh", "-c", #"PINACT_GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}" exec "$@""#, "sh")
 }
 ```
+
+Don't concatenate a string onto a builtin command (`"X=1 " + Builtins.pinact.fix`): in hk 2
+commands are `CommandSpec` objects, and on hk 2.2 that concat makes `hk validate` hang instead
+of failing.
 
 `gh` missing or not logged in yields an empty token, so pinact runs unauthenticated
 (rate-limited) rather than failing the commit; `${GITHUB_TOKEN:-…}` means `gh` is never called
@@ -241,8 +253,11 @@ command untouched) but requires each dev to store a token in their keychain.
 Wire each tool to read from `.config/` by the cheapest route it supports: **native discovery >
 env var > splicing `--config` into the builtin's own command**. Never retype a builtin's command
 to add a flag; restating it pins today's flags into your `hk.pkl` and silently drops whatever the
-builtin gains on the next hk bump. Splice instead, with `String.replaceAll` on the builtin's own
-string (hk's bundled Pkl evaluator has **no `replaceFirst`**, only `replaceAll`):
+builtin gains on the next hk bump. Splice instead, with one `withFlag` helper defined once in
+`hk.pkl` (below): it inserts the flag right after the binary and keeps the builtin's own args. In hk 2
+a builtin command is a shell string or an argv list, and the helper handles both; hk's bundled Pkl
+evaluator lacks much of the stdlib (no `replaceFirst`, `drop`, list indexing), which is why it filters
+by the binary name.
 
 | Tool            | Route to `.config/`                                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -250,23 +265,26 @@ string (hk's bundled Pkl evaluator has **no `replaceFirst`**, only `replaceAll`)
 | `yamllint`      | step `env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" }` (ignored if a root `.yamllint` exists)                                          |
 | `betterleaks`   | step `env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }` (**required** — nothing is auto-discovered, see above)                        |
 | `taplo`         | step `env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" }` (re-add `RUST_LOG`; re-declaring `env` replaces the whole mapping) |
-| `typos`         | splice `--config .config/typos.toml` into `fix`/`check_diff` (no env var)                                                                        |
-| `lychee`        | splice `--config .config/lychee.toml` into `check` (no env var)                                                                                  |
-| `markdown_lint` | splice `--config .config/markdownlint.yaml` into `check`/`fix` (no env var)                                                                      |
+| `typos`         | `withFlag` `--config=.config/typos.toml` into `fix`/`check_diff` (no env var)                                                                    |
+| `lychee`        | `withFlag` `--config=.config/lychee.toml` into `check` (no env var)                                                                              |
+| `markdown_lint` | `withFlag` `--config=.config/markdownlint.yaml` into `check`/`fix` (no env var)                                                                  |
 
 ```pkl
+// Adds `flag` right after `bin` in a builtin command, keeping the builtin's own args.
+local function withFlag(spec: CommandSpec, bin: String, flag: String): CommandSpec = (spec) {
+  command =
+    if (spec.command is String) (spec.command as String).replaceAll(bin + " ", bin + " " + flag + " ")
+    else (spec.command as Command) { argv = List(bin, flag) + (spec.command as Command).argv.filter((a) -> a != bin) }
+}
+
 local linters = new Mapping<String, Step> {
   ["yamllint"]    = (Builtins.yamllint)    { env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" } }
   ["betterleaks"] = (Builtins.betterleaks) { env { ["BETTERLEAKS_CONFIG"]   = ".config/betterleaks.toml" } }
   ["taplo"]       = (Builtins.taplo)       { env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" } }
-  ["lychee"]      = (Builtins.lychee) {
-    check = Builtins.lychee.check.replaceAll("lychee ", "lychee --config .config/lychee.toml ")
-  }
-  // typos' check_diff is a multi-line shell script, so append-at-the-end doesn't work; splice at
-  // the binary name and both commands keep whatever flags the builtin carries.
+  ["lychee"]      = (Builtins.lychee)      { check = withFlag(Builtins.lychee.check, "lychee", "--config=.config/lychee.toml") }
   ["typos"] = (Builtins.typos) {
-    check_diff = Builtins.typos.check_diff.replaceAll("typos ", "typos --config .config/typos.toml ")
-    fix        = Builtins.typos.fix.replaceAll("typos ", "typos --config .config/typos.toml ")
+    check_diff = withFlag(Builtins.typos.check_diff, "typos", "--config=.config/typos.toml")
+    fix        = withFlag(Builtins.typos.fix, "typos", "--config=.config/typos.toml")
   }
   // rumdl: nothing — just place the file at .config/rumdl.toml
 }
