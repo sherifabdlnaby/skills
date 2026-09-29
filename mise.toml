@@ -190,15 +190,12 @@ hide = true
 quiet = true
 run = 'printf %s "{{vars.setup_version}}" > .config/mise/setup && echo "✅ Setup v{{vars.setup_version}} stamped"'
 
-[tasks."setup:check"] # fast probe (runs on `enter`); warns if setup is stale, never fails
-hide = true
-quiet = true
-run = '[ "$(cat .config/mise/setup 2>/dev/null)" = "{{vars.setup_version}}" ] || echo "⚠️  Your setup is stale, run: mise run setup" >&2'
-
 # ── 🪝 hooks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [hooks]
-enter = "MISE_OFFLINE=1 mise run setup:check" # nudge when setup is stale; MISE_OFFLINE keeps cd offline-safe
-postinstall = "hk install --mise"             # canonical hook install: runs after every `mise install`, idempotent
+# plain shell: a `mise run` here installs missing tools on every `cd`
+enter = '[ "$(cat "{{config_root}}/.config/mise/setup" 2>/dev/null)" = "{{vars.setup_version}}" ] || echo "⚠️  Your setup is stale, run: mise run setup" >&2'
+# canonical hook install: runs after every `mise install`, idempotent
+postinstall = "hk install --mise"
 
 # ── 🩺 doctor checks ──────────────────────────────────────────────────────────────────────────────────────────────────
 # Prerequisites mise can't install. `mise doctor project` runs them; setup runs it first.
