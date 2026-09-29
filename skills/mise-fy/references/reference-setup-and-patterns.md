@@ -55,7 +55,7 @@ Every task belongs to a lane; the lane sets its budget:
 
 - **Fast path** — `check`, `test`, `dev`, `build`, the `enter` hook, pre-commit. Runs many
   times a day: cheap, offline-safe, non-interactive, and never `depends` on a slow-path
-  task. Staleness is *reported* here (the `setup:check` nag), never repaired.
+  task. Staleness is *reported* here (the `enter` hook nag), never repaired.
 - **Slow path** — `setup` and its `setup:*` sub-tasks. Run deliberately (onboarding, after
   the nag): may be slow, online, interactive. Nothing on the fast path waits on it.
 - **The one crossing: `deps`.** Fast-path tasks may depend on `deps` because its
@@ -93,7 +93,7 @@ fresh clone, since `deps` runs after it.
 
 #### Setup Check & Versioning
 
-Setup should include a `setup:check` and `setup:stamp` internal hidden commands that we use to check if the user ran the latest version of a setup or not. It's expected to run as a mise enter hook.
+Setup should include a hidden `setup:stamp` task that records the setup version, and an `enter` hook that compares it with the expected version.
 This allows us to version the setup, so we can notify (AND NAG!) users to re-run `mise run setup` again if expected version is not equal to saved version.
 
 The stamp is a **human-bumped counter**. Bump it only for a change nothing reconciles on its own: a new manual step, a new or changed prerequisite check, a one-time migration. A missing tool installs
@@ -102,7 +102,7 @@ itself on the next `mise run`, and `deps` self-heals from its cache, so adding o
 The stamp is written to `.config/mise/setup`. Add a committed `.config/mise/` folder to the project so the directory exists for the stamp to write into. Inside it, commit a `.gitignore` (see
 [.config/mise/.gitignore](../assets/.config/mise/.gitignore)) that ignores just the generated `setup` file.
 
-Wrap this enter hook in `MISE_OFFLINE=1` (`enter = "MISE_OFFLINE=1 mise run setup:check"`) so it never resolves tools online and can't hang the shell offline — see [`hooks.md`](hooks.md).
+Write the check as plain shell in the hook, not a `mise run` of a task: `mise run` installs missing tools first, on every `cd` — see [`hooks.md`](hooks.md).
 
 Check the reference [mise.toml](../assets/mise.toml)
 
