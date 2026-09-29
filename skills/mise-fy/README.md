@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-2%2C305%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,305 tokens" />
-  <img src="https://img.shields.io/badge/Total-28%2C716%20tokens-2ea44f?style=flat-square" alt="Total: 28,716 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-2%2C303%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,303 tokens" />
+  <img src="https://img.shields.io/badge/Total-28%2C740%20tokens-2ea44f?style=flat-square" alt="Total: 28,740 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,7 +13,7 @@ than read, so they are left out.
 
 | File                                                                                       |  Tokens |
 | ------------------------------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                                                     | `2,305` |
+| [`SKILL.md`](SKILL.md)                                                                     | `2,303` |
 | [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `472` |
 | [`assets/README.md`](assets/README.md)                                                     |   `600` |
 | [`references/ci/github.md`](references/ci/github.md)                                       | `2,009` |
@@ -21,10 +21,10 @@ than read, so they are left out.
 | [`references/docs.md`](references/docs.md)                                                 | `1,047` |
 | [`references/env.md`](references/env.md)                                                   | `1,412` |
 | [`references/hk.md`](references/hk.md)                                                     | `5,708` |
-| [`references/hooks.md`](references/hooks.md)                                               |   `429` |
+| [`references/hooks.md`](references/hooks.md)                                               |   `479` |
 | [`references/install.md`](references/install.md)                                           |   `355` |
 | [`references/mise-fy.md`](references/mise-fy.md)                                           | `2,091` |
-| [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | `2,346` |
+| [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | `2,322` |
 | [`references/runtimes/node.md`](references/runtimes/node.md)                               | `1,462` |
 | [`references/tasks.md`](references/tasks.md)                                               | `3,113` |
 | [`references/tools.md`](references/tools.md)                                               | `3,566` |

@@ -83,7 +83,7 @@ Installing a tool or a runtime.
 TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running and parallelism, `mise watch` (re-run on change).
 
 **Hooks** (directory & lifecycle: `enter`/`cd`, `watch_files`, `postinstall`) -> [`references/hooks.md`](references/hooks.md)
-Keeping `enter`/`cd` hooks offline-safe (`MISE_OFFLINE`, or they hang the shell), trust impact, the shim caveat. For git/pre-commit hooks specifically, see hk below.
+Keeping `enter`/`cd` hooks offline-safe (plain shell, not `mise run`), trust impact, the shim caveat. For git/pre-commit hooks specifically, see hk below.
 
 **hk Hooks** (pre-commit / git hooks) -> [`references/hk.md`](references/hk.md)
 `hk.pkl` (Pkl, lives at `.config/hk.pkl`), `check` vs `fix`, builtins, mise integration, install, extending with custom steps, the `.config/` home for linter configs.
