@@ -6,7 +6,7 @@ skill's own `SKILL.md` is its documentation.
 
 <p>
   <img src="https://img.shields.io/badge/All%20SKILL.md-19%2C282%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 19,282 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-35%2C273%20tokens-2ea44f?style=flat-square" alt="All Markdown: 35,273 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-35%2C308%20tokens-2ea44f?style=flat-square" alt="All Markdown: 35,308 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -16,7 +16,7 @@ than read, so they are left out.
 | Skill                                                             | Upstream                                                    | SKILL.md |   Total |
 | ----------------------------------------------------------------- | ----------------------------------------------------------- | -------: | ------: |
 | [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `781` | `1,939` |
-| [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)       |  `2,282` | `7,911` |
+| [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)       |  `2,282` | `7,946` |
 | [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `198` |   `198` |
 | [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)     |  `7,056` | `9,335` |
 | [`i-have-adhd`](i-have-adhd/)                                     | [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) |  `1,743` | `1,743` |
@@ -37,7 +37,7 @@ than read, so they are left out.
 | `gh-stack`                      | [`SKILL.md`](gh-stack/SKILL.md)                                           | `2,282` |
 | `gh-stack`                      | [`references/commands.md`](gh-stack/references/commands.md)               | `2,631` |
 | `gh-stack`                      | [`references/stack-design.md`](gh-stack/references/stack-design.md)       |   `946` |
-| `gh-stack`                      | [`references/troubleshooting.md`](gh-stack/references/troubleshooting.md) | `2,052` |
+| `gh-stack`                      | [`references/troubleshooting.md`](gh-stack/references/troubleshooting.md) | `2,087` |
 | `handoff`                       | [`SKILL.md`](handoff/SKILL.md)                                            |   `198` |
 | `humanizer`                     | [`AGENTS.md`](humanizer/AGENTS.md)                                        |   `752` |
 | `humanizer`                     | [`CHANGELOG.md`](humanizer/CHANGELOG.md)                                  | `1,527` |
