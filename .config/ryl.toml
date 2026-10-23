@@ -1,0 +1,5 @@
+# ryl: structural YAML only. Cosmetic rules are noisy on workflow/docs YAML.
+[lint.rules]
+anchors = "enable"
+indentation = "enable"
+key-duplicates = "enable"

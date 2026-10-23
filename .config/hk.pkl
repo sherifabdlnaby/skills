@@ -1,8 +1,8 @@
 // hk.pkl — git hooks for hk. Lives in .config/ (hk discovers it there) so the repo root stays thin;
 // every linter config sits next to it, wired below.
 // Both URLs pin the hk version; keep them equal to the hk in mise.toml [tools] and bump them together.
-amends "package://github.com/jdx/hk/releases/download/v2.2.0/hk@2.2.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.2.0/hk@2.2.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v2.8.1/hk@2.8.1#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.8.1/hk@2.8.1#/Builtins.pkl"
 
 // Anchor for branch-scoped checks (--pr and the pushGates' base). Keep in sync with
 // the base default in mise.toml's version:check task.
@@ -46,8 +46,9 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["pkl"] = Builtins.pkl // pkl validate (`pkl eval`)
   ["rumdl"] = Builtins.rumdl // markdown lint + format; table cell-alignment — .config/rumdl.toml, discovered natively
   ["taplo"] = Builtins.taplo // TOML lint + format (no config file; nothing to route)
-  ["yamllint"] = (Builtins.yamllint) { env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" } } // YAML structure only — cosmetic rules off there
+  ["ryl"] = Builtins.ryl // YAML structure only — .config/ryl.toml, discovered natively
   ["mise"] = Builtins.mise // validate mise.toml
+  ["hk-validate"] { glob = ".config/hk.pkl"; check = "hk validate --deny-warnings" } // a typo in hk.pkl leaves a step that checks nothing
 
   // spelling — accepted words / excludes live in .config/typos.toml (no env var for it, so splice --config in)
   ["typos"] = (Builtins.typos) {
@@ -61,7 +62,7 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   }
 
   // GitHub Actions
-  ["actionlint"] = Builtins.actionlint // workflow syntax
+  ["jactionlint"] = Builtins.jactionlint // workflow syntax
   ["zizmor"] = Builtins.zizmor // workflow security
   // pinact needs a GitHub token for tag→SHA resolution (CI: $GITHUB_TOKEN; local: gh auth).
   // hk `env` values are static, so a `sh -c` prefix resolves the token at run time and `exec`s the

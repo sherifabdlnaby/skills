@@ -1,23 +1,23 @@
 # Minimum `mise` version. If not matched, mise guides the user to update.
 # -> Bump when relying on a newly introduced setting.
-min_version = "2026.9.13"
+min_version = "2026.10.13"
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
 
 # linters & formatters
-actionlint = "1"    # GitHub Actions linter
-shellcheck = "0.11" # actionlint uses it to lint workflow run: blocks — 0.x, pin minor
-zizmor = "1"        # GitHub Actions security
-pinact = "5"        # pin GitHub Actions to SHAs
-lychee = "0.24"     # dead-link checker (offline; see .config/lychee.toml) — 0.x, pin minor
-ruff = "0.15"       # python lint + format (skills/git/scripts/*.py); native binary, no python — 0.x, pin minor
-betterleaks = "1"   # secret scanning (allowlist in .config/betterleaks.toml)
-typos = "1"         # source-code spell checker (excludes/words in .config/typos.toml)
-pkl = "0.31"        # pkl lint + format (.config/hk.pkl) — 0.x, pin minor
-rumdl = "0.2"       # markdown lint + format; table cell-alignment (MD060) — config in .config/rumdl.toml — 0.x, pin minor
-yamllint = "1"      # YAML structure (duplicate keys, indentation); cosmetic rules off in .config/yamllint.yml
-taplo = "0.10"      # TOML lint + format (mise.toml, *.toml) — 0.x, pin minor
+jactionlint = "2"              # GitHub Actions linter (maintained actionlint fork)
+shellcheck = "0.11"            # jactionlint uses it to lint workflow run: blocks — 0.x, pin minor
+zizmor = "1"                   # GitHub Actions security
+pinact = "5"                   # pin GitHub Actions to SHAs
+lychee = "0.24"                # dead-link checker (offline; see .config/lychee.toml) — 0.x, pin minor
+ruff = "0.15"                  # python lint + format (skills/git/scripts/*.py); native binary, no python — 0.x, pin minor
+betterleaks = "1"              # secret scanning (allowlist in .config/betterleaks.toml)
+typos = "1"                    # source-code spell checker (excludes/words in .config/typos.toml)
+pkl = "0.31"                   # pkl lint + format (.config/hk.pkl) — 0.x, pin minor
+rumdl = "0.2"                  # markdown lint + format; table cell-alignment (MD060) — config in .config/rumdl.toml — 0.x, pin minor
+"aqua:owenlamont/ryl" = "0.26" # YAML structure (duplicate keys, indentation); rules in .config/ryl.toml — 0.x, pin minor
+taplo = "0.10"                 # TOML lint + format (mise.toml, *.toml) — 0.x, pin minor
 
 # tasks' own dependencies
 jq = "1"        # JSON reads in tasks (version:check manifests, check completions)
@@ -25,7 +25,7 @@ python = "3.13" # token estimate generator
 uv = "0.12"     # locked Python dependencies
 
 # pre-commit
-hk = "2.2.0" # keep in sync with the pin in .config/hk.pkl
+hk = "2.8.1" # keep in sync with the pin in .config/hk.pkl
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
