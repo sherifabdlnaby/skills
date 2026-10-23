@@ -91,6 +91,11 @@ Checks run with the project's tools, but a missing tool installs on demand first
 download ahead of the fail-fast; a check that needs project deps (e.g. `node_modules`) fails on a
 fresh clone, since `deps` runs after it.
 
+**Chain checks with `depends`** so a probe that needs another (Compose needs the engine) reports
+`blocked`, not a second failure with a misleading hint. **`run`, `description`, and `hint` are Tera
+templates**: `{{ vars.x }}` works, and literal braces such as `docker info --format '{{.ServerVersion}}'`
+break the check until wrapped in `{% raw %}…{% endraw %}`.
+
 #### Setup Check & Versioning
 
 Setup should include a hidden `setup:stamp` task that records the setup version, and an `enter` hook that compares it with the expected version.

@@ -20,10 +20,7 @@ on:
         options: [all, pr]
         default: all
 
-# Read the repo; comment on PRs to point the author at the fix command.
-permissions:
-  contents: read
-  pull-requests: write
+permissions: {}
 
 # One run per PR (or ref): newer pushes cancel stale runs.
 concurrency:
@@ -34,6 +31,11 @@ jobs:
   check:
     name: check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Read the repo; comment on PRs to point the author at the fix command.
+    permissions:
+      contents: read
+      pull-requests: write
 
     env:
       # Pretty colors in the CI!
@@ -47,13 +49,22 @@ jobs:
           fetch-depth: 0 # full history so `check --pr` can diff against the default branch
           persist-credentials: false
 
-      - name: Setup mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      # Cache downloads, not installs: `--locked` re-checks each download against mise.lock.
+      # TODO: drop for mise-action `cache: true` once it caches downloads-cas.
+      - name: Cache mise downloads
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          version: "2026.9.13" # pin mise itself, not just the action
+          path: ~/.cache/mise/downloads-cas
+          key: mise-cas-${{ runner.os }}-${{ hashFiles('mise.lock') }}
+          restore-keys: mise-cas-${{ runner.os }}-
+
+      - name: Setup mise
+        uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
+        with:
+          version: "2026.10.18" # pin mise itself, not just the action
           install: true
           install_args: "--locked" # honor mise.lock
-          cache: true
+          cache: false # see the step above
           experimental: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SO tool installs don't hit API rate limits

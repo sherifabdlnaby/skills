@@ -41,6 +41,8 @@ How to build or improve mise Tasks.
 - **Don't wire `setup` into the fast path "so it always works".** `test depends =
   ["setup"]` puts slow, online (possibly interactive) work into a loop that runs dozens
   of times a day, and breaks offline.
+- **`skip_if = "<shell test>"` skips a task whose "done" state a shell test can see** (exit 0 = skip), e.g. a one-off `setup:*` step. It skips the task's own `run` only: its `depends` and
+  `depends_post` still run, and `--force` bypasses it.
 - **Tasks run from the config root, not your cwd.** Override per-task with `dir` (default `"{{config_root}}"`; set `dir = "{{cwd}}"` to follow the caller). Only reach for `{{config_root}}` when the
   task sets a non-default `dir`.
 - **`run` as an array = serial commands, each its own shell**; `cd` and unexported vars

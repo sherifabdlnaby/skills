@@ -75,8 +75,8 @@ The mise binary on `PATH` only gives you the `mise` command; the *managed* tools
 Two independent layers
 
 **1. The mise binary** — covered by [Installing mise in CI](#installing-mise-in-ci)
-(install script: embedded checksums; `mise-action`: minisign-verified release
-checksums, see [`ci/github.md`](ci/github.md)). Only a hand-rolled install
+(install script: embedded checksums; `mise-action`: the release's signed
+packslip, see [`ci/github.md`](ci/github.md)). Only a hand-rolled install
 verifies manually: against the release's `SHASUMS256.txt` (GPG `.asc` /
 minisign `.minisig`) or `gh attestation verify <tarball> --repo jdx/mise`;
 hashes are per-platform — grep the asset for *this* runner's os/arch.
@@ -84,34 +84,37 @@ hashes are per-platform — grep the asset for *this* runner's os/arch.
 **2. The tools mise installs** are handled by the lockfile, not the steps above.
 With `lockfile = true` + `mise install --locked`, mise re-verifies each tool's
 checksum **and** provenance (cosign, SLSA, minisign, GitHub attestations; all on
-by default, each with a `MISE_AQUA_*` toggle) on every CI run, aborting
-on mismatch. This is the main reason to commit `mise.lock` and pass `--locked`
+by default, each with a `MISE_AQUA_*` toggle) on every install, aborting
+on mismatch. A tool already installed is not re-checked, which is what decides
+[what to cache](#caching). This is the main reason to commit `mise.lock` and pass `--locked`
 (see [`tools.md`](tools.md)). Pre-populate every CI platform with `mise lock
 --platform linux-x64,…` (see the per-platform gotcha above).
 
 ## Caching
 
-Always cache mise's tool installs so CI doesn't re-download every run.
+Cache mise's **downloads**, not its installed tools. mise keeps every download in
+`$MISE_CACHE_DIR/downloads-cas` (default `~/.cache/mise/downloads-cas`), stored by content hash.
+With `--locked`, a cached download is used only when its hash matches `mise.lock`, so a poisoned
+cache is downloaded again. A cached data dir (`$MISE_DATA_DIR`) holds installed tools, and those run as-is.
 
-- **`jdx/mise-action`**: caching is on by default (`cache: true`); it keys on a hash of `mise.toml` + `mise.lock`. Nothing to wire up; see [`ci/github.md`](ci/github.md).
-- **Generic CI** (no action): cache the data dir where tools land, keyed on the config + lockfile so a tool bump busts the cache:
+- **`jdx/mise-action`**: its `cache: true` caches the data dir. Set `cache: false` and cache `downloads-cas` in a step before it; see [`ci/github.md`](ci/github.md).
+- **Generic CI**: key on the lockfile so a tool bump writes a new entry.
 
   ```yaml
-  # paths:  ~/.local/share/mise   ($MISE_DATA_DIR — installed tools live here)
-  #         ~/.cache/mise         ($MISE_CACHE_DIR — downloads; optional, smaller win)
-  # key:    mise-${{ hashFiles('mise.toml', 'mise.lock') }}
+  # path: ~/.cache/mise/downloads-cas
+  # key:  mise-cas-${{ hashFiles('mise.lock') }}
   ```
 
-  GitLab example (set `MISE_DATA_DIR` inside the project so it's cacheable):
+  GitLab example (set `MISE_CACHE_DIR` inside the project so it's cacheable):
 
   ```yaml
   variables:
-    MISE_DATA_DIR: $CI_PROJECT_DIR/.mise-data
+    MISE_CACHE_DIR: $CI_PROJECT_DIR/.mise-cache
   cache:
     key:
-      files: [mise.toml, mise.lock]
-      prefix: mise-
-    paths: [.mise-data]
+      files: [mise.lock]
+      prefix: mise-cas-
+    paths: [.mise-cache/downloads-cas]
   ```
 
 ## Docs:
