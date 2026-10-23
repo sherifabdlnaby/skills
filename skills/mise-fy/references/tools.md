@@ -25,13 +25,14 @@ Guidance on Installing Tools and Runtimes via Mise.
    fast-moving tools via `minimum_release_age_excludes` if needed). An exact pin already in `mise.lock` installs regardless of the cutoff.
 10. If a tool/runtime needed **just for a single task** define it just for the task.
 11. Use and enable Lockfile whenever possible, unless the user told you not to. Commit everything `mise lock` writes beside `mise.lock` (e.g. a `locks/` dir of per-tool dependency lockfiles), not
-    just the file itself.
+    just the file itself; `mise lock --sidecars` lists those paths.
 
 ## Notes & Gotchas:
 
 - **Lockfile only updates when enabled.** `mise use`/`install` write `mise.lock` only after `[settings] lockfile = true`. Without it, fuzzy versions resolve fresh each install.
-- **Lockfile format is versioned.** A `mise.lock` written by a newer mise can be unreadable to an older one (it warns and ignores the lock), so keep `min_version` and CI's pinned mise at or above
-  the version that wrote it.
+- **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the
+  version that wrote it. mise keeps an existing revision when it rewrites the file; `mise lock --upgrade` moves it to the current one.
+- **Unknown tool options fail the install.** A misspelled key in a tool's table form (`asset_glob`) stops `mise install` with `option … is not used by the <backend> backend`.
 - **Locked tools keep their locked backend.** When the registry moves a short name to a new backend, a tool already in `mise.lock` stays on the old one and mise warns; `mise backends switch` moves it.
 - **`mise use` edits the closest config**. It may not be the one you expect in a nested/monorepo tree.
 - **A backend spec goes in the KEY, never the value.** `ripgrep = "aqua:BurntSushi/ripgrep"` is a parse error (`invalid tool: invalid prefix: aqua`) that breaks the whole config; write

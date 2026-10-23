@@ -2,7 +2,7 @@
 
 Running Mise-managed tools and tasks on GitHub Actions. General, platform-agnostic CI rules live in [`../ci.md`](../ci.md); this file is GitHub-specific.
 
-Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and caches. The canonical workflow lives at [.github/workflows/check.yml](../../assets/.github/workflows/check.yml)
+Use `jdx/mise-action@v5`: it installs mise + tools and runs `mise install`. The canonical workflow lives at [.github/workflows/check.yml](../../assets/.github/workflows/check.yml)
 (report-only, `contents: read`). Copy and adapt it. A heavier opt-in variant that opens PRs with the fixes lives alongside it; see [Optional: auto-fix PRs](#optional-auto-fix-prs).
 
 ## Rules and Best Practices:
@@ -11,8 +11,8 @@ Use `jdx/mise-action@v4`: it installs mise + tools, runs `mise install`, and cac
 2. **Pin mise itself via the `version:` input**, not just the action SHA.
 3. **`sha256:` is optional hardening.** It pins the mise binary's bytes (per platform, a new hash every mise bump). The reference workflows omit it; add it when a poisoned Actions cache is
    in your threat model.
-4. **Scope `permissions`** to the minimum. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint comment. The opt-in [auto-fix variant](#optional-auto-fix-prs)
-   additionally needs `contents: write` to push the fix branch.
+4. **Scope `permissions`** to the minimum, on the job, with `permissions: {}` at the workflow level. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint
+   comment. The opt-in [auto-fix variant](#optional-auto-fix-prs) additionally needs `contents: write` to push the fix branch.
 5. **Cancel superseded runs** with a `concurrency` group keyed on the PR number or ref so a new push stops the old run.
 6. Set the GitHub token via `GITHUB_TOKEN` env / `github_token` input so tool installs don't hit API rate limits.
 
@@ -67,8 +67,9 @@ Caveats (why it's opt-in):
 
 ## Notes & Gotchas:
 
-- **`mise-action` default `version` defaults to CDN-resolved "latest"**, which is a supply chain risk.
-- **Cache key** should hash `mise.toml` + `mise.lock`; stale keys reinstall silently. `mise-action` does this for you; only set `cache_key` to override.
+- **Unpinned, `mise-action` installs the newest mise release older than 24h**, so CI drifts from the version `min_version` and `mise.lock` were tested with.
+- **`cache: true` caches installed tools**, and `--locked` never re-checks a tool that is already installed. The reference workflows set `cache: false` and cache
+  `~/.cache/mise/downloads-cas` with `actions/cache` before the mise step (see [`../ci.md`](../ci.md#caching)).
 - **`persist-credentials: false`** on checkout unless a later step pushes with the checkout token.
 - **`check --pr` checks the wrong files in CI unless you set `origin/HEAD`.**
   hk's `--pr` is shorthand for `--from-ref DEFAULT_BRANCH --to-ref HEAD`, and it
@@ -95,8 +96,7 @@ Caveats (why it's opt-in):
   The reference workflow does exactly this.
   zizmor's auto-fix for it is held back as "unsafe", so apply the env
   indirection by hand.
-- **Pin `shellcheck` next to `actionlint`.** actionlint shells out to shellcheck to lint `run:` blocks; unpinned, the mise shim errors (`No version is set`) and the scripts go unchecked. Add both to
-  `[tools]`.
+- **Pin `shellcheck` next to `jactionlint`.** jactionlint shells out to shellcheck to lint `run:` blocks; unpinned, the mise shim errors and the step fails. Add both to `[tools]`.
 
 ## Minimal job
 
@@ -106,12 +106,13 @@ Just gate the PR; see the asset for the full report + sticky-comment flow:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@<sha> # v6   (fetch-depth: 0 if you use `check --pr`)
+      - uses: actions/checkout@<sha> # v7   (fetch-depth: 0 if you use `check --pr`)
         with: { fetch-depth: 0 }
-      - uses: jdx/mise-action@<sha> # v4   installs mise + tools, runs `mise install`, caches
+      - uses: jdx/mise-action@<sha> # v5   installs mise + tools, runs `mise install`
         with: { version: "<mise-version>", install_args: "--locked" } # pin mise too, not just the action
       - run: mise run check --pr # same task as local + pre-commit
 ```

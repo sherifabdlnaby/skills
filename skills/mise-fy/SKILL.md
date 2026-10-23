@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.7.0"
+  version: "0.8.0"
 ---
 
 # mise-fy
@@ -118,10 +118,12 @@ safety/correctness floor: apply them even on a one-tool change, not polish you'd
    task logic hard-errors as a *whole file* until `mise trust` (interactive shells prompt to
    trust; non-interactive ones error). Only a bare `min_version` + plain-string
    `[tools]`/`[tasks]` file loads untrusted (since 2026.6.6). `mise run`/`install`/`exec` trust the
-   active config on their own (since 2026.8.9); everything else (`mise env`, the shell hook,
-   older clients) still errors, so docs keep an explicit `mise trust` (or a `trusted_config_paths` entry).
+   active config on their own (since 2026.8.9); `mise env` and older clients still error, and the
+   shell hook skips the file with a warning, so docs keep an explicit `mise trust` (or a `trusted_config_paths` entry).
+   An untrusted file's `[settings]` are silently ignored, so security settings such as
+   `disable_backends` and `minimum_release_age` stay off until trust.
 2. **Some features need `experimental = true`** and may change between releases. If a documented flag errors, check whether it's gated.
-3. **Set `min_version`** (root level, not under `[settings]`): the oldest release that supports every feature the config uses, never below the known-vulnerable floor (`2026.8.11`), and never
+3. **Set `min_version`** (root level, not under `[settings]`): the oldest release that supports every feature the config uses, never below the known-vulnerable floor (`2026.10.13`), and never
    above what the author has installed. An old client is then told to update instead of failing on a feature it lacks.
 4. **Avoid GitHub rate limits** on tool installs (local *and* CI): set
    `github.gh_cli_tokens` and `github.use_git_credentials` under `[settings]`.

@@ -68,7 +68,10 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
 - **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. The URLs need the exact release tag, and hk ships the Pkl package for its own
   version, so a matching pair validates offline on a cold cache.
-- **The `actionlint` builtin needs `shellcheck` pinned.** actionlint shells out to shellcheck to lint workflow `run:` blocks; missing or unpinned, it fails. Add both to `[tools]`.
+- **The `jactionlint` builtin needs `shellcheck` pinned.** jactionlint shells out to shellcheck to lint workflow `run:` blocks; unpinned, the shim errors and the step fails. Add both to
+  `[tools]`.
+- **Lint `hk.pkl` itself with `hk validate --deny-warnings`.** A misspelled property or a glob that never matches is a step that checks nothing, and `hk check` stays green. The asset runs it as
+  the `hk-validate` commit gate.
 
 ## Setup & Templates.
 
@@ -89,10 +92,10 @@ Beyond Popular Runtime Linters (check that yourself, and take a look at builtins
 - mise: lint the mise config itself.
 - File hygiene: newlines, trailing_whitespace, mixed_line_ending, byte_order_marker, check_added_large_files, check_case_conflict, check_merge_conflict, check_symlinks,
   check_executables_have_shebangs, detect_private_key (cheap, complements betterleaks).
-- GitHub Actions: actionlint (lint), zizmor (security), pinact (pin to SHAs; needs a token, see its note).
-- Structure: yamllint (structure only, see its note), taplo (TOML lint + format; alt: `tombi`).
+- GitHub Actions: jactionlint (lint; maintained actionlint fork), zizmor (security), pinact (pin to SHAs; needs a token, see its note).
+- Structure: ryl (YAML, structure only, see its note), taplo (TOML lint + format; alt: `tombi`).
 - lychee: broken links, anchors included (what keeps progressive disclosure from rotting; see its note).
-- Confirm with the user first, each is noisy on a real tree and gets a scaffolded config: betterleaks, typos, rumdl, yamlfmt (notes below).
+- Confirm with the user first, each is noisy on a real tree and gets a scaffolded config: betterleaks, typos, rumdl, ryl_format (notes below).
 
 You can recommend to the user other linters based on the project. Use Builtins list of inspiration.
 
@@ -169,23 +172,21 @@ a `.config/typos.toml`** (wired by splicing `--config` into the builtin, see the
 `extend-identifiers`, and `extend-ignore-re` examples so the user has an obvious place
 to silence false positives. See this repo's `.config/typos.toml`.
 
-##### yamllint (https://github.com/adrienverge/yamllint)
+##### ryl (https://github.com/owenlamont/ryl)
 
-Runs `yamllint --strict`. Its **error-level** rules are the structural ones you want:
-syntax errors, **duplicate keys**, bad indentation/nesting. Its **warning-level**
-defaults are cosmetic and noisy (`line-length`, `truthy`, `comments`, `document-start`).
-If the user only wants structure/spec validation (not style), scaffold a `.config/yamllint.yml`
-(wired via the `YAMLLINT_CONFIG_FILE` step env, see the table below) that disables the cosmetic rules:
+yamllint's rules in one Rust binary, plus a formatter: `Builtins.ryl` lints, `Builtins.ryl_format`
+formats (keeps comments, anchors, block scalars, multi-document files). No registry short name:
+pin `"aqua:owenlamont/ryl" = "0.26"`.
 
-```yaml
-extends: default
-rules:
-  line-length: disable
-  truthy: disable
-  comments: disable
-  comments-indentation: disable
-  document-start: disable
-  # keep structural: key-duplicates, indentation, syntax, anchors
+**It enables no rules without a config**, so scaffold `.config/ryl.toml` (native discovery). Keep it
+structural: syntax errors always report, add duplicate keys, indentation, anchors. The cosmetic rules
+(`line-length`, `truthy`, `comments`, `document-start`) are noise, and `ryl_format` owns style when enabled:
+
+```toml
+[lint.rules]
+anchors = "enable"
+indentation = "enable"
+key-duplicates = "enable"
 ```
 
 Note: none of the generic YAML builtins do **JSON-Schema** validation.
@@ -229,8 +230,8 @@ token and `exec`s the builtin's own argv, so the command stays in sync with the 
 ```
 
 Don't concatenate a string onto a builtin command (`"X=1 " + Builtins.pinact.fix`): in hk 2
-commands are `CommandSpec` objects, and on hk 2.2 that concat makes `hk validate` hang instead
-of failing.
+commands are `CommandSpec` objects, and that concat makes `hk validate` hang instead of
+failing (seen through hk 2.8.1).
 
 `gh` missing or not logged in yields an empty token, so pinact runs unauthenticated
 (rate-limited) rather than failing the commit; `${GITHUB_TOKEN:-…}` means `gh` is never called
@@ -262,7 +263,7 @@ by the binary name.
 | Tool            | Route to `.config/`                                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `rumdl`         | **native**: auto-discovers `.config/rumdl.toml`, no wiring                                                                                       |
-| `yamllint`      | step `env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" }` (ignored if a root `.yamllint` exists)                                          |
+| `ryl`           | **native**: auto-discovers `.config/ryl.toml`, no wiring                                                                                         |
 | `betterleaks`   | step `env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }` (**required** — nothing is auto-discovered, see above)                        |
 | `taplo`         | step `env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" }` (re-add `RUST_LOG`; re-declaring `env` replaces the whole mapping) |
 | `typos`         | `withFlag` `--config=.config/typos.toml` into `fix`/`check_diff` (no env var)                                                                    |
@@ -278,7 +279,6 @@ local function withFlag(spec: CommandSpec, bin: String, flag: String): CommandSp
 }
 
 local linters = new Mapping<String, Step> {
-  ["yamllint"]    = (Builtins.yamllint)    { env { ["YAMLLINT_CONFIG_FILE"] = ".config/yamllint.yml" } }
   ["betterleaks"] = (Builtins.betterleaks) { env { ["BETTERLEAKS_CONFIG"]   = ".config/betterleaks.toml" } }
   ["taplo"]       = (Builtins.taplo)       { env { ["TAPLO_CONFIG"] = ".config/taplo.toml"; ["RUST_LOG"] = "warn" } }
   ["lychee"]      = (Builtins.lychee)      { check = withFlag(Builtins.lychee.check, "lychee", "--config=.config/lychee.toml") }
@@ -286,13 +286,13 @@ local linters = new Mapping<String, Step> {
     check_diff = withFlag(Builtins.typos.check_diff, "typos", "--config=.config/typos.toml")
     fix        = withFlag(Builtins.typos.fix, "typos", "--config=.config/typos.toml")
   }
-  // rumdl: nothing — just place the file at .config/rumdl.toml
+  // rumdl, ryl: nothing — just place the file under .config/
 }
 ```
 
 **Prove every route after wiring it.** A config that isn't found is a vacuous green: the tool
 falls back to defaults and the step still passes. Check each one against a case only the config
-changes (an accepted word for `typos`, a cosmetic rule for `yamllint`, `👻 Excluded` counts plus a
+changes (an accepted word for `typos`, a cosmetic rule for `ryl`, `👻 Excluded` counts plus a
 non-zero `OK` for `lychee`), or point it at a deliberately broken file and confirm the step fails.
 
 ## Docs:

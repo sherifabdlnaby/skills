@@ -1,7 +1,7 @@
 // hk.pkl: git hooks for hk.
 // Both URLs pin the hk version; keep them equal to the hk in mise.toml [tools] and bump them together.
-amends "package://github.com/jdx/hk/releases/download/v2.2.0/hk@2.2.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.2.0/hk@2.2.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v2.8.1/hk@2.8.1#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.8.1/hk@2.8.1#/Builtins.pkl"
 
 // Repo-wide ignores: committed paths only (.gitignore is already honored). Per-step `exclude` stacks on top.
 local commonIgnores =
@@ -18,8 +18,13 @@ local commonIgnores =
 
 // Commit gates: run on every commit. File-scoped, fast, auto-fixable.
 local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
+  // A typo in hk.pkl leaves a step that checks nothing and passes.
+  ["hk-validate"] {
+    glob = ".config/hk.pkl"
+    check = "hk validate --deny-warnings"
+  }
   ["shfmt"] = Builtins.shfmt
-  ["actionlint"] = Builtins.actionlint
+  ["jactionlint"] = Builtins.jactionlint
   // pinact resolves Action tags to SHAs via the GitHub API, so it needs a token or it hits the
   // anonymous rate limit. Prefer $GITHUB_TOKEN (CI injects it); locally fall back to the dev's `gh`
   // login. gh missing/not-logged-in -> empty token, so pinact runs unauthenticated (rate-limited)

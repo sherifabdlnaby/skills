@@ -4,7 +4,7 @@
 
 # Minimum `mise` version. If not matched, will guide user to update.
 # -> Remember to update when relying on newly introduced setting.
-min_version = "2026.9.13" # oldest mise that supports everything in this file
+min_version = "2026.10.13" # oldest mise that supports everything in this file
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
@@ -16,12 +16,13 @@ node = "24"
 # terraform = { version = "1", lazy = true }
 
 # linters & formatters
-actionlint = "1"
+jactionlint = "2"
+shellcheck = "0.11" # jactionlint lints workflow `run:` blocks with it
 pinact = "4"   # pin GitHub Actions to SHAs; needs a GitHub token for the API (see hk.pkl pinact step)
 # rumdl = "0.2"  # markdown lint/format (disabled by default; config in rumdl.toml)
 
 # pre-commit
-hk = "2.2.0"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs
+hk = "2.8.1"   # full MAJOR.MINOR.PATCH pin, must match hk.pkl's amends/import URLs
 
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
@@ -88,6 +89,12 @@ postinstall = "hk install --mise" # canonical hook install: runs after every `mi
 # description = "Docker engine is running"
 # run = "docker info >/dev/null 2>&1"
 # hint = "Start your Docker engine (Docker Desktop, OrbStack, Colima), then re-run: mise run setup"
+#
+# [doctor.checks."docker:compose"] # `depends` needs mise 2026.10.18
+# description = "Docker Compose plugin is installed"
+# depends = "docker"                 # blocked, not failed, while docker is down
+# run = "docker compose version >/dev/null 2>&1"
+# hint = "Install the Docker Compose plugin, then re-run: mise run setup"
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]

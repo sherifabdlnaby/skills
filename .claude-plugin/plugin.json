@@ -2,7 +2,7 @@
   "name": "skills",
   "displayName": "Sherif's Skills",
   "description": "Opinionated skills, plus boilerplate commands, agents, and hooks.",
-  "version": "0.29.1",
+  "version": "0.30.0",
   "author": {
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"
