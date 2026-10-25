@@ -49,7 +49,8 @@ whenever `mise run check --fix` changes something
 
 How it works (all `gh` CLI, no extra action):
 
-- **Same scope** as report-only: PRs fix `--pr`, `schedule`/dispatch fix `--all`; the PR body notes its provenance (`#<n>` vs the `--all` sweep).
+- **PR code never runs beside the write token.** `check` runs the fixer read-only and uploads a patch; `fix-pr` applies and pushes it, running nothing from the PR.
+- **Same scope** as report-only: PRs fix `--pr`, `schedule`/dispatch fix `--all`.
 - **Stable branch per target.** `TARGET` is `github.head_ref` (PR) or
   `github.ref_name`; fixes force-push to `bot/ci/<TARGET>` and a PR opens with
   `base: <TARGET>`, so PR fixes target the PR branch and `main`/schedule target
