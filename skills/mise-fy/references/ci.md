@@ -15,7 +15,8 @@ Platform-specific setup lives under [`ci/`](ci/):
    [Getting tools on PATH](#getting-tools-on-path)).
 2. **Run the same tasks as locally** (`mise run check`, `mise run test`), don't re-encode commands in YAML (see [`tasks.md`](tasks.md)). When local, the pre-commit hook, and CI all call one task,
    behavior can't drift.
-3. Pin tool versions and commit `mise.lock`; install with `--locked` so CI can't silently drift off the lockfile (see [`tools.md`](tools.md)).
+3. Pin tool versions, commit `mise.lock`, and set `MISE_LOCKED=1` for the whole job, so no install drifts off the lockfile or rewrites it (see [`tools.md`](tools.md)). `--locked` on the install
+   step alone misses lazy and task tools, which `mise run` installs later without it.
 4. Set a CI token (e.g. `GITHUB_TOKEN`) so tool installs don't hit provider API rate limits. Locally the same is achieved via `[settings] github.gh_cli_tokens`/`github.use_git_credentials` (see
    SKILL.md "Always applies").
 
@@ -24,13 +25,13 @@ Platform-specific setup lives under [`ci/`](ci/):
 - **Color is off in CI by default.** Set `CLICOLOR_FORCE: "1"` / `FORCE_COLOR: "1"` to keep linter output readable in the logs.
 - **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise commit an install script (`mise generate install-script`). See
   [Installing mise in CI](#installing-mise-in-ci).
-- **`mise.lock` is per-platform.** `mise install` records only the platform it
-  ran on, so a lockfile grown that way plus `--locked` fails CI on `linux-x64`
-  with `No lockfile URL found for <tool>@<ver> on platform linux-x64`, even
-  though it works on your Mac. Run `mise lock` (resolves all 7 default platforms
-  without installing; scope with `--platform linux-x64,macos-arm64`, or persist
-  the set via the `lockfile_platforms` setting), commit the lockfile, and
-  re-run it whenever you add or bump a tool.
+- **`mise.lock` is per-platform.** Installs keep the platforms the file already
+  lists and never add one, so a runner on an unlisted platform (e.g. a lockfile
+  scoped with `lockfile_platforms`, then a new arm64 runner) fails `--locked` with
+  `No lockfile URL found for <tool>@<ver> on platform linux-arm64`, even though it
+  works on your Mac. Add the platform with `mise lock --platform <os-arch>,…` (or
+  extend `lockfile_platforms`), commit the lockfile, and re-run `mise lock`
+  whenever you add or bump a tool.
 
 ## Installing mise in CI
 

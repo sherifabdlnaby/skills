@@ -68,6 +68,8 @@ Caveats (why it's opt-in):
 ## Notes & Gotchas:
 
 - **Unpinned, `mise-action` installs the newest mise release older than 24h**, so CI drifts from the version `min_version` and `mise.lock` were tested with.
+- **The action's `--locked` covers only its own install step.** It adds the flag when `mise.lock` exists but exports nothing, so lazy and task tools that `mise run` installs later go unlocked
+  and rewrite `mise.lock`, which an auto-fix job then commits. The reference workflows set `MISE_LOCKED: "1"` in the job env instead of passing `install_args: "--locked"`.
 - **`cache: true` caches installed tools**, and `--locked` never re-checks a tool that is already installed. The reference workflows set `cache: false` and cache
   `~/.cache/mise/downloads-cas` with `actions/cache` before the mise step (see [`../ci.md`](../ci.md#caching)).
 - **`persist-credentials: false`** on checkout unless a later step pushes with the checkout token.
@@ -109,11 +111,13 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+    env:
+      MISE_LOCKED: "1" # every install honors mise.lock, also lazy/task tools `mise run` installs later
     steps:
       - uses: actions/checkout@<sha> # v7   (fetch-depth: 0 if you use `check --pr`)
         with: { fetch-depth: 0 }
       - uses: jdx/mise-action@<sha> # v5   installs mise + tools, runs `mise install`
-        with: { version: "<mise-version>", install_args: "--locked" } # pin mise too, not just the action
+        with: { version: "<mise-version>" } # pin mise too, not just the action
       - run: mise run check --pr # same task as local + pre-commit
 ```
 

@@ -29,7 +29,9 @@ Guidance on Installing Tools and Runtimes via Mise.
 
 ## Notes & Gotchas:
 
-- **Lockfile only updates when enabled.** `mise use`/`install` write `mise.lock` only after `[settings] lockfile = true`. Without it, fuzzy versions resolve fresh each install.
+- **An existing `mise.lock` is not read-only.** Plain installs, `mise use`, and first-run auto-installs from `mise run`/`mise x` rewrite it to fill missing entries; only locked mode (`--locked`,
+  `MISE_LOCKED=1`) leaves it alone. `lockfile = true` also creates the file, unset only updates an existing one, `false` stops writes. Run `mise lock` after every `[tools]` change so the committed
+  file is complete; a `mise.lock` diff after `mise install` means the commit missed entries, so commit it.
 - **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the
   version that wrote it. mise keeps an existing revision when it rewrites the file; `mise lock --upgrade` moves it to the current one.
 - **Unknown tool options fail the install.** A misspelled key in a tool's table form (`asset_glob`) stops `mise install` with `option … is not used by the <backend> backend`.
