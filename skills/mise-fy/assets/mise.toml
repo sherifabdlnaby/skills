@@ -15,6 +15,10 @@ node = "24"
 # on first use only (not every contributor needs these)
 # terraform = { version = "1", lazy = true }
 
+# local services
+pitchfork = "2" # runs [daemons]; keep the pin: without it `mise daemons logs`/`status` fail when mise shims are on PATH
+jq = "1"        # task completions and dev:reset
+
 # linters & formatters
 jactionlint = "2"
 shellcheck = "0.11" # jactionlint lints workflow `run:` blocks with it
@@ -59,6 +63,11 @@ description = "Run fast unit tests"
 depends = ["lint"]                                    # ordering only; depends run in parallel, don't see this task's env
 run = "node --test {{vars.test_args}}"
 
+[tasks."test:integration"]
+description = "Run integration tests against the local stack (starts it when needed)"
+depends = ["dev"]                                     # not `daemons = [...]`: that starts the daemons before `deps`, so a new worktree fails
+run = "node --test 'test/integration/**/*.test.js'"
+
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
 description = "One-time, idempotent project bootstrap: check prerequisites, install tools, then runtime deps"
 depends_post = ["deps", "setup:stamp"]               # deps after `mise install`; stamp last (see setup:stamp wait_for)
@@ -76,6 +85,79 @@ hide = true
 quiet = true
 wait_for = ["deps"]                                  # only stamp success once deps finished (waits iff deps is in the run)
 run = 'printf %s "{{vars.setup_version}}" > .config/mise/setup && echo "✅ Setup v{{vars.setup_version}} stamped"'
+
+[tasks.dev]
+alias = "dev:up"
+description = "Start the local stack in the background (safe to run again), then show its ports"
+depends = ["deps"]                                   # a new worktree has no node_modules yet; a no-op when they are fresh
+usage = '''
+    arg "[daemons]" var=#true double_dash="automatic" help="Daemon names (default: all), or flags for mise daemons start"
+    complete "daemons" run="mise daemons ls --json | jq -r '.[].name'"
+'''
+run = ["mise daemons start {{usage.daemons | join(sep=' ')}}", "mise daemons urls"]
+
+[tasks."dev:status"]
+description = "Show each local service's port and status"
+run = "mise daemons urls"
+
+[tasks."dev:logs"]
+description = "Follow the local stack's logs, or only the named daemons' (add -n 50 to skip old lines)"
+usage = '''
+    arg "[daemons]" var=#true double_dash="automatic" help="Daemon names (default: all), or flags for mise daemons logs"
+    complete "daemons" run="mise daemons ls --json | jq -r '.[].name'"
+'''
+run = "mise daemons logs --tail {{usage.daemons | join(sep=' ')}}"
+
+[tasks."dev:down"]
+description = "Stop the local stack, or only the named daemons (data is kept)"
+usage = '''
+    arg "[daemons]" var=#true double_dash="automatic" help="Daemon names (default: all), or flags for mise daemons stop"
+    complete "daemons" run="mise daemons ls --json | jq -r '.[].name'"
+'''
+run = "mise daemons stop {{usage.daemons | join(sep=' ')}}"
+
+[tasks."dev:reset"]
+description = "Delete a daemon's data (e.g. a broken local database); the next `mise run dev` starts it fresh"
+confirm = "Delete all data of {{usage.daemon}}?"
+usage = '''
+    arg "<daemon>" help="Daemon whose data to delete"
+    complete "daemon" run="mise daemons ls --json | jq -r '.[] | select(.data_dir) | .name'"
+'''
+run = '''
+dir=$(mise daemons ls --json | jq -r --arg n "$usage_daemon" '.[] | select(.name == $n) | .data_dir // empty')
+[ -n "$dir" ] || { echo "$usage_daemon keeps no data" >&2; exit 1; }
+mise daemons stop "$usage_daemon"
+rm -rf "$dir"
+'''
+
+# ── 🧩 daemons (local services) ───────────────────────────────────────────────────────────────────────────────────────
+# Port block: this project owns 14100-14109; each git worktree shifts the block by 10, so checkouts run side by side.
+# retry = 3 restarts a daemon per `mise run dev`, which resets the count. Not `true`: a daemon that fails before it is
+# ready is then retried forever, and `mise run dev` never returns.
+[daemons.postgres]
+preset = "postgres"
+version = "18"
+options.database = "app"
+port = { auto = true, base = 14101, stride = 10 }
+retry = 3
+
+[daemons.redis]
+preset = "redis"
+version = "8"
+port = { auto = true, base = 14102, stride = 10 }
+retry = 3
+
+[daemons.api]
+init = "npm run db:migrate"                       # before every start; must skip applied migrations
+run = "exec node src/server.js --port $API_PORT"  # the plain process: a watcher (node --watch, nodemon) exits 0 on stop, and a clean exit is never restarted
+watch = ["src/**", "migrations/**"]               # restart on a code or schema change
+port = { auto = true, base = 14100, stride = 10 }
+proxy = false                                     # no hostname: that needs the machine-wide pitchfork proxy
+ready_cmd = "curl -sf -m 2 http://127.0.0.1:$API_PORT/health"
+health_cmd = "curl -sf -m 2 http://127.0.0.1:$API_PORT/health"
+depends = ["postgres", "redis"]
+retry = 3
+# env = { HTTP_PORT = "{{ daemons.api.port }}" }  # for an app that can't take its port in the command
 
 # ── 🪝 hooks ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [hooks]
@@ -98,6 +180,7 @@ postinstall = "hk install --mise" # canonical hook install: runs after every `mi
 
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]
+experimental = true                  # [daemons]
 lockfile = true                      # keep mise.lock updated; create it once with `mise lock`, commit it
 minimum_release_age = "7d"           # ignore releases <7d old (supply-chain cooldown)
 disable_backends = ["asdf", "vfox"]  # resolve only via verified backends; drop "vfox" if you need a vfox-only tool

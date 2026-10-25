@@ -4,7 +4,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-2%2C423%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,423 tokens" />
-  <img src="https://img.shields.io/badge/Total-33%2C515%20tokens-2ea44f?style=flat-square" alt="Total: 33,515 tokens" />
+  <img src="https://img.shields.io/badge/Total-34%2C427%20tokens-2ea44f?style=flat-square" alt="Total: 34,427 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -14,8 +14,8 @@ than read, so they are left out.
 | File                                                                                       |  Tokens |
 | ------------------------------------------------------------------------------------------ | ------: |
 | [`SKILL.md`](SKILL.md)                                                                     | `2,423` |
-| [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `472` |
-| [`assets/README.md`](assets/README.md)                                                     |   `600` |
+| [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `810` |
+| [`assets/README.md`](assets/README.md)                                                     | `1,174` |
 | [`references/ci/github.md`](references/ci/github.md)                                       | `2,205` |
 | [`references/ci.md`](references/ci.md)                                                     | `1,902` |
 | [`references/dev.md`](references/dev.md)                                                   | `3,255` |
@@ -33,7 +33,7 @@ than read, so they are left out.
 <!-- token-estimates:end -->
 
 `mise-fy` helps make a project's development setup reproducible, discoverable, and consistent across local work, git hooks, and CI. It covers mise configuration, pinned tools, tasks, environment
-variables, dependency setup, lifecycle hooks, hk pre-commit checks, and CI integration.
+variables, dependency setup, local services, lifecycle hooks, hk pre-commit checks, and CI integration.
 
 [Read the canonical skill instructions.](SKILL.md)
 
@@ -53,7 +53,8 @@ setup, including `mise.toml`, hk configuration, CI workflows, and documentation 
 ## Boundaries and tradeoffs
 
 - Routine use such as running `mise install` or an existing task does not need this skill; changes to mise, hk, hooks, or their CI setup do.
-- mise manages project tools and client binaries, not privileged services such as container engines, databases, or Kubernetes clusters. Those remain documented prerequisites.
+- mise manages project tools, and through its experimental daemons the local services a project runs, such as a database or a cache, with a separate stack (ports and data) per git worktree. Privileged
+  services such as container engines or Kubernetes clusters remain documented prerequisites.
 - Project configuration with tasks, hooks, environment logic, or templates requires explicit trust on a fresh clone.
 - Reproducibility needs deliberate version policy, a committed lockfile, and lock data for every CI platform. Floating versions are not made safe by a lockfile alone.
 - Task-scoped tools reduce setup cost but have weaker lockfile behavior. Shared tools improve consistency but increase every contributor's install.
@@ -65,5 +66,6 @@ setup, including `mise.toml`, hk configuration, CI workflows, and documentation 
 - "Add and pin Node and pnpm through mise without breaking Corepack users."
 - "Create a cached build task with arguments and shell completion."
 - "Set up hk pre-commit checks and run the same check task in GitHub Actions."
+- "Run Postgres, Redis, and our API locally with one command, and let each git worktree run its own copy."
 - "Audit this mise configuration for trust, lockfile, and CI problems."
 - "Mise-fy this project and replace its current tool and task setup."
