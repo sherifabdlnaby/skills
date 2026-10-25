@@ -57,8 +57,9 @@ Per area, follow the matching reference, converse with user when required.
 
 ### 4. Verify
 
-`mise install`, then `mise doctor` reports no issues. Every standard task runs green via `mise run`. Fresh-clone smoke test: clone into a temp dir, `mise trust && mise run setup && mise run check`,
-all green with no manual step in between.
+`mise lock`, then `mise install`; `mise doctor` reports no issues. Every standard task runs green via `mise run`. Fresh-clone smoke test: clone into a temp dir,
+`mise trust && MISE_LOCKED=1 mise install --include-lazy && mise run setup && mise run check`, all green with no manual step in between, and `git status` clean at the end. The locked install
+proves every tool, lazy ones too, has a lock entry; the clean tree proves setup did not rewrite the lock.
 
 ### 5. Document it (README + AGENTS.md)
 

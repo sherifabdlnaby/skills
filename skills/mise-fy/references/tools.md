@@ -16,7 +16,7 @@ Guidance on Installing Tools and Runtimes via Mise.
      [`hk.md`](hk.md)); a Node package manager follows `packageManager` (see [`runtimes/node.md`](runtimes/node.md)).
 3. **Never use `latest`** until the user explicitly asks for it (even with a lockfile present). The lockfile is a safety net, not a license to float.
 4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it looks as expected, and re-order the added part by the command to match file structure
-   (e.g group relevant tools on top of each other)
+   (e.g group relevant tools on top of each other). A lazy tool takes the option in brackets: `mise use 'foo[lazy=true]@1'`; add `lazy_bins` to the written entry by hand.
 5. To pin per the version policy: `mise use <tool>@$(mise latest <tool> | cut -d. -f1) --fuzzy` for a `>=1.0` tool (writes the bare major); for a `0.x` tool use `cut -d. -f1,2` to write `0.<minor>`.
 6. Use mise's core backends. If you're choosing backends, pick the one with checksums + timestamp support as much as possible.
 7. Group relevant tools categories close to each other in the toml when you have >6 tools. Use a code comment as a title for group.
@@ -29,7 +29,9 @@ Guidance on Installing Tools and Runtimes via Mise.
 
 ## Notes & Gotchas:
 
-- **Lockfile only updates when enabled.** `mise use`/`install` write `mise.lock` only after `[settings] lockfile = true`. Without it, fuzzy versions resolve fresh each install.
+- **An existing `mise.lock` is not read-only.** Plain installs, `mise use`, and first-run auto-installs from `mise run`/`mise x` rewrite it to fill missing entries; only locked mode (`--locked`,
+  `MISE_LOCKED=1`) leaves it alone. `lockfile = true` also creates the file, unset only updates an existing one, `false` stops writes. Run `mise lock` after every `[tools]` change so the committed
+  file is complete; a `mise.lock` diff after `mise install` means the commit missed entries, so commit it.
 - **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the
   version that wrote it. mise keeps an existing revision when it rewrites the file; `mise lock --upgrade` moves it to the current one.
 - **Unknown tool options fail the install.** A misspelled key in a tool's table form (`asset_glob`) stops `mise install` with `option … is not used by the <backend> backend`.
