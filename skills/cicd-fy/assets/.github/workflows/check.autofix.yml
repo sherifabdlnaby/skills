@@ -38,6 +38,7 @@ jobs:
     if: ${{ !startsWith(github.head_ref, 'bot/ci/') }}
 
     env:
+      MISE_LOCKED: "1" # every install honors mise.lock, also lazy/task tools `mise run` installs later
       # Pretty colors in the CI!
       CLICOLOR_FORCE: "1"
       FORCE_COLOR: "1"
@@ -56,7 +57,6 @@ jobs:
         uses: jdx/mise-action@dba19683ed58901619b14f395a24841710cb4925 # v4.1.0
         with:
           install: true
-          install_args: "--locked" # honor mise.lock
           cache: true
           experimental: true
         env:
