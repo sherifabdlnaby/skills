@@ -49,9 +49,7 @@ whenever `mise run check --fix` changes something
 
 How it works (all `gh` CLI, no extra action):
 
-- **Two jobs, so PR code never runs beside the write token.** `check` runs `mise run check --fix` with `contents: read` and no persisted credentials, then uploads the diff as a patch
-  artifact. `fix-pr` holds the write token: it applies the patch, pushes, and manages the PR, and runs no mise, task, or tool from the PR. A same-repo PR, or a compromised tool version it pins,
-  reaches only a read token.
+- **PR code never runs beside the write token.** `check` runs the fixer read-only and uploads a patch; `fix-pr` applies and pushes it, running nothing from the PR.
 - **Same scope** as report-only: PRs fix `--pr`, `schedule`/dispatch fix `--all`; the PR body notes its provenance (`#<n>` vs the `--all` sweep).
 - **Stable branch per target.** `TARGET` is `github.head_ref` (PR) or
   `github.ref_name`; fixes force-push to `bot/ci/<TARGET>` and a PR opens with

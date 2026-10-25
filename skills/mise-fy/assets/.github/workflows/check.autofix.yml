@@ -2,10 +2,6 @@
 # anything it pushes the fixes to a `bot/ci/<target>` branch, opens (or updates) a PR targeting
 # the branch that was checked, and fails CI. A later clean run closes that PR again. Needs write
 # access. The report-only check.yml (contents: read) stays the default for repos that don't want this.
-#
-# Two jobs, so a PR's own code never runs next to a write token: `check` runs the fixer read-only
-# and hands its diff over as a patch; `fix-pr` holds the write token, applies the patch, and never
-# runs mise or anything else from the PR.
 name: 🎨 Linters, Validators, and Formatters
 
 on:
@@ -37,7 +33,7 @@ jobs:
     name: check
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Runs the PR's tasks and tools, so read-only: no write token, no persisted credentials.
+    # Runs PR code, so read-only; `fix-pr` does the writes.
     permissions:
       contents: read
     # Never act on our own fix branches (matters only with a PAT; GITHUB_TOKEN PRs can't self-trigger).
@@ -117,14 +113,11 @@ jobs:
           echo "::error::Lint & format issues on $REF_NAME, review the auto-fix PR (if one was opened) or run 'mise run check --fix' locally, then push."
           exit 1
 
-  # If `check` fixed anything, push the patch to bot/ci/<target> and open/update a PR targeting the
-  # checked branch; on a clean run, close that PR. PR-trigger runs also keep one sticky comment.
+  # Applies `check`'s patch to bot/ci/<target> and syncs its PR + sticky comment. Runs nothing from the PR.
   fix-pr:
     name: fix-pr
     needs: check
-    # Also after a red `check` (that's when there are fixes); skipped if `check` died before
-    # recording a result. Fork PRs carry a read-only token (by design, see github.md), so they
-    # keep only the annotation.
+    # Also after a red `check`; fork PRs get a read-only token, so they keep only the annotation.
     if: ${{ !cancelled() && needs.check.outputs.fixed != '' && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -140,7 +133,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.check.outputs.sha }} # the commit `check` fixed, so the patch applies
+          ref: ${{ needs.check.outputs.sha }} # the commit the patch was made on
           # zizmor: ignore[artipacked] -- intentional: keep the token to push the bot/ci/<target> fix branch
           persist-credentials: true
 

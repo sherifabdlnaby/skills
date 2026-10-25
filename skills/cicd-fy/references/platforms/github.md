@@ -72,8 +72,7 @@ Notes for [`check.yml`](../../assets/.github/workflows/check.yml) /
 - **Auto-fix** (`check.autofix.yml`) additionally needs `contents: write`: fixes force-push to a
   `bot/ci/<target>` branch as a self-closing PR with a frozen commit identity+date, so an unchanged fix
   is a no-op push that doesn't re-notify. It still fails the run — a fix PR doesn't green the check.
-  The fixer runs in a read-only job and hands a patch to a second job that holds the write token and
-  runs nothing from the PR, so PR code (or a compromised tool it pins) never sees a write token.
+  The fixer runs read-only; a second job applies its patch with the write token, running nothing from the PR.
 - **No fork support in auto-fix** (by design): fork tokens are read-only, so it detects the fork and
   falls back to the annotation instead of reaching for `pull_request_target`.
 - **The fix PR triggers no CI of its own**: `GITHUB_TOKEN`-created PRs don't fire `on: pull_request`
