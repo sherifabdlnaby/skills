@@ -36,7 +36,11 @@ Explore Development and or Contribution section in README.md, AGENTS.md, or CLAU
 #### Tasks
 Explore how the repo manage repetitive tasks. Look for Makefile, package.json (or similar) scripts. Check tasks run by the CI or references in README.md or AGENTS.md. **Flag watch candidates** while
 you're here: any existing watch/rerun loop (`nodemon`, `webpack --watch`, `cargo watch`, etc) maps to `mise watch <task>` + accurate `sources` drop the bespoke watcher and pin `watchexec` in
-`[tools]`. (See [`tasks.md`](tasks.md#watch).)
+`[tools]`. (See [`tasks.md`](tasks.md#watch).) A watched server that should keep running in the background is a daemon instead (see [`dev.md`](dev.md)).
+
+#### Services
+Find what the project runs next to its code: a compose file, a Procfile, `docker run` lines in docs or scripts, `DATABASE_URL`/`REDIS_URL` in `.env.example`, "start Postgres" steps in the README, etc.
+Note each service's version and how the app finds it (an env var, or a hard-coded port).
 
 #### CI & Hooks
 
@@ -51,6 +55,8 @@ When there is no user to ask, pick the gradual path, keep the old managers, and 
 
 Depending on user request, you might suggest new additions (like introduction of hk for pre-commit, as well as other linters)
 
+Map each service to a preset, a custom daemon, or (with no preset and no mise tool) a compose file, per [`dev.md`](dev.md).
+
 ### 3. Convert
 
 Per area, follow the matching reference, converse with user when required.
@@ -59,7 +65,8 @@ Per area, follow the matching reference, converse with user when required.
 
 `mise lock`, then `mise install`; `mise doctor` reports no issues. Every standard task runs green via `mise run`. Fresh-clone smoke test: clone into a temp dir,
 `mise trust && MISE_LOCKED=1 mise install --include-lazy && mise run setup && mise run check`, all green with no manual step in between, and `git status` clean at the end. The locked install
-proves every tool, lazy ones too, has a lock entry; the clean tree proves setup did not rewrite the lock.
+proves every tool, lazy ones too, has a lock entry; the clean tree proves setup did not rewrite the lock. With services, `mise run dev` brings the stack up in that clone, and a second run changes
+nothing.
 
 ### 5. Document it (README + AGENTS.md)
 
@@ -102,7 +109,8 @@ The mise-fy isn't done until every box is accounted for:
 - [ ] Tasks migrated; lint/test/build runnable via `mise run`
 - [ ] Lanes respected: no fast-path task (e.g. `check`, the `enter` hook) depends on `setup`; only a cached `deps` crosses
       ([`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#fast-path-vs-slow-path))
-- [ ] Bespoke file-watchers (nodemon/`--watch`/cargo-watch) replaced by `mise watch` + `sources`; `watchexec` pinned if used
+- [ ] Bespoke file-watchers (nodemon/`--watch`/cargo-watch) replaced by `mise watch` + `sources` (`watchexec` pinned if used), or by a daemon's `watch` for a background server
+- [ ] Local services run as `[daemons]` behind the `dev:*` tasks, and the app reads their connection env ([`dev.md`](dev.md#checklist))
 - [ ] Pre-commit hooks configured, and have a CI counterpart.
 - [ ] `.config/` layout applied: `hk.pkl`, linter configs, and the setup stamp live under `.config/`, not the repo root
       ([`hk.md`](hk.md#linter-config-lives-in-config-default)). Auditing an existing repo: 3+ relocatable configs at root → suggest migrating (non-blocking).

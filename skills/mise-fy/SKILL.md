@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.8.0"
+  version: "0.9.0"
 ---
 
 # mise-fy
@@ -82,6 +82,9 @@ Installing a tool or a runtime.
 **Tasks** (run scripts, build pipelines, watch) -> [`references/tasks.md`](references/tasks.md)
 TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running and parallelism, `mise watch` (re-run on change).
 
+**Local dev stack** (databases, caches, app servers and workers in the background; a stack per worktree) -> [`references/dev.md`](references/dev.md)
+`[daemons]` presets and custom daemons, the port block, ready/health/retry, migrations, the `dev:*` tasks, compose as the exception.
+
 **Hooks** (directory & lifecycle: `enter`/`cd`, `watch_files`, `postinstall`) -> [`references/hooks.md`](references/hooks.md)
 Keeping `enter`/`cd` hooks offline-safe (plain shell, not `mise run`), trust impact, the shim caveat. For git/pre-commit hooks specifically, see hk below.
 
@@ -136,5 +139,5 @@ safety/correctness floor: apply them even on a one-tool change, not polish you'd
    A setup is slow-path: allowed to be slow, online, interactive. Never make a fast-path task depend on a slow-path one, nag instead;
    the [lane map](references/reference-setup-and-patterns.md#fast-path-vs-slow-path) is the one list of members.
 8. More Generally, always think of how often a task is going to be run by the user. And never make tasks that belong to different cadences depend on each other.
-9. **Keep `mise.toml` top-level sections in order**, including when adding one for the first time: `min_version` → `[tools]` → `[env]` → `[vars]` → `[tasks]` → `[hooks]` → `[doctor]` →
-   `[settings]`. A section not listed goes before `[settings]`, next to the section it works with.
+9. **Keep `mise.toml` top-level sections in order**, including when adding one for the first time: `min_version` → `[tools]` → `[env]` → `[vars]` → `[tasks]` → `[daemons]` → `[hooks]` →
+   `[doctor]` → `[settings]`. A section not listed goes before `[settings]`, next to the section it works with.

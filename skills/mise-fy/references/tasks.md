@@ -35,6 +35,7 @@ How to build or improve mise Tasks.
 15. **Share static values via `[vars]`, not `[env]`** (vars stay template-only; they don't leak into the process environment).
 16. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to
     [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks). If user ask for a `check`/`lint`, check if **hk** is set up and use it (refer to -> [`hk.md`](hk.md)).
+    A `dev` that starts local services (a database, a cache, workers) follows [`dev.md`](dev.md).
 
 ## Notes & Gotchas:
 
@@ -142,15 +143,15 @@ Worth wiring watch for: tight edit -> rebuild/retest loops, dev servers, doc/ass
 it in a task so it has a standard name and `mise run <task>` starts the watcher:
 
 ```toml
-[tasks.dev]
+[tasks."test:watch"]
 description = "Watch sources & re-run tests on change"
-run = "mise watch test"        # `mise run dev` starts the watcher; someone still has to invoke it
+run = "mise watch test"        # `mise run test:watch` starts the watcher; someone still has to invoke it
 ```
 
 **Notes & Gotchas:**
 
 - **watchexec is a real dependency**, not bundled. pin it in `[tools]` if the team relies on `mise watch`.
-- **Need it truly unattended** (daemon, auto-restart, scheduled)? That's outside watch -> use a dedicated process manager or system service.
+- **A server that should run in the background, restart after a crash, or start with its services** is a mise daemon, not a watch: see [`dev.md`](dev.md). pitchfork's `watch` reloads it on change.
 
 ## Checklist
 

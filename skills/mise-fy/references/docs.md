@@ -16,7 +16,7 @@ files:
 - **Only mention hk if the repo uses it.**
 - **Declare external prerequisites mise can't install.** If the project
   needs a daemon/service outside mise's scope (a running Docker engine, a
-  database server, a k8s cluster — see [`tools.md`](tools.md)), say so up
+  k8s cluster, a database the project doesn't run as a mise daemon — see [`tools.md`](tools.md)), say so up
   front: what to install, and point at `mise doctor project` to confirm it's
   running (each prerequisite is a `[doctor.checks]` probe). mise sets up the
   toolchain; these are the things `mise run setup` can't.
@@ -33,8 +33,10 @@ Cover, in order (mirror [assets/README.md](../assets/README.md)):
 2. **Prerequisites mise can't install** (only if any); external daemons/services like a Docker engine or DB server — what to install, and `mise doctor project` to confirm it's up. Skip the section
    entirely when there are none.
 3. **Set up the project**; `mise trust` then `mise run setup`, and whatever get the user running.
-4. **Everyday commands**; a tiny list with `check`/`lint` and `test`, and `mise tasks` to find the rest.
-5. **Git hooks** (hk if exists): Give a quick intro that the repo has it, where to find it, how to run locally (e.g mise run check) for example.
+4. **Run it locally** (only with `[daemons]`): `mise run dev` and what it starts; that it is safe to run again and outlives the terminal; the `dev:*` table; connection through env; many checkouts at
+   once (own ports and data, `mise trust && mise run dev` in a new worktree, `dev:down` before removing one); debugging a service in the foreground.
+5. **Everyday commands**; a tiny list with `check`/`lint` and `test`, and `mise tasks` to find the rest.
+6. **Git hooks** (hk if exists): Give a quick intro that the repo has it, where to find it, how to run locally (e.g mise run check) for example.
 
 ## AGENTS.md / CLAUDE.md (agents)
 
@@ -45,12 +47,16 @@ Everything the README covers, plus how to *work in* and *extend* the setup. Keep
 - **Hooks** (hk only): commits run the commit gates through `hk`, pushes run the push gates, and CI runs both as `check`, so a green commit is not yet a green CI. Fix with `mise run check --fix`;
   don't disable steps to get a commit through. State that setup installs them and where they land — on Git 2.54+ that's git *config*, so an empty `.git/hooks/` doesn't mean no hooks.
 - **How to run a specific hk step**: Agent needs to learn to use --step or --skip-step flags for mise run check when they need shorter feedback loop.
+- **Local services** (only with `[daemons]`): `mise run dev` before running the app or the tests that need services, and it is the repair command; connect through env, never hard-coded ports; the
+  services outlive the shell (`dev:status`, `dev:logs <name> -n 50`, `dev:down`); how schema changes land; adding a service is one `[daemons.<name>]` block (rules in [`dev.md`](dev.md)), and the
+  `dev:*` tasks need no change.
 - **Extending the setup**: Refer the agent where to find tasks, add them, and how to extend hooks.
 
 ## Audit checklist
 
 - [ ] README: install mise, activate + `mise doctor`, `mise trust` + `mise run setup`, everyday commands.
-- [ ] External prerequisites (Docker engine, DB server, etc.) declared in README/AGENTS when the project depends on them — not stuffed into `[tools]`.
+- [ ] External prerequisites (Docker engine, a DB server outside `[daemons]`, etc.) declared in README/AGENTS when the project depends on them — not stuffed into `[tools]`.
+- [ ] With `[daemons]`: README "Run it locally" and AGENTS "Local services" sections.
 - [ ] AGENTS.md / CLAUDE.md: setup, run-via-mise + discovery, hk (if used), how to extend (where tools, tasks, and hooks live).
 - [ ] Examples not enumerations; `mise tasks` taught as the discovery path.
 - [ ] hk mentioned only when the repo actually uses it.
