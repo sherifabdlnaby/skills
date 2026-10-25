@@ -24,6 +24,7 @@ jobs:
       pull-requests: write
 
     env:
+      MISE_LOCKED: "1" # every install honors mise.lock, also lazy/task tools `mise run` installs later
       GH_TOKEN: ${{ github.token }} # gh CLI auth
 
     steps:
@@ -47,7 +48,6 @@ jobs:
         with:
           version: "2026.10.18" # pin mise itself, not just the action
           install: true
-          install_args: "--locked" # honor mise.lock
           cache: false # see the step above
           experimental: true
         env:
