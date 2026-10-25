@@ -16,7 +16,7 @@ Guidance on Installing Tools and Runtimes via Mise.
      [`hk.md`](hk.md)); a Node package manager follows `packageManager` (see [`runtimes/node.md`](runtimes/node.md)).
 3. **Never use `latest`** until the user explicitly asks for it (even with a lockfile present). The lockfile is a safety net, not a license to float.
 4. When adding/updating/removing tools, use `mise use` and `mise unuse`, then re-read the mise.toml to confirm it looks as expected, and re-order the added part by the command to match file structure
-   (e.g group relevant tools on top of each other)
+   (e.g group relevant tools on top of each other). A lazy tool takes the option in brackets: `mise use 'foo[lazy=true]@1'`; add `lazy_bins` to the written entry by hand.
 5. To pin per the version policy: `mise use <tool>@$(mise latest <tool> | cut -d. -f1) --fuzzy` for a `>=1.0` tool (writes the bare major); for a `0.x` tool use `cut -d. -f1,2` to write `0.<minor>`.
 6. Use mise's core backends. If you're choosing backends, pick the one with checksums + timestamp support as much as possible.
 7. Group relevant tools categories close to each other in the toml when you have >6 tools. Use a code comment as a title for group.
