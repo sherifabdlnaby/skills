@@ -75,43 +75,36 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }} # so tool installs don't hit API rate limits
 
-      # Run the fixer over every step (no --fail-fast) and record whether it changed anything.
+      # Run the fixer over every step (no --fail-fast), save its diff, and fail if it fixed or found anything.
       - name: Run check & fix
         id: fix
         env:
           EVENT: ${{ github.event_name }}
           SCOPE_INPUT: ${{ inputs.scope }} # 'all'|'pr' on manual dispatch; empty on PR/schedule
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REF_NAME: ${{ github.ref_name }} # via env, never interpolated into the shell (zizmor: template-injection)
         run: |
           [ "$EVENT" = pull_request ] && scope="pr" || scope="${SCOPE_INPUT:-all}"
-          echo "scope=$scope" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           # hk's --pr resolves the base via origin/HEAD, which the Actions checkout never sets; point it
           # at the default branch so hk diffs origin/<default>...HEAD (else it checks every file).
           [ "$scope" = pr ] && git remote set-head origin "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
-          # Apply fixes across every step (no --fail-fast); keep the exit code, don't abort.
           rc=0; mise run check --fix "--$scope" || rc=$?
-          echo "rc=$rc" >> "$GITHUB_OUTPUT"
-          git add -A
-          if git diff --cached --quiet; then echo "fixed=0"; else echo "fixed=1"; fi >> "$GITHUB_OUTPUT"
-          git diff --cached --binary > "$RUNNER_TEMP/autofix.patch"
+          git add -A && git diff --cached --binary > "$RUNNER_TEMP/autofix.patch"
+          [ -s "$RUNNER_TEMP/autofix.patch" ] && fixed=1 || fixed=0
+          echo "fixed=$fixed" >> "$GITHUB_OUTPUT"
+          if [ "$fixed" = 1 ] || [ "$rc" != 0 ]; then
+            echo "::error::Lint & format issues on $REF_NAME, review the auto-fix PR (if one was opened) or run 'mise run check --fix' locally, then push."
+            exit 1
+          fi
 
       - name: Upload fixes
-        if: ${{ steps.fix.outputs.fixed == '1' }}
+        if: ${{ !cancelled() && steps.fix.outputs.fixed == '1' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: autofix-patch
           path: ${{ runner.temp }}/autofix.patch
           retention-days: 1
-
-      # Fail the run if anything was fixed (code wasn't clean) or any non-fixable step failed.
-      - name: Fail if issues were found
-        if: ${{ steps.fix.outputs.fixed == '1' || steps.fix.outputs.rc != '0' }}
-        env:
-          REF_NAME: ${{ github.ref_name }} # via env, never interpolated into the shell (zizmor: template-injection)
-        run: |
-          echo "::error::Lint & format issues on $REF_NAME, review the auto-fix PR (if one was opened) or run 'mise run check --fix' locally, then push."
-          exit 1
 
   # Applies `check`'s patch to bot/ci/<target> and syncs its PR + sticky comment. Runs nothing from the PR.
   fix-pr:
@@ -169,20 +162,13 @@ jobs:
             git commit -qm "ci: auto-fix lint & format"
             git push -fq origin "$BRANCH"
 
-            # Open the PR if none is open yet; an existing one just got updated by the push above.
-            if [ -z "$(gh pr list --head "$BRANCH" --base "$TARGET" --state open --json number --jq '.[0].number // empty')" ]; then
-              [ "$IS_PR" = true ] \
-                && origin="the changed files in #$PR_NUMBER (\`mise run check --fix --pr\`)" \
-                || origin="the scheduled whole-tree sweep (\`mise run check --fix --all\`)"
-              printf "%s\n\nMerge to apply. This PR closes itself once \`%s\` is clean.\n" \
-                "Automated lint & format fixes from $origin." "$TARGET" > "$RUNNER_TEMP/pr-body.md"
-              gh pr create --head "$BRANCH" --base "$TARGET" \
-                --title "🤖 ci: auto-fixes for $TARGET" --body-file "$RUNNER_TEMP/pr-body.md"
-            fi
+            # The push updated an open fix PR, if there is one; else open it.
+            URL="$(gh pr list --head "$BRANCH" --base "$TARGET" --state open --json url --jq '.[0].url // empty')"
+            [ -n "$URL" ] || URL="$(gh pr create --head "$BRANCH" --base "$TARGET" --title "🤖 ci: auto-fixes for $TARGET" \
+              --body "Automated \`mise run check --fix\` output. Merge to apply; this PR closes itself once \`$TARGET\` is clean.")"
 
             # Sticky comment on the triggering PR, linking the fix PR (PR triggers only).
             if [ "$IS_PR" = true ]; then
-              URL="$(gh pr list --head "$BRANCH" --base "$TARGET" --state open --json url --jq '.[0].url')"
               BODY="$MARKER 🤖 Lint & format fixes are ready in $URL, merge it to apply, or run \`mise run check --fix\` locally."
               CID="$(comment_id || true)"
               if [ -n "$CID" ]; then gh api -X PATCH "repos/$REPO/issues/comments/$CID" -f body="$BODY" >/dev/null
