@@ -63,6 +63,8 @@ Read the matching one **before** planning or acting, not after. SKILL.md alone i
 
 Always read at-least 1 reference from the router below. Depending on your goal you might want to read more than 1 reference.
 Be eager to load local .md references. Do not load online links/references unless you really need to, default to trust your knowledge. Only load online reference when you need to learn more.
+Commands and keys in the references are the usual call, not the full surface: `--help` and the current docs win. Experimental features (e.g. `[daemons]`) are thin in your training, so read their
+linked docs before you use anything a page doesn't show.
 
 ## Router
 

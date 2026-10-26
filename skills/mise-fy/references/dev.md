@@ -14,6 +14,60 @@ no global mise or pitchfork config to write. Verified on mise 2026.10.18 and pit
 - **Daemons outlive the shell and the checkout.** Nothing stops them when the terminal closes. Run `mise run dev:down` in a worktree before removing it; `mise daemons prune` cleans up the state of
   checkouts that are already gone.
 
+## Cheat sheet
+
+`[daemons]` is newer than most models' training. The blocks below are the usual surface; read the linked docs before you use a key or a flag they don't show.
+
+**Declare** ([keys](https://mise.jdx.dev/daemons.html), [presets and their options](https://mise.jdx.dev/daemons/presets.html), [ports](https://mise.jdx.dev/daemons/worktrees.html)):
+
+```toml
+[daemons]
+redis = "8"                        # shorthand: the preset named like the entry, at a version
+
+[daemons.db]                       # one entry, one daemon, of one kind:
+preset = "postgres"                #   a preset, with version, options.*, data_dir, tool
+version = "18"
+options.database = "app"
+# run = "exec <cmd>"               #   a shell command (custom daemon)
+# task = "dev:core"                #   a mise task, with args
+# project = "../svc"               #   another repo's daemon (with name); provider = a shared server
+
+port = { auto = true, base = 14101, stride = 10 }  # or a fixed port; "auto" alone works only on a preset
+proxy = false                      # a hostname label, or false
+init = "<setup>"                   # before every start and restart; a string or a list
+env = { KEY = "value" }            # this process only
+depends = ["other"]                # starts them first and waits until they are ready
+watch = ["src/**"]                 # restart on a file change
+ready_cmd = "<probe>"              # or ready_port, ready_http, ready_output, ready_delay
+health_cmd = "<probe>"             # or health_http, health_port; failed probes kill it
+retry = 3                          # restarts after a crash or a health kill
+# stop_signal, hooks (on_exit, on_fail, …), oneshot, mise = false, etc.: pitchfork daemon options
+```
+
+Keys mise doesn't know go to pitchfork unchanged ([pitchfork daemon options](https://pitchfork.jdx.dev/reference/configuration.html)).
+
+**Run** (`mise daemons <cmd> --help`, [CLI docs](https://mise.jdx.dev/cli/daemons.html)). Names are short (`api`) or full (`shop/api`), and other flags go to pitchfork:
+
+```sh
+mise daemons start [NAME… | --group G | --all] [--force]  # with depends; waits until ready
+mise daemons stop  [NAME… | --group G | --all]            # the data is kept
+mise daemons restart [NAME…]                              # a changed declaration applies here
+mise daemons ls [--json]                                  # status, port, data_dir, etc.; starts nothing
+mise daemons status [NAME…]
+mise daemons urls [--json]                                # name, port, proxy mode, status
+mise daemons logs [NAME…] [--tail] [-n N] [--since 5min] [--grep TEXT]
+mise daemons register | prune [--dry-run] | tui
+```
+
+**Env and templates:**
+
+- **Exported** to the shell, tasks, `mise x` and every daemon: `<NAME>_PORT`, and each preset's connection vars (e.g. `DATABASE_URL`, `PG*`, `REDIS_URL`; the presets page lists them). Inside a daemon,
+  pitchfork also sets `PORT`/`PORT0` to that daemon's own port.
+- **Templates:** `run` renders mise's (`{{ env.X }}`, `{{ vars.X }}`). Fields that pitchfork renders (a daemon's `env`, `ready_http`, etc.) know `{{ daemons.<name>.port }}` and similar, not
+  `{{ env.* }}`.
+- **Elsewhere:** a task's `daemons = [...]` starts daemons before it runs (rule 10 says why the `dev:*` tasks don't use it), and `[daemon_groups]` names sets of daemons (`default` is what `start` uses
+  with no names).
+
 ## Rules and Best Practices:
 
 1. **Pick the simplest kind of daemon.** A preset first (`preset = "postgres"`, `"redis"`, etc.): mise installs the binary, keeps the data, and exports the connection env. Else a custom daemon

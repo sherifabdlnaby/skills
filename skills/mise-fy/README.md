@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-2%2C423%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,423 tokens" />
-  <img src="https://img.shields.io/badge/Total-34%2C427%20tokens-2ea44f?style=flat-square" alt="Total: 34,427 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-2%2C481%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,481 tokens" />
+  <img src="https://img.shields.io/badge/Total-35%2C369%20tokens-2ea44f?style=flat-square" alt="Total: 35,369 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,12 +13,12 @@ than read, so they are left out.
 
 | File                                                                                       |  Tokens |
 | ------------------------------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                                                     | `2,423` |
+| [`SKILL.md`](SKILL.md)                                                                     | `2,481` |
 | [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `810` |
 | [`assets/README.md`](assets/README.md)                                                     | `1,174` |
 | [`references/ci/github.md`](references/ci/github.md)                                       | `2,205` |
 | [`references/ci.md`](references/ci.md)                                                     | `1,902` |
-| [`references/dev.md`](references/dev.md)                                                   | `3,255` |
+| [`references/dev.md`](references/dev.md)                                                   | `4,139` |
 | [`references/docs.md`](references/docs.md)                                                 | `1,296` |
 | [`references/env.md`](references/env.md)                                                   | `1,412` |
 | [`references/hk.md`](references/hk.md)                                                     | `5,730` |
