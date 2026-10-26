@@ -157,7 +157,7 @@ If using hk for pre-commit linters then delegate the actual steps to **hk** (one
 
 ### Test
 
-Your typical local tests. If the project doesn't, add a no-op.
+Your typical local tests. If the project doesn't, add a no-op. Bare `test` starts no services; a test task that needs them (e.g. `test:integration`) uses `depends = ["dev"]` (see [`dev.md`](dev.md)).
 
 ### Build
 
@@ -165,7 +165,8 @@ For applicable projects, build the projects. Should use `sources` and `outputs` 
 
 ### Dev
 
-Whatever runs the dev environment.
+Whatever runs the dev environment. With local services (a database, a cache, the project's own servers and workers), `dev` (alias `dev:up`) starts them as mise `[daemons]` in the background and is
+safe to run again, beside `dev:status`, `dev:logs`, `dev:down` and `dev:reset`. It is fast path and may depend on `deps` (the one crossing). The rules and the full shape are in [`dev.md`](dev.md).
 
 ## Docs:
 
