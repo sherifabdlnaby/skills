@@ -53,8 +53,8 @@ mise daemons start [NAME… | --group G | --all] [--force]  # with depends; wait
 mise daemons stop  [NAME… | --group G | --all]            # the data is kept
 mise daemons restart [NAME…]                              # a changed declaration applies here
 mise daemons ls [--json]                                  # status, port, data_dir, etc.; starts nothing
-mise daemons status [NAME…]
-mise daemons urls [--json]                                # name, port, proxy mode, status
+mise daemons status [NAME…]                               # status, PID and port (active or not) per daemon
+mise daemons urls [--json]                                # hostnames: they work only with the machine-wide proxy
 mise daemons logs [NAME…] [--tail] [-n N] [--since 5min] [--grep TEXT]
 mise daemons register | prune [--dry-run] | tui
 ```
@@ -103,17 +103,19 @@ mise daemons register | prune [--dry-run] | tui
 
 Every project with daemons exposes the same set. Copy it from [`assets/mise.toml`](../assets/mise.toml).
 
-| Task                            | Does                                                                                                                                                          |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dev [names…]` (alias `dev:up`) | Start every daemon (or the named ones and their `depends`) in the background, then print the port table. Safe to run again, so it is also the repair command. |
-| `dev:status`                    | The port table (`mise daemons urls`), without starting anything.                                                                                              |
-| `dev:logs [names…]`             | Follow the logs (history first; `-n 50` skips old lines). Ctrl+C closes the view only.                                                                        |
-| `dev:down [names…]`             | Stop; the data is kept.                                                                                                                                       |
-| `dev:reset <name>`              | Stop one daemon and delete its data, behind `confirm`.                                                                                                        |
+| Task                            | Does                                                                                                                                                       |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dev [names…]` (alias `dev:up`) | Start every daemon (or the named ones and their `depends`) in the background, then show `dev:status`. Safe to run again, so it is also the repair command. |
+| `dev:status`                    | The state of the whole dev environment: each daemon's status and port, and anything else `dev` starts.                                                     |
+| `dev:logs [names…]`             | Follow the logs (history first; `-n 50` skips old lines). Ctrl+C closes the view only.                                                                     |
+| `dev:down [names…]`             | Stop; the data is kept.                                                                                                                                    |
+| `dev:reset <name>`              | Stop one daemon and delete its data, behind `confirm`.                                                                                                     |
 
 - **Thin wrappers.** Each task `run`s `mise daemons <cmd>`. A `usage` arg (`var=#true double_dash="automatic"`) takes names and flags, `{{usage.daemons | join(sep=' ')}}` puts them in `run`
   (with a spec, args no longer append on their own), and `complete` lists the daemon names from `mise daemons ls --json` (`mise daemons` itself doesn't complete them). The `join` splits an arg that
   holds spaces (`--grep "a b"`); call `mise daemons logs` directly for that.
+- **`dev:status` reports the dev environment, not only the daemons.** It covers everything `dev` starts (e.g. `docker compose ps` in a compose project), and `dev` runs it as its last step
+  (`{ task = "dev:status" }`), so the two never drift. For the daemons it runs `mise daemons status`, which shows each port with no hostname and needs no filtering.
 - **Adding a service** is one `[daemons.<name>]` block. The tasks and their completion need no change. The `dev:` verbs are reserved: no daemon takes one as its name.
 - **`dev` depends on `deps`**, the one allowed fast-path crossing (see the [lane map](reference-setup-and-patterns.md#fast-path-vs-slow-path)). Everything else it needs, pitchfork and the preset
   binaries, mise installs on the first run; `setup`'s `mise install` and `mise lock` cover them too. A new worktree needs only `mise trust && mise run dev`.
@@ -125,8 +127,8 @@ Every project with daemons exposes the same set. Copy it from [`assets/mise.toml
 For a service with no preset and no mise tool:
 
 - **Docker is a prerequisite:** declare it as a `[doctor.checks]` probe (see [prerequisite checks](reference-setup-and-patterns.md#prerequisite-checks)).
-- **`dev` runs `docker compose up -d --wait` before `mise daemons start`** (`--wait` blocks on the compose healthchecks); `dev:down` also runs `docker compose down`, and `docker compose logs -f` shows
-  the logs.
+- **`dev` runs `docker compose up -d --wait` before `mise daemons start`** (`--wait` blocks on the compose healthchecks); `dev:down` also runs `docker compose down`, `dev:status` also runs
+  `docker compose ps`, and `docker compose logs -f` shows the logs.
 - **Compose ports don't follow the worktree offset**, so only one checkout runs them at a time unless the compose file maps its ports from env. The compose file's content is the project's.
 - **Don't run `docker compose up` as a daemon.** pitchfork's default 5s stop timeout kills the client while the containers keep running.
 
@@ -149,7 +151,8 @@ For a service with no preset and no mise tool:
 - **A preset's `ports.<name>` override collides across worktrees.** It doesn't follow the offset. Fix: leave it unset.
 - **The pitchfork CLI warns "CLI version … differs from supervisor version".** Another project started the shared supervisor with its own pin. Harmless: after a reboot the first project to start sets
   the version. Restarting the supervisor to match stops every project's daemons (see Safety).
-- **`mise daemons urls` lists `project: https://<project>.localhost`** with the proxy off. Only the proxy serves it; ignore it.
+- **Right after `dev`, the last daemon's port shows without `(active)`.** pitchfork marks ports a few seconds later; `Status: running` is the signal.
+- **`mise daemons urls` lists `project: https://<project>.localhost`** with the proxy off. Only the proxy serves it; `mise daemons status` shows the ports without it.
 - **`mise daemons prune` leaves an empty state dir and the project's namespace entry behind.** Harmless.
 - **The Redis preset has no Windows build.**
 

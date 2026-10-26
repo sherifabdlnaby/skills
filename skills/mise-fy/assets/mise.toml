@@ -88,17 +88,17 @@ run = 'printf %s "{{vars.setup_version}}" > .config/mise/setup && echo "✅ Setu
 
 [tasks.dev]
 alias = "dev:up"
-description = "Start the local stack in the background (safe to run again), then show its ports"
+description = "Start the local stack in the background (safe to run again), then show its status"
 depends = ["deps"]                                   # a new worktree has no node_modules yet; a no-op when they are fresh
 usage = '''
     arg "[daemons]" var=#true double_dash="automatic" help="Daemon names (default: all), or flags for mise daemons start"
     complete "daemons" run="mise daemons ls --json | jq -r '.[].name'"
 '''
-run = ["mise daemons start {{usage.daemons | join(sep=' ')}}", "mise daemons urls"]
+run = ["mise daemons start {{usage.daemons | join(sep=' ')}}", { task = "dev:status" }]
 
 [tasks."dev:status"]
-description = "Show each local service's port and status"
-run = "mise daemons urls"
+description = "Show the state of the local dev environment"
+run = "mise daemons status"                          # covers everything dev starts; extend it when dev starts more (e.g. docker compose ps)
 
 [tasks."dev:logs"]
 description = "Follow the local stack's logs, or only the named daemons' (add -n 50 to skip old lines)"

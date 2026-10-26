@@ -21,8 +21,8 @@ Prefer `mise run <task>` over calling the tool directly, so local, hooks, and CI
 
 ## Local services (mise daemons)
 
-- **`mise run dev`** starts the local stack in the background and prints its ports. It is safe to run again, and it is the repair command for a crashed or `errored` service. In a new worktree,
-  `mise trust && mise run dev` brings up that checkout's own stack.
+- **`mise run dev`** starts the local stack in the background and prints its status and ports. It is safe to run again, and it is the repair command for a crashed or `errored` service. In a new
+  worktree, `mise trust && mise run dev` brings up that checkout's own stack.
 - **Connect through env**, never hard-coded ports: `DATABASE_URL`, `PG*`, `REDIS_URL`, and `<NAME>_PORT` come from mise (the shell, tasks, `mise x`). Every checkout has its own ports and data.
 - **The services outlive your shell.** See them with `mise run dev:status`, read `mise run dev:logs <name> -n 50`, and stop them with `mise run dev:down`.
 - **Schema changes** are a new migration file. The API applies pending migrations before every start, and saving the file restarts it.

@@ -69,13 +69,13 @@ That's everything. You're ready to work.
 mise run dev    # alias: mise run dev:up
 ```
 
-This starts the local services (Postgres, Redis, and the API) in the background, then prints their ports. No Docker is needed: mise downloads the services like any other project tool.
+This starts the local services (Postgres, Redis, and the API) in the background, then prints their status and ports. No Docker is needed: mise downloads the services like any other project tool.
 `mise run dev` is safe to run again: it starts what is down and leaves the rest alone, so it is also the repair command. The services keep running after you close the terminal.
 
 | Command                     | What it does                                                        |
 | --------------------------- | ------------------------------------------------------------------- |
 | `mise run dev [name…]`      | Start everything, or one service and what it needs                  |
-| `mise run dev:status`       | Show each service's port and status                                 |
+| `mise run dev:status`       | Show the state of the local services: each one's status and port    |
 | `mise run dev:logs [name…]` | Follow the logs (add `-n 50` to skip old lines); Ctrl+C closes them |
 | `mise run dev:down [name…]` | Stop everything, or one service; the data is kept                   |
 | `mise run dev:reset <name>` | Delete a service's data, e.g. a broken local database               |
