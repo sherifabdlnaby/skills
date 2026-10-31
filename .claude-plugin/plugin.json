@@ -9,18 +9,7 @@
   },
   "homepage": "https://github.com/sherifabdlnaby/skills",
   "repository": "https://github.com/sherifabdlnaby/skills",
-  "keywords": [
-    "skills",
-    "git",
-    "mise",
-    "commands",
-    "hooks",
-    "agents"
-  ],
-  "skills": [
-    "./skills/",
-    "./skills/variants",
-    "./skills/vendor"
-  ],
+  "keywords": ["skills", "git", "mise", "commands", "hooks", "agents"],
+  "skills": ["./skills/","./skills/variants","./skills/vendor"],
   "hooks": "./hooks/claude-hooks.json"
 }
