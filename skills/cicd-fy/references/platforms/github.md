@@ -1,7 +1,7 @@
 # GitHub Actions notes & gotchas
 
 The GitHub mechanics behind [SKILL.md's `## Always`](../../SKILL.md#always) floor, plus platform gotchas. All demonstrated
-in `assets/`; lint the workflows themselves with `actionlint` + `zizmor`.
+in `assets/`; lint the workflows themselves with `jactionlint` (the maintained actionlint fork) + `zizmor`.
 
 ## Mechanics
 
@@ -21,7 +21,8 @@ in `assets/`; lint the workflows themselves with `actionlint` + `zizmor`.
   (zizmor `template-injection`; its auto-fix is marked unsafe, apply the indirection by hand). Repo-wide
   exceptions go in `.github/zizmor.yml` with a written justification.
 - **Tokens**: feed `GITHUB_TOKEN` to tool installers (mise-action, Trivy DB pulls, pinact) and set
-  `GH_TOKEN` for the `gh` CLI, so nothing hits anonymous rate limits.
+  `GH_TOKEN` for the `gh` CLI, so nothing hits anonymous rate limits. mise-action keeps its token to its
+  own install step; set `persist_github_token: true` only when a later `mise run` install hits a rate limit.
 
 ## Annotations
 
