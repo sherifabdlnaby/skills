@@ -101,7 +101,8 @@ The mise-fy isn't done until every box is accounted for:
 - [ ] Inventoried existing tool/env/task/hook/CI mechanisms
 - [ ] `mise.toml` `[tools]` covers all runtimes; old version files removed
 - [ ] Lazy/uncommon tools placed by the decision order in [`tools.md`](tools.md#lazy-install-for-uncommon-tools)
-- [ ] Lockfile decision made (`mise.lock`, plus anything `mise lock` writes beside it, committed if enabled)
+- [ ] Lockfile decision made (`mise.lock`, plus anything `mise lock` writes beside it, committed if enabled); an older lockfile revision upgraded (`mise lock --upgrade`) with `min_version` raised to
+      match
 - [ ] Prerequisites mise can't install declared as `[doctor.checks]`, run first by setup
       ([`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#prerequisite-checks))
 - [ ] `[env]` replaces `.envrc`/manual exports; secrets policy applied; shell `${VAR:-default}` fallbacks converted to `{ default = ... }`.

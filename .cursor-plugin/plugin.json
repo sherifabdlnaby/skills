@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "description": "Opinionated skills plus boilerplate commands, agents, and hooks.",
-  "version": "0.31.1",
+  "version": "0.31.2",
   "author": {
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"
