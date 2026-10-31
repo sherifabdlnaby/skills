@@ -58,7 +58,8 @@ permissions:
 
 # Release runs queue WHOLE (version + release), so back-to-back merges compute their tags serially —
 # unqueued version jobs would read the same latest tag and collide on it. PR runs (autolabel) keep
-# per-PR cancel-superseded. Caveat: GitHub keeps at most ONE pending run per group, so on rapid merges
+# per-PR cancel-superseded. Caveat: without `queue: max` (it needs cancel-in-progress off, and this group
+# sets that per event), GitHub keeps at most ONE pending run per group, so on rapid merges
 # a superseded pending run is dropped; its changes still land in the next release's notes, but its
 # bump label isn't consumed (re-run the dropped run from the UI if that bump mattered).
 concurrency:
