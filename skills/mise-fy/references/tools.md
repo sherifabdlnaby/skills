@@ -158,7 +158,7 @@ pinned and land in `mise.lock`; pick in this order:
 2. **Task-scoped tool: when exactly one task needs it** and it shouldn't be on anyone's `PATH`. `[tasks.x] tools.foo = "…"`: installed when that task runs, not seen by `depends`.
    - **Don't use it when several tasks need the same tool**; the pin repeats per task and drifts. That's option 1.
 3. **Tool stub: an off-registry binary, or a tool run by path outside mise.** A committed `./bin/x` that installs-and-runs **one** pinned tool on first run.
-   - Append ./bin/ to PATH using [env] _.path = ["./bin"] (ref: [env.md](env.md))
+   - Prepend ./bin/ to PATH using [env] _.path = ["./bin"] (ref: [env.md](env.md))
 
 A tool everyone is expected to use (e.g. every pre-commit linter) is none of these; it's a plain `[tools]` entry.
 

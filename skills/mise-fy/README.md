@@ -4,7 +4,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-2%2C529%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,529 tokens" />
-  <img src="https://img.shields.io/badge/Total-35%2C987%20tokens-2ea44f?style=flat-square" alt="Total: 35,987 tokens" />
+  <img src="https://img.shields.io/badge/Total-36%2C022%20tokens-2ea44f?style=flat-square" alt="Total: 36,022 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -20,7 +20,7 @@ than read, so they are left out.
 | [`references/ci.md`](references/ci.md)                                                     | `1,882` |
 | [`references/dev.md`](references/dev.md)                                                   | `4,666` |
 | [`references/docs.md`](references/docs.md)                                                 | `1,296` |
-| [`references/env.md`](references/env.md)                                                   | `1,412` |
+| [`references/env.md`](references/env.md)                                                   | `1,446` |
 | [`references/hk.md`](references/hk.md)                                                     | `5,735` |
 | [`references/hooks.md`](references/hooks.md)                                               |   `503` |
 | [`references/install.md`](references/install.md)                                           |   `355` |
@@ -28,7 +28,7 @@ than read, so they are left out.
 | [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | `2,558` |
 | [`references/runtimes/node.md`](references/runtimes/node.md)                               | `1,462` |
 | [`references/tasks.md`](references/tasks.md)                                               | `3,243` |
-| [`references/tools.md`](references/tools.md)                                               | `3,773` |
+| [`references/tools.md`](references/tools.md)                                               | `3,774` |
 
 <!-- token-estimates:end -->
 

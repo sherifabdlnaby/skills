@@ -5,7 +5,8 @@ Guidance on managing project environment and variables via Mise `[env]`.
 ## Rules and Best Practices:
 
 1. Define project env in `[env]` and let mise load it (on `cd` with `mise activate`, and for `mise run`/`mise exec`). Don't re-export by hand.
-2. Load dotenv with `_.file`, prepend PATH with `_.path`, source scripts with `_.source`. Use the table form (`{ path = ..., redact/tools = ... }`) only when you need an option.
+2. Load dotenv with `_.file`, prepend PATH with `_.path`, source scripts with `_.source`. Use the table form (`{ path = ..., redact/tools = ... }`) only when you need an option, e.g.
+   `position = "append"` puts a `_.path` entry after mise's tools, so a dir like `~/bin` can't shadow them.
 3. Scope env to one task with `[tasks.x] env.FOO = "..."` instead of global `[env]` when only that task needs it. (why: smaller blast radius; note these are **not** passed to `depends` tasks.)
 4. Share values between tasks with `[vars]` + `{{vars.x}}`, not `[env]`, when the value is only for task config and shouldn't leak into the process environment. (why: vars DRY task config without
    polluting env.)
