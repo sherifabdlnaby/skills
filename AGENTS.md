@@ -73,8 +73,8 @@ skill needs to finish its job. Raise to the user when hard dependency make sense
 
 ## Skill freshness
 
-A skill that teaches third-party tools (e.g. mise-fy) says in its `SKILL.md` which release of each tool it was checked against, and when, in a **Versions** line the agent reads. The line also tells
-the agent to read the release notes when the project's version differs, newer or older. Update that line only when a change comes from reading newer release notes; other edits leave it alone.
+A skill that teaches third-party tools (e.g. mise-fy) says in its `SKILL.md` which release of each tool it was checked against, and when, in a **Versions** line the agent reads, so that when a tool
+does not behave as the skill says, the agent can suspect a version difference. Update that line only when a change comes from reading newer release notes; other edits leave it alone.
 
 ## Skill READMEs
 
