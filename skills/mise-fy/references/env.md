@@ -31,8 +31,8 @@ Guidance on managing project environment and variables via Mise `[env]`.
 - **Tera templating is always on:** `{{env.X}}`, `{{config_root}}`, `{{cwd}}`, `{{tools.<t>.version}}`.
 - **`_.path` relatives resolve against `config_root`**, not cwd.
 - **Redaction is line-based.** `redact`/`redactions` scrub task output line-by-line; tasks with `raw = true` bypass it entirely and will leak secrets.
-- **`_.file` vs the `env_file` setting.** `_.file` paths resolve against the config that declares them; the global `[settings] env_file` (or `MISE_ENV_FILE`) is **deprecated (removal 2027.4.0)**. use
-  `_.file`.
+- **`_.file` vs the `env_file` setting.** `_.file` paths resolve against the config that declares them. The `[settings] env_file` (or `MISE_ENV_FILE`) loads its dotenv names from the current
+  directory and each parent, so what loads depends on where you stand: use `_.file` in a project. A top-level `env_file = …` key in `mise.toml` is **deprecated (removal 2027.4.0)**.
 - **Vars are not env.** `[vars]`/`{{vars.x}}` are shared across tasks but never exported to the process; use them for task config, `[env]` for the actual environment.
   `[vars]` entries accept `required`/`redact` too, but redaction of `{{vars.x}}` substitution only takes effect on mise 2026.7.0+
   (older versions parse it and print plaintext).
