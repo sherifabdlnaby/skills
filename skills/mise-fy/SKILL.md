@@ -59,8 +59,7 @@ their agent get all local linters/tests/validations)!
 The skill uses progressive disclosure: each area routes to a `references/` file holding the actual rules and best practices.
 Read the matching one **before** planning or acting, not after. SKILL.md alone is not enough. Plan ahead, and read all references you'll need!
 
-**Versions.** Checked against mise 2026.10.24, hk 2.10.0 and pitchfork 2.32.4 on 2026-10-31. When a tool does not behave as written
-here, a different version (newer or older) is a likely cause.
+**Versions.** Checked against mise 2026.10.24, hk 2.10.0 and pitchfork 2.32.4 on 2026-10-31.
 
 ## When to read references
 

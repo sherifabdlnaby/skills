@@ -17,8 +17,7 @@ metadata:
 Route first: each action's actual rules live in a `references/` file. Open the matching one before planning or acting; rules like commit grouping and branch naming shape the plan, so reading them late
 means redoing it. Several actions, several references.
 
-**Versions.** Checked against gh 2.103.3 and gh-stack 0.3.0 on 2026-10-31. When a tool does not behave as written
-here, a different version (newer or older) is a likely cause.
+**Versions.** Checked against gh 2.103.3 and gh-stack 0.3.0 on 2026-10-31.
 
 ## Router
 

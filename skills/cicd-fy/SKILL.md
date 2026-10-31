@@ -26,8 +26,7 @@ The skill uses progressive disclosure: each area routes to a `references/` file 
 Read the matching one **before** planning or building that pipeline, not after.
 
 **Versions.** Checked against mise 2026.10.24, hk 2.10.0, mise-action 5.2.4, zizmor 1.31.1, pinact 5.0.2, cosign 3.1.4, syft 1.55.0, goreleaser 2.19.0,
-trivy 0.76.1, gh 2.103.3 and the GitHub changelog on 2026-10-31. When a tool does not behave as written
-here, a different version (newer or older) is a likely cause.
+trivy 0.76.1, gh 2.103.3 and the GitHub changelog on 2026-10-31.
 SKILL.md alone is not enough. Plan ahead, and read all references you'll need!
 
 ## When to read references
