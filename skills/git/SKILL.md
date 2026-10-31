@@ -9,7 +9,9 @@ license: MIT
 argument-hint: "[commit|branch|pr|attach|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.5.0"
+  version: "0.5.1"
+  checked-against: "gh 2.103.3, gh-stack 0.3.0"
+  checked-on: "2026-10-31"
 ---
 
 # Git
