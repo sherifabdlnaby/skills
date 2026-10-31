@@ -90,7 +90,7 @@ list first. run `hk builtins` to list all linters builtins (or grep for the one 
 Beyond Popular Runtime Linters (check that yourself, and take a look at builtins). The following Linters are highly recommended and you should always suggest to the user:
 
 - mise: lint the mise config itself.
-- File hygiene: newlines, trailing_whitespace, mixed_line_ending, byte_order_marker, check_added_large_files, check_case_conflict, check_merge_conflict, check_symlinks,
+- File hygiene: newlines, trailing_whitespace, mixed_line_ending, byte_order_marker, check_added_large_files, check_case_conflict, check_merge_conflict, check_symlinks, destroyed_symlinks,
   check_executables_have_shebangs, detect_private_key (cheap, complements betterleaks).
 - GitHub Actions: jactionlint (lint; maintained actionlint fork), zizmor (security), pinact (pin to SHAs; needs a token, see its note).
 - Structure: ryl (YAML, structure only, see its note), taplo (TOML lint + format; alt: `tombi`).

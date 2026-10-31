@@ -63,10 +63,10 @@ Per area, follow the matching reference, converse with user when required.
 
 ### 4. Verify
 
-`mise lock`, then `mise install`; `mise doctor` reports no issues. Every standard task runs green via `mise run`. Fresh-clone smoke test: clone into a temp dir,
-`mise trust && MISE_LOCKED=1 mise install --include-lazy && mise run setup && mise run check`, all green with no manual step in between, and `git status` clean at the end. The locked install
-proves every tool, lazy ones too, has a lock entry; the clean tree proves setup did not rewrite the lock. With services, `mise run dev` brings the stack up in that clone, and a second run changes
-nothing.
+`mise lock`, then `mise install`; `mise doctor` reports no issues, and `mise config explain` marks no unknown or deprecated key. Every standard task runs green via `mise run`. Fresh-clone smoke test:
+clone into a temp dir, `mise trust && MISE_LOCKED=1 mise install --include-lazy && mise run setup && mise run check`, all green with no manual step in between, and `git status` clean at the end. The
+locked install proves every tool, lazy ones too, has a lock entry; the clean tree proves setup did not rewrite the lock. With services, `mise run dev` brings the stack up in that clone, and a second
+run changes nothing.
 
 ### 5. Document it (README + AGENTS.md)
 

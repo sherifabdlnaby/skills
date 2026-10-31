@@ -148,7 +148,8 @@ For a service with no preset and no mise tool:
 - **"port N is already in use".** Another checkout, project, or app holds a port of the block (two worktrees on one slot, overlapping blocks, macOS AirPlay on 5000/7000, etc.). Fix: move that daemon
   in `mise.local.toml`, as mise's hint says. It is rare and loud, so no code guards against it.
 - **"exceeds 65535 for this worktree".** `B` is too high for a high slot. Fix: keep `B + 5119 ≤ 65535`.
-- **A preset's `ports.<name>` override collides across worktrees.** It doesn't follow the offset. Fix: leave it unset.
+- **A preset's named ports sit outside the port block.** Unset, one is the preset's default plus the worktree offset, and that clashes between projects; a fixed number collides across worktrees.
+  Fix: give it a slot like `port`, `ports.<name> = { auto = true, base = <B+k>, stride = 10 }`.
 - **The pitchfork CLI warns "CLI version … differs from supervisor version".** Another project started the shared supervisor with its own pin. Harmless: after a reboot the first project to start sets
   the version. Restarting the supervisor to match stops every project's daemons (see Safety).
 - **Right after `dev`, the last daemon's port shows without `(active)`.** pitchfork marks ports a few seconds later; `Status: running` is the signal.

@@ -7,7 +7,8 @@ Guidance on mise's directory & lifecycle hooks (`enter`/`cd`/`leave`, `watch_fil
 1. **Keep `enter`/`cd` hooks offline-safe.** They fire on **every** directory change, so a hook that reaches the network taxes each `cd` and hangs the shell when offline.
 2. **Write `enter`/`cd` hooks as plain shell, not `mise run`.** `mise run` installs every missing tool before the task starts, even tools the task never uses: a fresh clone or a new pin downloads
    on `cd`, and `MISE_OFFLINE=1` only turns that download into an error on each `cd`. The hook string is templated like a task (`{{vars.*}}`, `{{config_root}}`), so a staleness check or nudge needs
-   no task. It runs in the shell's current directory, which can be a subfolder: reach project files through `{{config_root}}`.
+   no task. `enter`, `leave` and `watch_files` hooks start in the project root; a `cd` hook runs in the shell's current directory, which can be a subfolder: reach project files through
+   `{{config_root}}`.
 3. **Keep hook commands fast and idempotent.** They run on routine events; slow or side-effecting work belongs in a task you invoke explicitly.
 
 ## Notes & Gotchas:
