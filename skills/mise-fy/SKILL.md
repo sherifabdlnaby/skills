@@ -9,7 +9,9 @@ license: MIT
 argument-hint: "Mise-fy this project | Audit this project | Add x tool via Mise"
 metadata:
   author: sherifabdlnaby
-  version: "0.9.0"
+  version: "0.9.1"
+  checked-against: "mise 2026.10.24, hk 2.10.0, pitchfork 2.32.4"
+  checked-on: "2026-10-31"
 ---
 
 # mise-fy
