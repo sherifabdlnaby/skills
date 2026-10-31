@@ -33,9 +33,12 @@ Guidance on Installing Tools and Runtimes via Mise.
   stale ones); only locked mode (`--locked`, `MISE_LOCKED=1`) leaves it alone. `lockfile = true` also creates the file, unset only updates an existing one, `false` stops writes. Run `mise lock` after
   every `[tools]` change so the committed file is complete; a `mise.lock` diff after `mise install` means the commit missed entries, so commit it.
 - **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the
-  version that wrote it. mise keeps an existing revision when it rewrites the file; `mise lock --upgrade` moves it to the current one.
+  version that wrote it (revision 2 needs mise 2026.9.7, revision 3 needs 2026.9.16). mise keeps an existing revision when it rewrites the file and warns when a newer one would store more;
+  `mise lock --upgrade` moves it to the current one. From revision 2, `npm:` and `pypi:` tools also get a dependency graph in `.mise/locks/` (commit it), and a `pypi:` tool then installs
+  only from wheels for the resolved Python, so a package without one fails until `python` is pinned to a version it ships wheels for.
 - **Unknown tool options fail the install.** A misspelled key in a tool's table form (`asset_glob`) stops `mise install` with `option … is not used by the <backend> backend`.
-- **Locked tools keep their locked backend.** When the registry moves a short name to a new backend, a tool already in `mise.lock` stays on the old one and mise warns; `mise backends switch` moves it.
+- **Locked tools keep their locked backend.** When the registry moves a short name to a new backend, a tool already in `mise.lock` stays on the old one and mise warns. An install can also fail with
+  `would change the recorded signer`. `mise backends switch` moves it.
 - **`mise use` edits the closest config**. It may not be the one you expect in a nested/monorepo tree.
 - **A backend spec goes in the KEY, never the value.** `ripgrep = "aqua:BurntSushi/ripgrep"` is a parse error (`invalid tool: invalid prefix: aqua`) that breaks the whole config; write
   `"aqua:BurntSushi/ripgrep" = "15"` (see Syntax Reminder).

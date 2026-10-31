@@ -25,11 +25,11 @@ Platform-specific setup lives under [`ci/`](ci/):
 - **Color is off in CI by default.** Set `CLICOLOR_FORCE: "1"` / `FORCE_COLOR: "1"` to keep linter output readable in the logs.
 - **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise commit an install script (`mise generate install-script`). See
   [Installing mise in CI](#installing-mise-in-ci).
-- **`mise.lock` is per-platform.** `mise lock` and installs write entries for the
-  common Linux, macOS and Windows platforms. A `lockfile_platforms` list limits that
-  set, so a runner outside it (e.g. a new arm64 runner) fails `--locked` with
+- **`mise.lock` is per-platform.** `mise lock` targets the `lockfile_platforms` list
+  (plus the current platform) when set, else the platforms already in the file, else
+  common Linux, macOS and Windows platforms for a new file. A runner outside that set (e.g. a new arm64 runner) fails `--locked` with
   `No lockfile URL found for <tool>@<ver> on platform linux-arm64`, even though it
-  works on your Mac. Extend `lockfile_platforms`, re-run `mise lock`, and commit
+  works on your Mac. Extend `lockfile_platforms` (or pass `--platform`), re-run `mise lock`, and commit
   the lockfile.
 
 ## Installing mise in CI

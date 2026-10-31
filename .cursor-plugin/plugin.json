@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "description": "Opinionated skills plus boilerplate commands, agents, and hooks.",
-  "version": "0.31.1",
+  "version": "0.31.2",
   "author": {
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"
@@ -9,9 +9,20 @@
   "homepage": "https://github.com/sherifabdlnaby/skills",
   "repository": "https://github.com/sherifabdlnaby/skills",
   "license": "MIT",
-  "keywords": ["skills", "git", "mise", "commands", "hooks", "agents"],
+  "keywords": [
+    "skills",
+    "git",
+    "mise",
+    "commands",
+    "hooks",
+    "agents"
+  ],
   "logo": ".github/assets/logo.svg",
-  "skills": ["skills", "skills/variants", "skills/vendor"],
+  "skills": [
+    "skills",
+    "skills/variants",
+    "skills/vendor"
+  ],
   "commands": "commands",
   "hooks": "hooks/cursor-hooks.json"
 }
