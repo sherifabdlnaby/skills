@@ -14,7 +14,8 @@ Use `jdx/mise-action@v5`: it installs mise + tools and runs `mise install`. The 
 4. **Scope `permissions`** to the minimum, on the job, with `permissions: {}` at the workflow level. Report-only linting needs `contents: read`, plus `pull-requests: write` to post the fix-hint
    comment. The opt-in [auto-fix variant](#optional-auto-fix-prs) additionally needs `contents: write` to push the fix branch.
 5. **Cancel superseded runs** with a `concurrency` group keyed on the PR number or ref so a new push stops the old run.
-6. Set the GitHub token via `GITHUB_TOKEN` env / `github_token` input so tool installs don't hit API rate limits.
+6. Set the GitHub token via `GITHUB_TOKEN` env / `github_token` input so tool installs don't hit API rate limits. The action keeps it to its own step; set `persist_github_token: true` only
+   when a later `mise run` install hits a rate limit.
 
 ## The lint workflow pattern
 
