@@ -132,6 +132,7 @@ For a service with no preset and no mise tool, `image = "<image>:<tag>"` runs it
 image = "opensearchproject/opensearch:2"
 port = { auto = true, base = 14102, stride = 10 }  # the host port, in the port block
 container_port = 9200                              # the port inside the image, when it differs
+ports.perf = { container = 9600, auto = true, base = 14103, stride = 10 }  # more ports: <NAME>_PERF_PORT
 data_mount = "/usr/share/opensearch/data"          # a per-checkout data dir, mounted here
 ready_cmd = "curl -sf http://127.0.0.1:$SEARCH_PORT/ >/dev/null"
 proxy = false
