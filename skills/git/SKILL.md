@@ -10,14 +10,15 @@ argument-hint: "[commit|branch|pr|attach|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
   version: "0.5.1"
-  checked-against: "gh 2.103.3, gh-stack 0.3.0"
-  checked-on: "2026-10-31"
 ---
 
 # Git
 
 Route first: each action's actual rules live in a `references/` file. Open the matching one before planning or acting; rules like commit grouping and branch naming shape the plan, so reading them late
 means redoing it. Several actions, several references.
+
+**Versions.** Checked against gh 2.103.3 and gh-stack 0.3.0 on 2026-10-31. When the project pins or runs a different version,
+newer or older, read the release notes between the two before you rely on a claim that depends on a version.
 
 ## Router
 

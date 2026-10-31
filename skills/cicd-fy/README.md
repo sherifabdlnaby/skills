@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C549%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,549 tokens" />
-  <img src="https://img.shields.io/badge/Total-15%2C870%20tokens-2ea44f?style=flat-square" alt="Total: 15,870 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-1%2C551%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,551 tokens" />
+  <img src="https://img.shields.io/badge/Total-15%2C872%20tokens-2ea44f?style=flat-square" alt="Total: 15,872 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,7 +13,7 @@ than read, so they are left out.
 
 | File                                                                   |  Tokens |
 | ---------------------------------------------------------------------- | ------: |
-| [`SKILL.md`](SKILL.md)                                                 | `1,549` |
+| [`SKILL.md`](SKILL.md)                                                 | `1,551` |
 | [`assets/CONTRIBUTING.md`](assets/CONTRIBUTING.md)                     |   `454` |
 | [`references/artifacts/docker.md`](references/artifacts/docker.md)     | `1,118` |
 | [`references/artifacts/go.md`](references/artifacts/go.md)             |   `928` |

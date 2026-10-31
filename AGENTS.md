@@ -73,9 +73,8 @@ skill needs to finish its job. Raise to the user when hard dependency make sense
 
 ## Skill freshness
 
-A skill that teaches third-party tools (e.g. mise-fy) records in its `SKILL.md` frontmatter the newest release of each tool it teaches that its claims were checked against, as
-`metadata.checked-against` (`"<tool> <version>, …"`), and the date of that check, as `metadata.checked-on`. Before you edit such a skill, compare those releases with the current ones. When they are
-behind, read the release notes since them, fix the claims they make wrong, and then update both keys, also when nothing else changed. An edit made without a release-notes check leaves them alone.
+A skill that teaches third-party tools (e.g. mise-fy) says in its `SKILL.md` which release of each tool it was checked against, and when, in a **Versions** line the agent reads. The line also tells
+the agent to read the release notes when the project's version differs, newer or older. Update that line only when a change comes from reading newer release notes; other edits leave it alone.
 
 ## Skill READMEs
 
