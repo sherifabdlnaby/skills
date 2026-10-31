@@ -87,7 +87,7 @@ Installing a tool or a runtime.
 TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running and parallelism, `mise watch` (re-run on change).
 
 **Local dev stack** (databases, caches, app servers and workers in the background; a stack per worktree) -> [`references/dev.md`](references/dev.md)
-`[daemons]` presets and custom daemons, the port block, ready/health/retry, migrations, the `dev:*` tasks, compose as the exception.
+`[daemons]` presets and custom daemons, the port block, ready/health/retry, migrations, the `dev:*` tasks, container images, compose as the exception.
 
 **Hooks** (directory & lifecycle: `enter`/`cd`, `watch_files`, `postinstall`) -> [`references/hooks.md`](references/hooks.md)
 Keeping `enter`/`cd` hooks offline-safe (plain shell, not `mise run`), trust impact, the shim caveat. For git/pre-commit hooks specifically, see hk below.

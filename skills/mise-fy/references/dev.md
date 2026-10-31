@@ -31,6 +31,7 @@ options.database = "app"
 # run = "exec <cmd>"               #   a shell command (custom daemon)
 # task = "dev:core"                #   a mise task, with args
 # project = "../svc"               #   another repo's daemon (with name); provider = a shared server
+# image = "nginx:1.28-alpine"      #   a container image, run with docker or podman (with container_port, data_mount)
 
 port = { auto = true, base = 14101, stride = 10 }  # or a fixed port; "auto" alone works only on a preset
 proxy = false                      # a hostname label, or false
@@ -71,7 +72,7 @@ mise daemons register | prune [--dry-run] | tui
 ## Rules and Best Practices:
 
 1. **Pick the simplest kind of daemon.** A preset first (`preset = "postgres"`, `"redis"`, etc.): mise installs the binary, keeps the data, and exports the connection env. Else a custom daemon
-   (`run = …`) on a mise-managed tool. A service with neither runs from a compose file, the one Docker exception (see [Compose](#compose)).
+   (`run = …`) on a mise-managed tool. Else a container daemon (see [Containers](#containers)). Compose only for what a container daemon can't run (see [Compose](#compose)).
 2. **One port block per project.** Each daemon gets `port = { auto = true, base = <B+k>, stride = 10 }`, with `k` from 0 to 9 and one `B` per project: a free multiple of 100 in 10000–27000, named in a
    comment. The main checkout uses `B+k`; a linked worktree adds 10 × its slot (1–511, derived from its path). `stride` has no project-wide setting, so repeat it on every daemon. (why: the default
    stride of 1 makes two daemons whose bases differ by less than 512 collide in some worktree, and presets on their default ports clash between projects.)
@@ -122,9 +123,28 @@ Every project with daemons exposes the same set. Copy it from [`assets/mise.toml
 - **Tests:** bare `test` stays fast and starts nothing. A test task that needs services (`test:integration`, `test:e2e`, etc.) uses `depends = ["dev"]`.
 - **Foreground debugging:** `mise run dev:down api`, then `mise x -- node src/server.js --port $API_PORT` (same env), then `mise run dev` to put it back.
 
+## Containers
+
+For a service with no preset and no mise tool, `image = "<image>:<tag>"` runs it with `docker run` (or `podman run`) as a custom daemon. Experimental, from mise 2026.10.24.
+
+```toml
+[daemons.search]
+image = "opensearchproject/opensearch:2"
+port = { auto = true, base = 14102, stride = 10 }  # the host port, in the port block
+container_port = 9200                              # the port inside the image, when it differs
+data_mount = "/usr/share/opensearch/data"          # a per-checkout data dir, mounted here
+ready_cmd = "curl -sf http://127.0.0.1:$SEARCH_PORT/ >/dev/null"
+proxy = false
+```
+
+- **It is a daemon like the others:** the port block, `<NAME>_PORT`, `depends`, ready checks, `retry` and `mise daemons logs` work the same. Each checkout gets its own container and data dir.
+- **Docker or Podman is a prerequisite:** declare it as a `[doctor.checks]` probe (see [prerequisite checks](reference-setup-and-patterns.md#prerequisite-checks)). mise doesn't start the engine or
+  build an image.
+- **TCP ports only**, and it fails on Windows.
+
 ## Compose
 
-For a service with no preset and no mise tool:
+For what a container daemon can't run: an image the project builds, UDP ports, containers that share a network, etc.
 
 - **Docker is a prerequisite:** declare it as a `[doctor.checks]` probe (see [prerequisite checks](reference-setup-and-patterns.md#prerequisite-checks)).
 - **The `dev:*` tasks cover the compose services as well:** `dev` brings them up before the daemons (`docker compose up -d --wait` blocks on their healthchecks), and stopping, status and logs
@@ -160,7 +180,7 @@ For a service with no preset and no mise tool:
 ## Checklist
 
 - [ ] `experimental = true`; `pitchfork` and `jq` pinned in `[tools]`
-- [ ] Each service is a preset, else a custom daemon; compose only for the rest, behind a Docker doctor check
+- [ ] Each service is a preset, else a custom daemon, else a container daemon; compose only for the rest; containers behind a Docker doctor check
 - [ ] One port block: `base = B+k` and `stride = 10` on every daemon, the block named in a comment
 - [ ] Custom daemons: the plain process with `exec` and its port in the command, `watch`, `proxy = false`, `ready_cmd` and `health_cmd` with a timeout, `depends`
 - [ ] `retry = 3` on every daemon, never `true`

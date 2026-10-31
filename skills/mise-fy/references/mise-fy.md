@@ -55,7 +55,7 @@ When there is no user to ask, pick the gradual path, keep the old managers, and 
 
 Depending on user request, you might suggest new additions (like introduction of hk for pre-commit, as well as other linters)
 
-Map each service to a preset, a custom daemon, or (with no preset and no mise tool) a compose file, per [`dev.md`](dev.md).
+Map each service to a preset, a custom daemon, a container daemon, or (for what those cannot run) a compose file, per [`dev.md`](dev.md).
 
 ### 3. Convert
 
