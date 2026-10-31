@@ -29,9 +29,9 @@ Guidance on Installing Tools and Runtimes via Mise.
 
 ## Notes & Gotchas:
 
-- **An existing `mise.lock` is not read-only.** Plain installs, `mise use`, and first-run auto-installs from `mise run`/`mise x` rewrite it to fill missing entries; only locked mode (`--locked`,
-  `MISE_LOCKED=1`) leaves it alone. `lockfile = true` also creates the file, unset only updates an existing one, `false` stops writes. Run `mise lock` after every `[tools]` change so the committed
-  file is complete; a `mise.lock` diff after `mise install` means the commit missed entries, so commit it.
+- **An existing `mise.lock` is not read-only.** Plain installs, `mise use`, and first-run auto-installs from `mise run`/`mise x` rebuild it from the current requests (adding missing entries, dropping
+  stale ones); only locked mode (`--locked`, `MISE_LOCKED=1`) leaves it alone. `lockfile = true` also creates the file, unset only updates an existing one, `false` stops writes. Run `mise lock` after
+  every `[tools]` change so the committed file is complete; a `mise.lock` diff after `mise install` means the commit missed entries, so commit it.
 - **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the
   version that wrote it. mise keeps an existing revision when it rewrites the file; `mise lock --upgrade` moves it to the current one.
 - **Unknown tool options fail the install.** A misspelled key in a tool's table form (`asset_glob`) stops `mise install` with `option … is not used by the <backend> backend`.
@@ -158,7 +158,7 @@ pinned and land in `mise.lock`; pick in this order:
 2. **Task-scoped tool: when exactly one task needs it** and it shouldn't be on anyone's `PATH`. `[tasks.x] tools.foo = "…"`: installed when that task runs, not seen by `depends`.
    - **Don't use it when several tasks need the same tool**; the pin repeats per task and drifts. That's option 1.
 3. **Tool stub: an off-registry binary, or a tool run by path outside mise.** A committed `./bin/x` that installs-and-runs **one** pinned tool on first run.
-   - Append ./bin/ to PATH using [env] _.path = ["./bin"] (ref: [env.md](env.md))
+   - Prepend ./bin/ to PATH using [env] _.path = ["./bin"] (ref: [env.md](env.md))
 
 A tool everyone is expected to use (e.g. every pre-commit linter) is none of these; it's a plain `[tools]` entry.
 

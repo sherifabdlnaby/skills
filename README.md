@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-32%2C875%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 32,875 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-113%2C310%20tokens-2ea44f?style=flat-square" alt="All Markdown: 113,310 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C058%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,058 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-114%2C172%20tokens-2ea44f?style=flat-square" alt="All Markdown: 114,172 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -31,14 +31,14 @@ than read, so they are left out.
 | Skill                                                                                  | SKILL.md |    Total |
 | -------------------------------------------------------------------------------------- | -------: | -------: |
 | [`afk`](skills/afk/)                                                                   |    `228` |    `228` |
-| [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,408` | `15,633` |
+| [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,517` | `15,838` |
 | [`coding`](skills/coding/)                                                             |  `1,048` |  `1,048` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
-| [`git`](skills/git/)                                                                   |  `2,383` | `14,783` |
+| [`git`](skills/git/)                                                                   |  `2,414` | `14,814` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
-| [`mise-fy`](skills/mise-fy/)                                                           |  `2,481` | `35,504` |
+| [`mise-fy`](skills/mise-fy/)                                                           |  `2,524` | `36,130` |
 | [`review`](skills/review/)                                                             |    `325` |    `325` |
 | [`skill-fy`](skills/skill-fy/)                                                         |  `2,901` |  `6,389` |
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |

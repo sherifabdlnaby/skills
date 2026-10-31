@@ -5,7 +5,8 @@ Guidance on managing project environment and variables via Mise `[env]`.
 ## Rules and Best Practices:
 
 1. Define project env in `[env]` and let mise load it (on `cd` with `mise activate`, and for `mise run`/`mise exec`). Don't re-export by hand.
-2. Load dotenv with `_.file`, prepend PATH with `_.path`, source scripts with `_.source`. Use the table form (`{ path = ..., redact/tools = ... }`) only when you need an option.
+2. Load dotenv with `_.file`, prepend PATH with `_.path`, source scripts with `_.source`. Use the table form (`{ path = ..., redact/tools = ... }`) only when you need an option, e.g.
+   `position = "append"` puts a `_.path` entry after mise's tools, so a dir like `~/bin` can't shadow them.
 3. Scope env to one task with `[tasks.x] env.FOO = "..."` instead of global `[env]` when only that task needs it. (why: smaller blast radius; note these are **not** passed to `depends` tasks.)
 4. Share values between tasks with `[vars]` + `{{vars.x}}`, not `[env]`, when the value is only for task config and shouldn't leak into the process environment. (why: vars DRY task config without
    polluting env.)
@@ -30,8 +31,8 @@ Guidance on managing project environment and variables via Mise `[env]`.
 - **Tera templating is always on:** `{{env.X}}`, `{{config_root}}`, `{{cwd}}`, `{{tools.<t>.version}}`.
 - **`_.path` relatives resolve against `config_root`**, not cwd.
 - **Redaction is line-based.** `redact`/`redactions` scrub task output line-by-line; tasks with `raw = true` bypass it entirely and will leak secrets.
-- **`_.file` vs the `env_file` setting.** `_.file` paths resolve against the config that declares them; the global `[settings] env_file` (or `MISE_ENV_FILE`) is **deprecated (removal 2027.4.0)**. use
-  `_.file`.
+- **`_.file` vs the `env_file` setting.** `_.file` paths resolve against the config that declares them. The `[settings] env_file` (or `MISE_ENV_FILE`) loads its dotenv names from the current
+  directory and each parent, so what loads depends on where you stand: use `_.file` in a project. A top-level `env_file = …` key in `mise.toml` is **deprecated (removal 2027.4.0)**.
 - **Vars are not env.** `[vars]`/`{{vars.x}}` are shared across tasks but never exported to the process; use them for task config, `[env]` for the actual environment.
   `[vars]` entries accept `required`/`redact` too, but redaction of `{{vars.x}}` substitution only takes effect on mise 2026.7.0+
   (older versions parse it and print plaintext).

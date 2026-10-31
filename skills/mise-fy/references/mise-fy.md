@@ -55,7 +55,7 @@ When there is no user to ask, pick the gradual path, keep the old managers, and 
 
 Depending on user request, you might suggest new additions (like introduction of hk for pre-commit, as well as other linters)
 
-Map each service to a preset, a custom daemon, or (with no preset and no mise tool) a compose file, per [`dev.md`](dev.md).
+Map each service to a preset, a custom daemon, a container daemon, or (for what those cannot run) a compose file, per [`dev.md`](dev.md).
 
 ### 3. Convert
 
@@ -63,10 +63,10 @@ Per area, follow the matching reference, converse with user when required.
 
 ### 4. Verify
 
-`mise lock`, then `mise install`; `mise doctor` reports no issues. Every standard task runs green via `mise run`. Fresh-clone smoke test: clone into a temp dir,
-`mise trust && MISE_LOCKED=1 mise install --include-lazy && mise run setup && mise run check`, all green with no manual step in between, and `git status` clean at the end. The locked install
-proves every tool, lazy ones too, has a lock entry; the clean tree proves setup did not rewrite the lock. With services, `mise run dev` brings the stack up in that clone, and a second run changes
-nothing.
+`mise lock`, then `mise install`; `mise doctor` reports no issues, and `mise config explain` marks no unknown or deprecated key. Every standard task runs green via `mise run`. Fresh-clone smoke test:
+clone into a temp dir, `mise trust && MISE_LOCKED=1 mise install --include-lazy && mise run setup && mise run check`, all green with no manual step in between, and `git status` clean at the end. The
+locked install proves every tool, lazy ones too, has a lock entry; the clean tree proves setup did not rewrite the lock. With services, `mise run dev` brings the stack up in that clone, and a second
+run changes nothing.
 
 ### 5. Document it (README + AGENTS.md)
 

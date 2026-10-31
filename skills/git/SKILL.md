@@ -9,13 +9,15 @@ license: MIT
 argument-hint: "[commit|branch|pr|attach|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.5.0"
+  version: "0.5.1"
 ---
 
 # Git
 
 Route first: each action's actual rules live in a `references/` file. Open the matching one before planning or acting; rules like commit grouping and branch naming shape the plan, so reading them late
 means redoing it. Several actions, several references.
+
+**Versions.** Checked against gh 2.103.3 and gh-stack 0.3.0 on 2026-10-31.
 
 ## Router
 

@@ -1,7 +1,7 @@
 # GitHub Actions notes & gotchas
 
 The GitHub mechanics behind [SKILL.md's `## Always`](../../SKILL.md#always) floor, plus platform gotchas. All demonstrated
-in `assets/`; lint the workflows themselves with `actionlint` + `zizmor`.
+in `assets/`; lint the workflows themselves with `jactionlint` (the maintained actionlint fork) + `zizmor`.
 
 ## Mechanics
 
@@ -21,7 +21,8 @@ in `assets/`; lint the workflows themselves with `actionlint` + `zizmor`.
   (zizmor `template-injection`; its auto-fix is marked unsafe, apply the indirection by hand). Repo-wide
   exceptions go in `.github/zizmor.yml` with a written justification.
 - **Tokens**: feed `GITHUB_TOKEN` to tool installers (mise-action, Trivy DB pulls, pinact) and set
-  `GH_TOKEN` for the `gh` CLI, so nothing hits anonymous rate limits.
+  `GH_TOKEN` for the `gh` CLI, so nothing hits anonymous rate limits. mise-action keeps its token to its
+  own install step; set `persist_github_token: true` only when a later `mise run` install hits a rate limit.
 
 ## Annotations
 
@@ -49,9 +50,11 @@ Surface errors as annotations:
 - **`pull_request` default types miss `edited`**, so title-regex autolabels go stale on retitle. Add
   `types: [opened, reopened, synchronize, edited]` where labels come from titles (plus
   `labeled, unlabeled` where a job reacts to label changes, like the bump gate/preview).
-- **One pending run per concurrency group.** On rapid merges a superseded queued release run is
-  dropped, not queued behind: its changes still land in the next release's notes, but its bump label
-  isn't consumed — re-run the dropped run from the UI if that bump mattered.
+- **One pending run per concurrency group, unless it sets `queue: max`.** By default, on rapid merges a
+  superseded queued release run is dropped, not queued behind: its changes still land in the next
+  release's notes, but its bump label isn't consumed — re-run the dropped run from the UI if that bump
+  mattered. `queue: max` keeps up to 100 pending runs, but only in a group whose `cancel-in-progress` is
+  false or unset.
 - **The pin comment is machine-owned; nothing shares its line.** Text appended after `# vX.Y.Z` (a
   `zizmor: ignore[...]`, a note) stops Dependabot's comment rewrite on bump: stale comment, and
   `pinact --verify` fails the line. Suppressions go on their own line inside the finding's span

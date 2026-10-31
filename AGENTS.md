@@ -71,6 +71,11 @@ sync moves its output out of `.agents/` and `.claude/skills/` and deletes both; 
 Users install each skill on its own, not as a plugin. Write every skill as if no other skill and no hook is present. A reference to another skill or a hook is an optional extra, never a step the
 skill needs to finish its job. Raise to the user when hard dependency make sense.
 
+## Skill freshness
+
+A skill that teaches third-party tools (e.g. mise-fy) says in its `SKILL.md` which release of each tool it was checked against, and when, in a **Versions** line the agent reads. Update that line only
+when a change comes from reading newer release notes; other edits leave it alone.
+
 ## Skill READMEs
 
 Every skill of ours has a `README.md` beside it, for humans deciding whether and how to use it. Write from the skill and its references, but explain the problem, outcome, operating shape, and

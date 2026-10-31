@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C408%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,408 tokens" />
-  <img src="https://img.shields.io/badge/Total-15%2C633%20tokens-2ea44f?style=flat-square" alt="Total: 15,633 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-1%2C517%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,517 tokens" />
+  <img src="https://img.shields.io/badge/Total-15%2C838%20tokens-2ea44f?style=flat-square" alt="Total: 15,838 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,19 +13,19 @@ than read, so they are left out.
 
 | File                                                                   |  Tokens |
 | ---------------------------------------------------------------------- | ------: |
-| [`SKILL.md`](SKILL.md)                                                 | `1,408` |
+| [`SKILL.md`](SKILL.md)                                                 | `1,517` |
 | [`assets/CONTRIBUTING.md`](assets/CONTRIBUTING.md)                     |   `454` |
 | [`references/artifacts/docker.md`](references/artifacts/docker.md)     | `1,118` |
 | [`references/artifacts/go.md`](references/artifacts/go.md)             |   `928` |
 | [`references/artifacts/packaged.md`](references/artifacts/packaged.md) |   `659` |
 | [`references/checks.md`](references/checks.md)                         |   `709` |
-| [`references/cicd-fy.md`](references/cicd-fy.md)                       | `2,412` |
+| [`references/cicd-fy.md`](references/cicd-fy.md)                       | `2,414` |
 | [`references/community.md`](references/community.md)                   | `1,088` |
 | [`references/docs.md`](references/docs.md)                             |   `805` |
 | [`references/hygiene.md`](references/hygiene.md)                       | `1,842` |
-| [`references/platforms/github.md`](references/platforms/github.md)     | `1,462` |
+| [`references/platforms/github.md`](references/platforms/github.md)     | `1,550` |
 | [`references/publish.md`](references/publish.md)                       |   `630` |
-| [`references/releases.md`](references/releases.md)                     | `1,304` |
+| [`references/releases.md`](references/releases.md)                     | `1,310` |
 | [`references/security.md`](references/security.md)                     |   `814` |
 
 <!-- token-estimates:end -->

@@ -58,7 +58,8 @@ permissions:
 
 # Release runs queue WHOLE (version + release), so back-to-back merges compute their tags serially —
 # unqueued version jobs would read the same latest tag and collide on it. PR runs (autolabel) keep
-# per-PR cancel-superseded. Caveat: GitHub keeps at most ONE pending run per group, so on rapid merges
+# per-PR cancel-superseded. Caveat: without `queue: max` (it needs cancel-in-progress off, and this group
+# sets that per event), GitHub keeps at most ONE pending run per group, so on rapid merges
 # a superseded pending run is dropped; its changes still land in the next release's notes, but its
 # bump label isn't consumed (re-run the dropped run from the UI if that bump mattered).
 concurrency:
@@ -281,7 +282,7 @@ jobs:
           git push origin "${TAG}"
 
       - name: Setup mise
-        uses: jdx/mise-action@dba19683ed58901619b14f395a24841710cb4925 # v4.1.0
+        uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
         with:
           install: true
           cache: false # one-shot release build; no cache to poison (zizmor: cache-poisoning)

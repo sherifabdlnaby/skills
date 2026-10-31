@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-2%2C481%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,481 tokens" />
-  <img src="https://img.shields.io/badge/Total-35%2C504%20tokens-2ea44f?style=flat-square" alt="Total: 35,504 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-2%2C524%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,524 tokens" />
+  <img src="https://img.shields.io/badge/Total-36%2C130%20tokens-2ea44f?style=flat-square" alt="Total: 36,130 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,22 +13,22 @@ than read, so they are left out.
 
 | File                                                                                       |  Tokens |
 | ------------------------------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                                                     | `2,481` |
+| [`SKILL.md`](SKILL.md)                                                                     | `2,524` |
 | [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `813` |
 | [`assets/README.md`](assets/README.md)                                                     | `1,182` |
-| [`references/ci/github.md`](references/ci/github.md)                                       | `2,205` |
-| [`references/ci.md`](references/ci.md)                                                     | `1,902` |
-| [`references/dev.md`](references/dev.md)                                                   | `4,263` |
+| [`references/ci/github.md`](references/ci/github.md)                                       | `2,239` |
+| [`references/ci.md`](references/ci.md)                                                     | `1,882` |
+| [`references/dev.md`](references/dev.md)                                                   | `4,705` |
 | [`references/docs.md`](references/docs.md)                                                 | `1,296` |
-| [`references/env.md`](references/env.md)                                                   | `1,412` |
-| [`references/hk.md`](references/hk.md)                                                     | `5,730` |
-| [`references/hooks.md`](references/hooks.md)                                               |   `479` |
+| [`references/env.md`](references/env.md)                                                   | `1,486` |
+| [`references/hk.md`](references/hk.md)                                                     | `5,735` |
+| [`references/hooks.md`](references/hooks.md)                                               |   `503` |
 | [`references/install.md`](references/install.md)                                           |   `355` |
-| [`references/mise-fy.md`](references/mise-fy.md)                                           | `2,359` |
+| [`references/mise-fy.md`](references/mise-fy.md)                                           | `2,373` |
 | [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | `2,558` |
 | [`references/runtimes/node.md`](references/runtimes/node.md)                               | `1,462` |
 | [`references/tasks.md`](references/tasks.md)                                               | `3,243` |
-| [`references/tools.md`](references/tools.md)                                               | `3,764` |
+| [`references/tools.md`](references/tools.md)                                               | `3,774` |
 
 <!-- token-estimates:end -->
 

@@ -67,7 +67,7 @@ the auto-tag model.
 
 - **Rollback is per-artifact**, never a rewritten release: Go `retract`, image alias re-point, delete
   release + tag for a Release asset. Each [artifact page](artifacts/) carries its own.
-- **Rapid merges can drop a queued release run** (one pending slot per concurrency group): its changes
+- **Rapid merges can drop a queued release run** (one pending slot per concurrency group without `queue: max`): its changes
   still land in the next release's notes, but its bump label isn't consumed
   ([`platforms/github.md`](platforms/github.md#gotchas)).
 - **Token-created tags and releases fire no workflows** on GitHub (recursion guard) — plan what the

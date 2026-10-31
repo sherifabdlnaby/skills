@@ -64,7 +64,7 @@ auto-tag model).
 
 ### 4. Verify
 
-`actionlint` + `zizmor` pass on every workflow; a `workflow_dispatch` dry run where one exists; a
+`jactionlint` + `zizmor` pass on every workflow; a `workflow_dispatch` dry run where one exists; a
 scratch PR exercising the checks and the bump gate/preview; for the release path, an `-rc.N` dispatch
 before trusting it with a stable version.
 
@@ -89,7 +89,7 @@ the user):
 
 ### Hardening
 
-- [ ] Actions SHA-pinned with `# vX.Y.Z` comments; `actionlint` + `zizmor` pass
+- [ ] Actions SHA-pinned with `# vX.Y.Z` comments; `jactionlint` + `zizmor` pass
 - [ ] Top-level read-only `permissions`, widened per job only
 - [ ] `persist-credentials: false` except jobs that push with the checkout token (justified inline)
 - [ ] Concurrency by intent: PR runs cancel superseded, publish runs queue

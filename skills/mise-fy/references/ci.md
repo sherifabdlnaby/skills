@@ -25,13 +25,12 @@ Platform-specific setup lives under [`ci/`](ci/):
 - **Color is off in CI by default.** Set `CLICOLOR_FORCE: "1"` / `FORCE_COLOR: "1"` to keep linter output readable in the logs.
 - **No mise in the image?** Prefer the official integration (e.g. GitHub Action); otherwise commit an install script (`mise generate install-script`). See
   [Installing mise in CI](#installing-mise-in-ci).
-- **`mise.lock` is per-platform.** Installs keep the platforms the file already
-  lists and never add one, so a runner on an unlisted platform (e.g. a lockfile
-  scoped with `lockfile_platforms`, then a new arm64 runner) fails `--locked` with
+- **`mise.lock` is per-platform.** `mise lock` and installs write entries for the
+  common Linux, macOS and Windows platforms. A `lockfile_platforms` list limits that
+  set, so a runner outside it (e.g. a new arm64 runner) fails `--locked` with
   `No lockfile URL found for <tool>@<ver> on platform linux-arm64`, even though it
-  works on your Mac. Add the platform with `mise lock --platform <os-arch>,…` (or
-  extend `lockfile_platforms`), commit the lockfile, and re-run `mise lock`
-  whenever you add or bump a tool.
+  works on your Mac. Extend `lockfile_platforms`, re-run `mise lock`, and commit
+  the lockfile.
 
 ## Installing mise in CI
 
@@ -83,13 +82,13 @@ minisign `.minisig`) or `gh attestation verify <tarball> --repo jdx/mise`;
 hashes are per-platform — grep the asset for *this* runner's os/arch.
 
 **2. The tools mise installs** are handled by the lockfile, not the steps above.
-With `lockfile = true` + `mise install --locked`, mise re-verifies each tool's
-checksum **and** provenance (cosign, SLSA, minisign, GitHub attestations; all on
-by default, each with a `MISE_AQUA_*` toggle) on every install, aborting
-on mismatch. A tool already installed is not re-checked, which is what decides
+With `lockfile = true` + `mise install --locked`, mise checks each download
+against the checksum in `mise.lock` and aborts on mismatch. Provenance (cosign,
+SLSA, minisign, GitHub attestations; all on by default, each with a `MISE_AQUA_*`
+toggle) is verified when `mise lock` writes the entry, and a locked install
+trusts that record. A tool already installed is not re-checked, which is what decides
 [what to cache](#caching). This is the main reason to commit `mise.lock` and pass `--locked`
-(see [`tools.md`](tools.md)). Pre-populate every CI platform with `mise lock
---platform linux-x64,…` (see the per-platform gotcha above).
+(see [`tools.md`](tools.md)). Every CI platform needs its entries (see the per-platform gotcha above).
 
 ## Caching
 
