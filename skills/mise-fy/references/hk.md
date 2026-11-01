@@ -65,6 +65,10 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
   `.hkrc.pkl`, `hk.toml`, and `UserConfig.pkl` are removed in hk 2) > defaults;
   `exclude`/`skip_steps`/`skip_hooks` **union** across sources rather than overriding.
 - **`hk check --plan --json`** prints the resolved plan without running it; feed it to tooling (e.g. completions: `… --json --no-progress | jq -r '.steps[].name'`).
+- **`--sarif <path>` (and `--format json`) carry findings only from steps with a `diagnostic_format`**, the parser hk applies to the tool's output. A step without one still fails the run but
+  adds no finding. Many builtins set one (e.g. `jactionlint`, `shellcheck`, `ruff`, `eslint`, `cargo_clippy`, etc.) and each release adds more, so ask the config instead of a list:
+  `mise x pkl -- pkl eval -f json .config/hk.pkl | jq '.hooks.check.steps | map_values(.diagnostic_format)'` (`null` = no findings). Your own step sets one, e.g. `diagnostic_format = "gcc"` for
+  `file:line:col: message` output ([formats](https://hk.jdx.dev/configuration#diagnostics)). Run with `--no-fail-fast`: a step cancelled by an earlier failure reports nothing.
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
 - **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. The URLs need the exact release tag, and hk ships the Pkl package for its own
   version, so a matching pair validates offline on a cold cache.
