@@ -34,12 +34,17 @@ The reference workflow reports failures and points the author at the fix; it nev
   `mise run check --fix --pr` hint when the check fails, and **deletes** it once
   the check passes. No inline suggestions, no comment spam.
 
-## Findings in code scanning
+## Findings on the PR
 
-The reference workflow also writes hk's findings as SARIF (`mise run check --sarif hk.sarif`) and uploads them with `github/codeql-action/upload-sarif`, so they show on the PR diff and in
-the Security tab. It needs `security-events: write` and code scanning turned on (free on public repos, GitHub Code Security on private ones); without it, drop the step, the flag, and the
-permission. The upload skips fork PRs, whose token can't write. Only steps with a `diagnostic_format` add findings; check which ones do before promising coverage (see
-[`../hk.md`](../hk.md)).
+The reference workflow writes hk's findings as SARIF (`mise run check --sarif hk.sarif`) and shows them two ways:
+
+- **Annotations.** A `jq` step turns each finding into a `::error`/`::warning` line, shown on its line in the PR's *Files changed* tab. No permission, no setup. GitHub keeps 10
+  errors and 10 warnings per step and drops the rest silently; the check step's log still has every finding.
+- **Code scanning.** `github/codeql-action/upload-sarif` posts each finding as an inline bot comment, lists it in the Security tab, and adds a check named after the `category` that
+  fails on new error alerts. Needs `security-events: write` and code scanning on (free on public repos, GitHub Code Security on private ones); without it, drop the step and the
+  permission. The upload skips fork PRs, whose token can't write.
+
+Only steps with a `diagnostic_format` add findings; check which ones do before promising coverage (see [`../hk.md`](../hk.md)).
 
 ## Optional: auto-fix PRs
 
