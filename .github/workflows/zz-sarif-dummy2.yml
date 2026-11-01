@@ -1,0 +1,66 @@
+# Dummy: many jobs without timeout, to measure the annotation limit. Manual trigger only.
+name: SARIF dummy 2
+on: workflow_dispatch
+permissions: {}
+concurrency: { group: d2, cancel-in-progress: true }
+jobs:
+  j01:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
+  j02:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 2
+  j03:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 3
+  j04:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 4
+  j05:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 5
+  j06:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 6
+  j07:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 7
+  j08:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 8
+  j09:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 9
+  j10:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 10
+  j11:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 11
+  j12:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 12
+  j13:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 13
+  j14:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 14
+  j15:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 15

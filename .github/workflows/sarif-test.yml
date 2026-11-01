@@ -16,7 +16,6 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
-      security-events: write
     env:
       HK_FILE: hk-sarif-test.pkl # copy of skills/mise-fy/assets/.config/hk.pkl
     steps:
@@ -44,12 +43,12 @@ jobs:
           git remote set-head origin "$BASE_REF" >/dev/null 2>&1 || true
           mise x shfmt@3 -- hk check --no-fail-fast --pr --sarif hk.sarif
 
-      # Copied from the asset workflow.
-      - name: Upload findings to code scanning
-        if: >-
-          always() && hashFiles('hk.sarif') != '' &&
-          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
-        with:
-          sarif_file: hk.sarif
-          category: hk
+      # One annotation per finding, on its line in the PR's "Files changed" tab. No extra permission.
+      - name: Annotate findings
+        if: always() && hashFiles('hk.sarif') != ''
+        run: |
+          jq -r '.runs[].results[]
+            | .locations[0].physicalLocation as $l
+            | (.level // "error" | if . == "note" then "notice" elif . == "none" then "notice" else . end) as $lvl
+            | (.message.text | gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A")) as $msg
+            | "::\($lvl) file=\($l.artifactLocation.uri),line=\($l.region.startLine),col=\($l.region.startColumn // 1),title=\(.ruleId)::\($msg)"' hk.sarif
