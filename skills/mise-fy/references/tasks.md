@@ -132,6 +132,7 @@ Gotchas:
 ```bash
 mise watch test                # run + re-run on source change
 mise watch -r serve            # -r/--restart: kill & restart the process (dev servers)
+mise watch test --once         # block until one change, run once, exit with its status (scripts, agents; mise 2026.10.25+)
 ```
 
 Flags pass through to watchexec (`mise watch --help`); `-r/--restart` is the one dev servers need, and `--poll` is for filesystems whose native events don't fire.
