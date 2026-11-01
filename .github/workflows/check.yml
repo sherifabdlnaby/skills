@@ -84,13 +84,14 @@ jobs:
           SCOPE_INPUT: ${{ inputs.scope }} # 'all'|'pr' on manual dispatch; empty on PR/schedule
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           REF_NAME: ${{ github.ref_name }} # via env, never interpolated into the shell (zizmor: template-injection)
+          GITHUB_TOKEN: ${{ github.token }} # mise-action keeps its token to its own step; pinact and lazy installs need one here
         run: |
           [ "$EVENT" = pull_request ] && scope="pr" || scope="${SCOPE_INPUT:-all}"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           # hk's --pr resolves the base via origin/HEAD, which the Actions checkout never sets; point it
           # at the default branch so hk diffs origin/<default>...HEAD (else it checks every file).
           [ "$scope" = pr ] && git remote set-head origin "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
-          rc=0; mise run check --fix "--$scope" || rc=$?
+          rc=0; mise run check --fix "--$scope" --sarif hk.sarif || rc=$?
           git add -A && git diff --cached --binary > "$RUNNER_TEMP/autofix.patch"
           [ -s "$RUNNER_TEMP/autofix.patch" ] && fixed=1 || fixed=0
           echo "fixed=$fixed" >> "$GITHUB_OUTPUT"
@@ -98,6 +99,19 @@ jobs:
             echo "::error::Lint & format issues on $REF_NAME, review the auto-fix PR (if one was opened) or run 'mise run check --fix' locally, then push."
             exit 1
           fi
+
+      # One annotation per finding, on its line in the PR's "Files changed" tab. GitHub keeps 10 errors and
+      # 10 warnings per step and drops the rest; the check step's log has them all.
+      - name: Annotate findings
+        if: always() && hashFiles('hk.sarif') != ''
+        run: |
+          jq -r '.runs[].results[]
+            | .locations[0].physicalLocation as $l
+            | (.level // "error" | if . == "note" or . == "none" then "notice" else . end) as $lvl
+            | (.message.text | gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A")) as $msg
+            | ([.properties.step, .ruleId] | map(select(.)) | join(" / ")
+               | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $title
+            | "::\($lvl) file=\($l.artifactLocation.uri),line=\($l.region.startLine),col=\($l.region.startColumn // 1),title=\($title)::\($msg)"' hk.sarif
 
       - name: Upload fixes
         if: ${{ !cancelled() && steps.fix.outputs.fixed == '1' }}
