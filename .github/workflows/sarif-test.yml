@@ -51,4 +51,6 @@ jobs:
             | .locations[0].physicalLocation as $l
             | (.level // "error" | if . == "note" then "notice" elif . == "none" then "notice" else . end) as $lvl
             | (.message.text | gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A")) as $msg
-            | "::\($lvl) file=\($l.artifactLocation.uri),line=\($l.region.startLine),col=\($l.region.startColumn // 1),title=\(.ruleId)::\($msg)"' hk.sarif
+            | ([.properties.step, .ruleId] | map(select(.)) | join(" / ")
+               | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $title
+            | "::\($lvl) file=\($l.artifactLocation.uri),line=\($l.region.startLine),col=\($l.region.startColumn // 1),title=\($title)::\($msg)"' hk.sarif

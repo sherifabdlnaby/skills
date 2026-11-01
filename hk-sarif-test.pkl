@@ -25,6 +25,13 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   }
   ["shfmt"] = Builtins.shfmt
   ["jactionlint"] = Builtins.jactionlint
+  // TEST ONLY: a custom step whose findings carry no severity, so diagnostic_severity sets it.
+  ["todo"] {
+    glob = ".sarif-test/*.txt"
+    check = #"awk '/TODO/ { printf "%s:%d:1: todo-found: %s\n", FILENAME, FNR, $0; bad = 1 } END { exit bad }' {{files}}"#
+    diagnostic_format = "gcc"
+    diagnostic_severity = "warning"
+  }
   // pinact resolves Action tags to SHAs via the GitHub API, so it needs a token or it hits the
   // anonymous rate limit. Prefer $GITHUB_TOKEN (CI injects it); locally fall back to the dev's `gh`
   // login. gh missing/not-logged-in -> empty token, so pinact runs unauthenticated (rate-limited)
