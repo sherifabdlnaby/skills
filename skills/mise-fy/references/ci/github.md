@@ -36,15 +36,25 @@ The reference workflow reports failures and points the author at the fix; it nev
 
 ## Findings on the PR
 
-The reference workflow writes hk's findings as SARIF (`mise run check --sarif hk.sarif`) and shows them two ways:
-
-- **Annotations.** A `jq` step turns each finding into a `::error`/`::warning` line, shown on its line in the PR's *Files changed* tab. No permission, no setup. GitHub keeps 10
-  errors and 10 warnings per step and drops the rest silently; the check step's log still has every finding.
-- **Code scanning.** `github/codeql-action/upload-sarif` posts each finding as an inline bot comment, lists it in the Security tab, and adds a check named after the `category` that
-  fails on new error alerts. Needs `security-events: write` and code scanning on (free on public repos, GitHub Code Security on private ones); without it, drop the step and the
-  permission. The upload skips fork PRs, whose token can't write.
+The reference workflow writes hk's findings as SARIF (`mise run check --sarif hk.sarif`), and a `jq` step turns each finding into a `::error`/`::warning` annotation on its line
+in the PR's *Files changed* tab. No permission, no setup. GitHub keeps 10 errors and 10 warnings per step and drops the rest silently; the check step's log still has every finding.
 
 Only steps with a `diagnostic_format` add findings; check which ones do before promising coverage (see [`../hk.md`](../hk.md)).
+
+**Opt-in: code scanning.** Upload the same file when the repo wants findings tracked over time (open, fixed, dismissed), or runs with more findings than annotations keep. Each
+finding becomes an alert in the Security tab and an inline bot comment, and a check named after `category` fails on new error alerts. Needs code scanning on (free on public repos,
+GitHub Code Security on private ones) and `security-events: write` on the job. Skip fork PRs, whose token can't upload:
+
+```yaml
+- name: Upload findings to code scanning
+  if: >-
+    always() && hashFiles('hk.sarif') != '' &&
+    (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+  uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+  with:
+    sarif_file: hk.sarif
+    category: hk
+```
 
 ## Optional: auto-fix PRs
 

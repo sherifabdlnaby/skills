@@ -32,11 +32,10 @@ jobs:
     name: check
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Read the repo; comment on PRs to point the author at the fix command; upload findings to code scanning.
+    # Read the repo; comment on PRs to point the author at the fix command.
     permissions:
       contents: read
       pull-requests: write
-      security-events: write
 
     env:
       MISE_LOCKED: "1" # every install honors mise.lock, also lazy/task tools `mise run` installs later
@@ -103,17 +102,6 @@ jobs:
             | ([.properties.step, .ruleId] | map(select(.)) | join(" / ")
                | gsub("%"; "%25") | gsub(":"; "%3A") | gsub(","; "%2C")) as $title
             | "::\($lvl) file=\($l.artifactLocation.uri),line=\($l.region.startLine),col=\($l.region.startColumn // 1),title=\($title)::\($msg)"' hk.sarif
-
-      # Findings show on the PR diff and in the Security tab. Needs code scanning on (free for public repos);
-      # without it, drop this step, `--sarif` and `security-events`. A fork PR's token can't upload.
-      - name: Upload findings to code scanning
-        if: >-
-          always() && hashFiles('hk.sarif') != '' &&
-          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
-        with:
-          sarif_file: hk.sarif
-          category: hk
 
       # One sticky PR comment pointing at `--fix`: post/update it when the check fails,
       # delete it once the check passes. No inline suggestions; the author runs the fixer.

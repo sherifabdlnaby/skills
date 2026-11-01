@@ -4,7 +4,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-2%2C524%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,524 tokens" />
-  <img src="https://img.shields.io/badge/Total-36%2C774%20tokens-2ea44f?style=flat-square" alt="Total: 36,774 tokens" />
+  <img src="https://img.shields.io/badge/Total-36%2C888%20tokens-2ea44f?style=flat-square" alt="Total: 36,888 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -16,7 +16,7 @@ than read, so they are left out.
 | [`SKILL.md`](SKILL.md)                                                                     | `2,524` |
 | [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `813` |
 | [`assets/README.md`](assets/README.md)                                                     | `1,182` |
-| [`references/ci/github.md`](references/ci/github.md)                                       | `2,480` |
+| [`references/ci/github.md`](references/ci/github.md)                                       | `2,594` |
 | [`references/ci.md`](references/ci.md)                                                     | `1,903` |
 | [`references/dev.md`](references/dev.md)                                                   | `4,705` |
 | [`references/docs.md`](references/docs.md)                                                 | `1,296` |
@@ -58,7 +58,7 @@ setup, including `mise.toml`, hk configuration, CI workflows, and documentation 
 - Project configuration with tasks, hooks, environment logic, or templates requires explicit trust on a fresh clone.
 - Reproducibility needs deliberate version policy, a committed lockfile, and lock data for every CI platform. Floating versions are not made safe by a lockfile alone.
 - Task-scoped tools reduce setup cost but have weaker lockfile behavior. Shared tools improve consistency but increase every contributor's install.
-- The default CI check reports failures with read-oriented permissions, annotates findings on the PR diff, and uploads them to GitHub code scanning, which must be turned on (or the upload dropped). An
+- The default CI check reports failures with read-oriented permissions and annotates findings on the PR diff. An
   auto-fix pull-request workflow is optional because it needs repository write access.
 - A full-tree lint pass can expose substantial existing debt. It should be reviewed before broad automatic fixes or new blocking gates are enabled.
 
