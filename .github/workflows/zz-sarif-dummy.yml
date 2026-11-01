@@ -1,0 +1,8 @@
+# Dummy workflow with lint errors on purpose, to test hk --sarif uploads. Never runs (manual trigger only).
+name: SARIF dummy
+on: workflow_dispatch
+jobs:
+  x:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ github.event.issue.title }}

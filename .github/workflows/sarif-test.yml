@@ -1,0 +1,55 @@
+# TEMPORARY: exercises the mise-fy asset's SARIF upload on a dummy PR. Delete with the PR.
+name: hk SARIF test
+
+on:
+  pull_request: {}
+
+permissions: {}
+
+concurrency:
+  group: sarif-test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sarif:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      HK_FILE: hk-sarif-test.pkl # copy of skills/mise-fy/assets/.config/hk.pkl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
+        with:
+          version: "2026.10.24"
+          install: true
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Same flags the asset `check` task passes on a PR.
+      - name: Run check
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git remote set-head origin "$BASE_REF" >/dev/null 2>&1 || true
+          mise x shfmt@3 -- hk check --no-fail-fast --pr --sarif hk.sarif
+
+      # Copied from the asset workflow.
+      - name: Upload findings to code scanning
+        if: >-
+          always() && hashFiles('hk.sarif') != '' &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: hk.sarif
+          category: hk
