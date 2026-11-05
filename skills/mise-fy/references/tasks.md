@@ -62,9 +62,14 @@ How to build or improve mise Tasks.
   artifact tasks.
 - **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits _if_ that task is already in the run. A task's `env` is **not** seen by its
   `depends`.
+- **Tasks that share a single resource take turns with `lock`** (a test database, a simulator, a fixed port, etc.; mise 2026.11.0+). A string name is shared by every task on the machine;
+  `lock = true` locks the task across the repo and all its worktrees, so parallel worktrees and agents stop colliding. mise takes the lock after `depends`, `skip_if` and `sources` checks, so a
+  skipped task never waits; `--lock-timeout`/`task.lock_timeout` bounds the wait.
 - **No-spec args go to the _last_ `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
 - **Output is line-buffered + label-prefixed.** Change with `--output
-  interleave|keep-order|silent` (or `MISE_TASK_OUTPUT`); to hide only mise's own headers and
+  interleave|keep-order|summary|silent` (or `MISE_TASK_OUTPUT`, `task.output`, a task's `output`). `summary` (mise 2026.11.2+) prints one line per
+  passed task and the full output of a failed one, which suits agents and CI; a long-running task (dev server, watcher) then prints nothing until it
+  exits, so give it `output = "interleave"`. To hide only mise's own headers and
   prefixes, set `task.quiet` (the `quiet` output mode is deprecated). `raw = true` / `--raw`
   reads-writes the terminal directly (forces `--jobs=1`) and **bypasses secret
   redaction**; never in env-bearing tasks (see [`env.md`](env.md)). When a task just
@@ -75,6 +80,10 @@ How to build or improve mise Tasks.
   tasks = ["lint", "test"] }]`. `{ task = }` runs one (accepts `args`/`env`
   overrides); `{ tasks = [...] }` runs them in parallel. Unlike `depends`, these run
   _as_ steps, in position.
+- **`tags` label tasks across namespaces** (mise 2026.11.2+): `tags = ["slow"]` (file tasks: `#MISE tags=["slow"]`), then `mise run --tag slow` or `mise tasks ls --tag slow`. A task matches
+  any given tag, and its `depends` run whatever their tags. Colon namespaces stay the grouping (rule 2); tags are for labels that cut across them (`slow`, `network`, etc.).
+- **`mise run --at <rev> <task>` runs a task at another commit** (mise 2026.11.2+), e.g. to reproduce a failure on `main`. mise uses a temporary worktree with that revision's own config and
+  tasks, and leaves your checkout alone. `--at-setup "<cmd>"` prepares the worktree first (e.g. install dependencies).
 - Mise has Tera function "task_source_files" read at [`additional mise functions`](https://mise.jdx.dev/templates.html#additional-mise-functions)
 
 Still stuck? Check the docs below.
