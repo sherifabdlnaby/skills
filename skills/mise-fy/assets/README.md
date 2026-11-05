@@ -83,8 +83,8 @@ This starts the local services (Postgres, Redis, and the API) in the background,
 Connection settings come from mise, not from a `.env` file: `DATABASE_URL`, `PGHOST`/`PGPORT`/…, `REDIS_URL`, and `API_PORT`. In your shell (with mise activated), `psql` connects with no flags and
 `redis-cli -u $REDIS_URL` reaches Redis.
 
-The API restarts when you save a file under `src/` or `migrations/`, and it applies new migrations before it starts. If it crashes or stops answering its health check, it restarts a few times on its
-own; after that it shows as `errored` (`mise run dev:status`) until you fix it and run `mise run dev`.
+The API restarts when you save a file under `src/`. Each `mise run dev` applies new migrations first, and the API waits for them. If it crashes or stops answering its health check, it restarts a few
+times on its own; after that it shows as `errored` (`mise run dev:status`) until you fix it and run `mise run dev`.
 
 ### Many checkouts at once
 

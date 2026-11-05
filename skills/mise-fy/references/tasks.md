@@ -62,9 +62,14 @@ How to build or improve mise Tasks.
   artifact tasks.
 - **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits _if_ that task is already in the run. A task's `env` is **not** seen by its
   `depends`.
+- **`lock` is a mutex (a semaphore of 1) between task runs** (mise 2026.11.0+). Tasks that name the same lock run one at a time: a string name is shared by every task on the machine, and `lock = true`
+  covers the repo and all its worktrees. Add it only when runs compete for one resource that each worktree can't have its own copy of (a simulator, a device, a shared remote DB, etc.), or when the
+  user asks for it.
 - **No-spec args go to the _last_ `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
 - **Output is line-buffered + label-prefixed.** Change with `--output
-  interleave|keep-order|silent` (or `MISE_TASK_OUTPUT`); to hide only mise's own headers and
+  interleave|keep-order|summary|silent` (or `MISE_TASK_OUTPUT`). `summary` (mise 2026.11.2+) prints one line per
+  passed task and the full output of a failed one, which suits agents and CI; a long-running task (dev server, watcher) then prints nothing until it
+  exits, so give it `output = "interleave"`. To hide only mise's own headers and
   prefixes, set `task.quiet` (the `quiet` output mode is deprecated). `raw = true` / `--raw`
   reads-writes the terminal directly (forces `--jobs=1`) and **bypasses secret
   redaction**; never in env-bearing tasks (see [`env.md`](env.md)). When a task just

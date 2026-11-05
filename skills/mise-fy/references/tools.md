@@ -31,11 +31,12 @@ Guidance on Installing Tools and Runtimes via Mise.
 
 - **An existing `mise.lock` is not read-only.** Plain installs, `mise use`, and first-run auto-installs from `mise run`/`mise x` rebuild it from the current requests (adding missing entries, dropping
   stale ones); only locked mode (`--locked`, `MISE_LOCKED=1`) leaves it alone. `lockfile = true` also creates the file, unset only updates an existing one, `false` stops writes. Run `mise lock` after
-  every `[tools]` change so the committed file is complete; a `mise.lock` diff after `mise install` means the commit missed entries, so commit it.
-- **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the
-  version that wrote it (revision 2 needs mise 2026.9.7, revision 3 needs 2026.9.16). mise keeps an existing revision when it rewrites the file and warns when a newer one would store more;
-  `mise lock --upgrade` moves it to the current one. From revision 2, `npm:` and `pypi:` tools also get a dependency graph in `.mise/locks/` (commit it), and a `pypi:` tool then installs
-  only from wheels for the resolved Python, so a package without one fails until `python` is pinned to a version it ships wheels for.
+  every `[tools]` change so the committed file is complete; a `mise.lock` diff after `mise install` means the commit missed entries (e.g. the `npm:` provenance pin, which only install writes), so
+  commit it.
+- **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the version that
+  wrote it (revision 2 needs mise 2026.9.7, revision 3 needs 2026.9.16, revision 4 needs 2026.11.1). mise keeps an existing revision when it rewrites the file and warns when a newer one would store
+  more; `mise lock --upgrade` moves it to the current one. From revision 2, `npm:` and `pypi:` tools also get a dependency graph in `.mise/locks/` (commit it), and a `pypi:` tool then installs only
+  from wheels for the resolved Python, so a package without one fails until `python` is pinned to a version it ships wheels for.
 - **Unknown tool options fail the install.** A misspelled key in a tool's table form (`asset_glob`) stops `mise install` with `option … is not used by the <backend> backend`.
 - **Locked tools keep their locked backend.** When the registry moves a short name to a new backend, a tool already in `mise.lock` stays on the old one and mise warns. An install can also fail with
   `would change the recorded signer`. `mise backends switch` moves it.
@@ -64,7 +65,7 @@ Safety, high -> low:
 - **`github`/`gitlab`**; release binaries with provenance when not in aqua. (`ubi` is deprecated, use `github`.)
 - **`http`**; a direct URL plus a checksum you record yourself (what tool stubs use). Only as safe as the checksum you pin.
 - **`cargo`/`npm`/`pypi`/`go`/`gem`**; language ecosystems (`pypi:` is the current name; `pipx:` still works but is a separate tool identity). ⚠️ **No checksums/provenance** and need the runtime
-  installed. Use only when the tool ships nowhere else.
+  installed (`npm:` checks its own package's Sigstore provenance, not its dependencies). Use only when the tool ships nowhere else.
 - **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter).
   ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise
   *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts

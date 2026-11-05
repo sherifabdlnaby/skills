@@ -149,15 +149,19 @@ version = "8"
 port = { auto = true, base = 14102, stride = 10 }
 retry = 3
 
+[daemons.migrate]
+run = "npm run db:migrate"                        # must skip applied migrations: it runs on every `mise run dev`
+oneshot = true                                    # runs to completion; the daemons that use the schema depend on it
+depends = ["postgres"]
+
 [daemons.api]
-init = "npm run db:migrate"                       # before every start; must skip applied migrations
 run = "exec node src/server.js --port $API_PORT"  # the plain process: a watcher (node --watch, nodemon) exits 0 on stop, and a clean exit is never restarted
-watch = ["src/**", "migrations/**"]               # restart on a code or schema change
+watch = ["src/**"]                                # restart on a code change
 port = { auto = true, base = 14100, stride = 10 }
 proxy = false                                     # no hostname: that needs the machine-wide pitchfork proxy
 ready_cmd = "curl -sf -m 2 http://127.0.0.1:$API_PORT/health"
 health_cmd = "curl -sf -m 2 http://127.0.0.1:$API_PORT/health"
-depends = ["postgres", "redis"]
+depends = ["migrate", "redis"]
 retry = 3
 # env = { HTTP_PORT = "{{ daemons.api.port }}" }  # for an app that can't take its port in the command
 
