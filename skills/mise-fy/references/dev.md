@@ -36,13 +36,14 @@ options.database = "app"
 port = { auto = true, base = 14101, stride = 10 }  # or a fixed port; "auto" alone works only on a preset
 proxy = false                      # a hostname label, or false
 init = "<setup>"                   # before every start and restart; a string or a list
+oneshot = true                     # runs to completion on every start; what depends on it waits
 env = { KEY = "value" }            # this process only
 depends = ["other"]                # starts them first and waits until they are ready
 watch = ["src/**"]                 # restart on a file change
 ready_cmd = "<probe>"              # or ready_port, ready_http, ready_output, ready_delay
 health_cmd = "<probe>"             # or health_http, health_port; failed probes kill it
 retry = 3                          # restarts after a crash or a health kill
-# stop_signal, hooks (on_exit, on_fail, …), oneshot, mise = false, etc.: pitchfork daemon options
+# stop_signal, hooks (on_exit, on_fail, …), mise = false, etc.: pitchfork daemon options
 ```
 
 Keys mise doesn't know go to pitchfork unchanged ([pitchfork daemon options](https://pitchfork.jdx.dev/reference/configuration.html)).
@@ -93,8 +94,10 @@ mise daemons register | prune [--dry-run] | tui
      `{{ env.* }}`.
 8. **Never `retry = true`.** A daemon that fails before it is ready is then retried forever, with a doubling delay. `start` (and `mise run dev`) waits with only a spinner, and Ctrl+C leaves the
    supervisor retrying until `mise daemons stop`.
-9. **Migrations run in `init`.** `init` runs before every start and restart, and readiness waits for it, so the command must skip applied migrations. With the migrations dir in `watch`, saving a new
-   migration applies it.
+9. **Setup that several daemons need runs in one oneshot daemon.** Migrations are the usual case (an app and its workers on one schema); queue declares, seed data, a bucket, etc. are the same. Give
+   it `oneshot = true` and `depends` on what it needs, and every daemon that needs its result `depends` on it. It runs on every `mise run dev`, before them, and if it fails they don't start, so the
+   command must skip work already done. It needs no port, ready or health check, `retry`, or `watch`: new work (e.g. a new migration) applies on the next `mise run dev`. Keep `init` for setup that
+   belongs to one process. (why: an `init` on each daemon runs the setup once per daemon, at the same time, and a `watch` runs it the moment a file is saved, before it is finished.)
 10. **Order with daemon `depends`.** `mise daemons start api` starts `api`'s `depends` first and waits until each is ready. A task reaches the stack with `depends = ["dev"]`, not a task-level
     `daemons = [...]`. (why: `daemons = [...]` starts the daemons before the task's own `depends`, so in a fresh worktree an app daemon starts before `deps` installed its packages.)
 11. **Groups only for optional services.** Without `[daemon_groups]`, `dev` starts every daemon. Declare `default = [...]` only when a service shouldn't start every day; `mise run dev <name>` and
@@ -165,8 +168,6 @@ For what a container daemon can't run: an image the project builds, UDP ports, c
   `run`/`ready_cmd`/`health_cmd`. `{{config_root}}` in `run` fails the same way; paths in `run` resolve from the project root.
 - **Every daemon sees the same `PORT`.** `[env] PORT = …` overrides the per-daemon `PORT` that pitchfork sets. Fix: never set `PORT` in `[env]`; alias another name
   (`HTTP_PORT = "{{ env.API_PORT }}"`).
-- **After `dev:reset` of a database, the app runs against an empty one.** Its `init` (the migrations) runs only when it starts, and `dev` leaves a running daemon alone. Fix:
-  `mise run dev:down api && mise run dev`.
 - **"port N is already in use".** Another checkout, project, or app holds a port of the block (two worktrees on one slot, overlapping blocks, macOS AirPlay on 5000/7000, etc.). Fix: move that daemon
   in `mise.local.toml`, as mise's hint says. It is rare and loud, so no code guards against it.
 - **"exceeds 65535 for this worktree".** `B` is too high for a high slot. Fix: keep `B + 5119 ≤ 65535`.
@@ -185,8 +186,8 @@ For what a container daemon can't run: an image the project builds, UDP ports, c
 - [ ] Each service is a preset, else a custom daemon, else a container daemon; compose only for the rest; containers behind a Docker doctor check
 - [ ] One port block: `base = B+k` and `stride = 10` on every daemon, the block named in a comment
 - [ ] Custom daemons: the plain process with `exec` and its port in the command, `watch`, `proxy = false`, `ready_cmd` and `health_cmd` with a timeout, `depends`
-- [ ] `retry = 3` on every daemon, never `true`
-- [ ] Migrations in `init`, safe to repeat
+- [ ] `retry = 3` on every daemon but oneshots, never `true`
+- [ ] Shared setup (migrations, etc.) in a oneshot daemon, safe to repeat, that every daemon needing it `depends` on
 - [ ] The `dev:*` tasks from the asset; tests that need services use `depends = ["dev"]`
 - [ ] App code reads connection env, not hard-coded ports
 - [ ] `mise run dev` works from a fresh clone and in a second worktree at the same time, and a second run changes nothing

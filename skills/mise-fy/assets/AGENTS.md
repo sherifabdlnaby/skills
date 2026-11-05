@@ -25,9 +25,10 @@ Prefer `mise run <task>` over calling the tool directly, so local, hooks, and CI
   worktree, `mise trust && mise run dev` brings up that checkout's own stack.
 - **Connect through env**, never hard-coded ports: `DATABASE_URL`, `PG*`, `REDIS_URL`, and `<NAME>_PORT` come from mise (the shell, tasks, `mise x`). Every checkout has its own ports and data.
 - **The services outlive your shell.** See them with `mise run dev:status`, read `mise run dev:logs <name> -n 50`, and stop them with `mise run dev:down`.
-- **Schema changes** are a new migration file. The API applies pending migrations before every start, and saving the file restarts it.
+- **Schema changes** are a new migration file. `mise run dev` applies it before the services that use the database start.
 - **Adding a service** is one `[daemons.<name>]` block in `mise.toml`: a preset when mise has one, else the plain process (`exec`, its port in the command, `watch`, `proxy = false`); the next free
-  port in the project's block with `stride = 10`; a ready and a health check; `retry = 3`. The `dev:*` tasks and their completion pick it up with no change.
+  port in the project's block with `stride = 10`; a ready and a health check; `retry = 3`; `depends` on `migrate` when it uses the schema. The `dev:*` tasks and their completion pick it up with no
+  change.
 
 ## Git hooks (hk)
 
