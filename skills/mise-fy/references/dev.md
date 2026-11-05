@@ -120,7 +120,8 @@ Every project with daemons exposes the same set. Copy it from [`assets/mise.toml
 - **Adding a service** is one `[daemons.<name>]` block. The tasks and their completion need no change. The `dev:` verbs are reserved: no daemon takes one as its name.
 - **`dev` depends on `deps`**, the one allowed fast-path crossing (see the [lane map](reference-setup-and-patterns.md#fast-path-vs-slow-path)). Everything else it needs, pitchfork and the preset
   binaries, mise installs on the first run; `setup`'s `mise install` and `mise lock` cover them too. A new worktree needs only `mise trust && mise run dev`.
-- **Tests:** bare `test` stays fast and starts nothing. A test task that needs services (`test:integration`, `test:e2e`, etc.) uses `depends = ["dev"]`.
+- **Tests:** bare `test` stays fast and starts nothing. A test task that needs services (`test:integration`, `test:e2e`, etc.) uses `depends = ["dev"]`, and takes a task `lock` only when it competes
+  for a resource the worktrees share (see [`tasks.md`](tasks.md)).
 - **Foreground debugging:** `mise run dev:down api`, then `mise x -- node src/server.js --port $API_PORT` (same env), then `mise run dev` to put it back.
 
 ## Containers
