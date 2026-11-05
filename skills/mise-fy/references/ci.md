@@ -31,10 +31,8 @@ Platform-specific setup lives under [`ci/`](ci/):
   `No lockfile URL found for <tool>@<ver> on platform linux-arm64`, even though it
   works on your Mac. Extend `lockfile_platforms` (or pass `--platform`), re-run `mise lock`, and commit
   the lockfile.
-- **`--locked` needs a checksum, not just a URL** (mise 2026.11.0+). An entry written by hand or by an older mise fails before the download, with a hint to run `mise lock`. Run it once and
-  commit the result; don't set `locked_require_checksum = false`.
-- **Read results from a report, not the log.** `mise run --report-file <path>` (or `MISE_TASK_REPORT_FILE`) writes JSON with each task's status, exit code and duration, also when the run fails
-  or times out (mise 2026.11.2+). `--output summary` (or `MISE_TASK_OUTPUT=summary`) shortens the log to one line per passed task and the full output of a failed one.
+- **`mise run --report-file <path>`** (or `MISE_TASK_REPORT_FILE`) writes each task's status, exit code and duration as JSON, also on failure or timeout (mise 2026.11.2+). It holds status only,
+  so it pays off for a run of many small tasks; one task that wraps a tool (e.g. `check` running hk) reports a single pass/fail.
 
 ## Installing mise in CI
 
