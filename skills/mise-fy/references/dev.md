@@ -159,7 +159,6 @@ For what a container daemon can't run: an image the project builds, UDP ports, c
 
 ## Notes & Gotchas:
 
-- **`mise daemons logs`/`status` fail with "No version is set for shim: pitchfork".** The mise shims are on PATH and the project doesn't pin pitchfork. Fix: `pitchfork = "2"` in `[tools]`.
 - **`mise run dev` spins on "waiting for delay (3s)…" and never returns.** A daemon fails before it is ready under `retry = true`; `mise daemons logs <name>` shows it exiting again and again. Fix:
   `retry = 3` (rule 8).
 - **A crashed daemon stays down, and its status is `stopped`, not `errored`.** It exited 0 (a watcher, or a SIGTERM handler that exits 0), and a clean exit is never retried. Fix: rule 6.

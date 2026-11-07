@@ -16,7 +16,7 @@ node = "24"
 # terraform = { version = "1", lazy = true }
 
 # local services
-pitchfork = "2" # runs [daemons]; keep the pin: without it `mise daemons logs`/`status` fail when mise shims are on PATH
+pitchfork = "2" # runs [daemons]
 jq = "1"        # task completions and dev:reset
 
 # linters & formatters
