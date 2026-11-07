@@ -64,8 +64,9 @@ Safety, high -> low:
 - **`aqua`**; preferred for everything else: checksums + cosign + SLSA + attestations, no plugin code. `aqua:BurntSushi/ripgrep`.
 - **`github`/`gitlab`**; release binaries with provenance when not in aqua. (`ubi` is deprecated, use `github`.)
 - **`http`**; a direct URL plus a checksum you record yourself (what tool stubs use). Only as safe as the checksum you pin.
-- **`cargo`/`npm`/`pypi`/`go`/`gem`**; language ecosystems (`pypi:` is the current name; `pipx:` still works but is a separate tool identity). ⚠️ **No checksums/provenance** and need the runtime
-  installed (`npm:` checks its own package's Sigstore provenance, not its dependencies). Use only when the tool ships nowhere else.
+- **`cargo`/`npm`/`pypi`/`go`/`gem`**; language ecosystems (`pypi:` is the current name; `pipx:` still works but is a separate tool identity). They need the runtime installed.
+  ⚠️ **No checksums/provenance**, except `npm:`: it locks the package's integrity and, by default, verifies its Sigstore provenance and pins the source repository in `mise.lock`; its dependencies
+  get no provenance check. A network that blocks Sigstore fails those installs (opt out: `npm.provenance = false`). Use only when the tool ships nowhere else.
 - **`vfox`**; plugin system (Lua, cross-platform via mise's built-in interpreter).
   ⚠️ Still runs plugin code, and gives **no automatic checksums** like aqua. mise
   *can* verify attestations (GitHub/cosign/SLSA) **only when a tool plugin opts

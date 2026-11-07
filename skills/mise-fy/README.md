@@ -4,7 +4,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-2%2C524%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,524 tokens" />
-  <img src="https://img.shields.io/badge/Total-37%2C394%20tokens-2ea44f?style=flat-square" alt="Total: 37,394 tokens" />
+  <img src="https://img.shields.io/badge/Total-37%2C451%20tokens-2ea44f?style=flat-square" alt="Total: 37,451 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -17,8 +17,8 @@ than read, so they are left out.
 | [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `828` |
 | [`assets/README.md`](assets/README.md)                                                     | `1,185` |
 | [`references/ci/github.md`](references/ci/github.md)                                       | `2,594` |
-| [`references/ci.md`](references/ci.md)                                                     | `2,009` |
-| [`references/dev.md`](references/dev.md)                                                   | `4,862` |
+| [`references/ci.md`](references/ci.md)                                                     | `2,076` |
+| [`references/dev.md`](references/dev.md)                                                   | `4,807` |
 | [`references/docs.md`](references/docs.md)                                                 | `1,296` |
 | [`references/env.md`](references/env.md)                                                   | `1,486` |
 | [`references/hk.md`](references/hk.md)                                                     | `5,939` |
@@ -28,7 +28,7 @@ than read, so they are left out.
 | [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | `2,558` |
 | [`references/runtimes/node.md`](references/runtimes/node.md)                               | `1,462` |
 | [`references/tasks.md`](references/tasks.md)                                               | `3,457` |
-| [`references/tools.md`](references/tools.md)                                               | `3,940` |
+| [`references/tools.md`](references/tools.md)                                               | `3,985` |
 
 <!-- token-estimates:end -->
 
