@@ -26,6 +26,9 @@ Non-interactive shells (scripts, IDEs, CI-like) need the shims dir on `PATH`. Ad
 eval "$(mise activate zsh --shims)"
 ```
 
+Coding agents run each command in a non-interactive shell too. [Coding agents](https://mise.jdx.dev/agents.html) has a per-agent setup, e.g. a Claude Code `SessionStart` hook that runs
+`mise hook-env` before each command, which gives `[env]` and follows `cd`, unlike shims.
+
 
 ## 4. Install Completions
 
@@ -42,3 +45,4 @@ Run `mise doctor` in new subshell to ensure config got reloaded. Validate the tw
 - [activate](https://mise.jdx.dev/cli/activate.html)
 - [shims](https://mise.jdx.dev/dev-tools/shims.html)
 - [completions](https://mise.jdx.dev/cli/completion.html)
+- [coding agents](https://mise.jdx.dev/agents.html)
