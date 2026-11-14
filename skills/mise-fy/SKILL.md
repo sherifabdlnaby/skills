@@ -59,7 +59,7 @@ their agent get all local linters/tests/validations)!
 The skill uses progressive disclosure: each area routes to a `references/` file holding the actual rules and best practices.
 Read the matching one **before** planning or acting, not after. SKILL.md alone is not enough. Plan ahead, and read all references you'll need!
 
-**Versions.** Checked against mise 2026.11.3, hk 2.11.1 and pitchfork 2.33.1 on 2026-11-07.
+**Versions.** Checked against mise 2026.11.8, hk 2.12.0 and pitchfork 2.34.0 on 2026-11-14.
 
 ## When to read references
 
@@ -87,7 +87,7 @@ Installing a tool or a runtime.
 TOML vs file tasks, `depends`/`wait_for`, `sources`/`outputs` caching, running and parallelism, `mise watch` (re-run on change).
 
 **Local dev stack** (databases, caches, app servers and workers in the background; a stack per worktree) -> [`references/dev.md`](references/dev.md)
-`[daemons]` presets and custom daemons, the port block, ready/health/retry, migrations, the `dev:*` tasks, container images, compose as the exception.
+`[daemons]` presets and custom daemons, the port block, ready/health/retry, migrations, the `dev:*` tasks, container images, compose files as daemons.
 
 **Hooks** (directory & lifecycle: `enter`/`cd`, `watch_files`, `postinstall`) -> [`references/hooks.md`](references/hooks.md)
 Keeping `enter`/`cd` hooks offline-safe (plain shell, not `mise run`), trust impact, the shim caveat. For git/pre-commit hooks specifically, see hk below.

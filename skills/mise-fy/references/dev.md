@@ -34,6 +34,7 @@ options.database = "app"
 # image = "nginx:1.28-alpine"      #   a container image, run with docker or podman (with container_port, data_mount)
 
 port = { auto = true, base = 14101, stride = 10 }  # or a fixed port; "auto" alone works only on a preset
+# ports.admin = { auto = true, base = 14102, stride = 10 }  # more ports: <NAME>_ADMIN_PORT (custom daemons: 2026.11.6+)
 proxy = false                      # a hostname label, or false
 init = "<setup>"                   # before every start and restart; a string or a list
 oneshot = true                     # runs to completion on every start; what depends on it waits
@@ -72,8 +73,9 @@ mise daemons register | prune [--dry-run] | tui
 
 ## Rules and Best Practices:
 
-1. **Pick the simplest kind of daemon.** A preset first (`preset = "postgres"`, `"redis"`, etc.): mise installs the binary, keeps the data, and exports the connection env. Else a custom daemon
-   (`run = …`) on a mise-managed tool. Else a container daemon (see [Containers](#containers)). Compose only for what a container daemon can't run (see [Compose](#compose)).
+1. **Pick the simplest kind of daemon.** A project that already runs its services with a compose file keeps it, as one compose daemon (see [Compose](#compose)). Otherwise a preset first
+   (`preset = "postgres"`, `"redis"`, etc.): mise installs the binary, keeps the data, and exports the connection env. Else a custom daemon (`run = …`) on a mise-managed tool. Else a container daemon
+   (see [Containers](#containers)). Else a compose daemon. (why: rewriting a working compose file into daemons is a migration the project did not ask for.)
 2. **One port block per project.** Each daemon gets `port = { auto = true, base = <B+k>, stride = 10 }`, with `k` from 0 to 9 and one `B` per project: a free multiple of 100 in 10000–27000, named in a
    comment. The main checkout uses `B+k`; a linked worktree adds 10 × its slot (1–511, derived from its path). `stride` has no project-wide setting, so repeat it on every daemon. (why: the default
    stride of 1 makes two daemons whose bases differ by less than 512 collide in some worktree, and presets on their default ports clash between projects.)
@@ -149,13 +151,37 @@ proxy = false
 
 ## Compose
 
-For what a container daemon can't run: an image the project builds, UDP ports, containers that share a network, etc.
+For a project that already has a compose file, and for what a container daemon can't run (an image the project builds, UDP ports, containers that share a network, etc.). One compose project
+is one custom daemon running `docker compose up` in the foreground, with its host ports in the port block (named ports need mise 2026.11.6):
 
+```toml
+[daemons.stack]
+run = "docker compose up"
+port = { auto = true, base = 14105, stride = 10 }         # the HTTP service: STACK_PORT, and the hostname
+ports.cache = { auto = true, base = 14106, stride = 10 }  # every other host port: STACK_CACHE_PORT
+ready_cmd = "curl -sf -m 2 http://127.0.0.1:$STACK_PORT/ >/dev/null"
+stop_signal = { signal = "SIGTERM", timeout = "30s" }     # longer than the slowest container's stop
+retry = 3
+proxy = false
+```
+
+```yaml
+# compose.yaml
+services:
+  web:
+    ports: ["${STACK_PORT:?run through mise}:80"]
+  cache:
+    ports: ["${STACK_CACHE_PORT:?run through mise}:6379"]
+```
+
+- **Every host port comes from the daemon's env.** mise exports `<NAME>_PORT` and `<NAME>_<PORT>_PORT` to the compose process, with the worktree offset. `:?` makes a bare `docker compose up` fail
+  instead of taking another checkout's port. Compose names the project after the checkout's directory, so each worktree gets its own containers and volumes.
+- **Raise the stop timeout.** On stop, compose asks the engine to stop the containers (10s grace each). pitchfork kills the compose client after 5s; the engine still finishes, but `stop` returns
+  before the containers are down, and an immediate `dev` races them. A `stop_signal` timeout above the slowest container's stop makes `stop` wait. (verified on mise 2026.11.6, Podman 5.8.2)
+- **One hostname per daemon, on its `port`.** Named ports get no `<NAME>_URL` and no proxy hostname, so the service the browser or other services call goes on `port`. Rule 5 (`proxy = false`)
+  holds here too.
+- **It is a daemon like the others:** `depends`, `ready_cmd`, `retry`, `mise daemons logs` (every service's output, prefixed) and the `dev:*` tasks work with no compose-specific branch.
 - **Docker is a prerequisite:** declare it as a `[doctor.checks]` probe (see [prerequisite checks](reference-setup-and-patterns.md#prerequisite-checks)).
-- **The `dev:*` tasks cover the compose services as well:** `dev` brings them up before the daemons (`docker compose up -d --wait` blocks on their healthchecks), and stopping, status and logs
-  include them.
-- **Compose ports don't follow the worktree offset**, so only one checkout runs them at a time unless the compose file maps its ports from env. The compose file's content is the project's.
-- **Don't run `docker compose up` as a daemon.** pitchfork's default 5s stop timeout kills the client while the containers keep running.
 
 ## Notes & Gotchas:
 
@@ -170,8 +196,8 @@ For what a container daemon can't run: an image the project builds, UDP ports, c
 - **"port N is already in use".** Another checkout, project, or app holds a port of the block (two worktrees on one slot, overlapping blocks, macOS AirPlay on 5000/7000, etc.). Fix: move that daemon
   in `mise.local.toml`, as mise's hint says. It is rare and loud, so no code guards against it.
 - **"exceeds 65535 for this worktree".** `B` is too high for a high slot. Fix: keep `B + 5119 ≤ 65535`.
-- **A preset's named ports sit outside the port block.** Unset, one is the preset's default plus the worktree offset, and that clashes between projects; a fixed number collides across worktrees.
-  Fix: give it a slot like `port`, `ports.<name> = { auto = true, base = <B+k>, stride = 10 }`.
+- **Named ports sit outside the port block.** A preset's, unset, is its default plus the worktree offset, and that clashes between projects; a fixed number collides across worktrees. Custom
+  daemons take `ports.<name>` too (mise 2026.11.6+). Fix: give each one a slot like `port`, `ports.<name> = { auto = true, base = <B+k>, stride = 10 }`.
 - **The pitchfork CLI warns "CLI version … differs from supervisor version".** Another project started the shared supervisor with its own pin. Harmless: after a reboot the first project to start sets
   the version. Restarting the supervisor to match stops every project's daemons (see Safety).
 - **Right after `dev`, the last daemon's port shows without `(active)`.** pitchfork marks ports a few seconds later; `Status: running` is the signal.
@@ -182,7 +208,8 @@ For what a container daemon can't run: an image the project builds, UDP ports, c
 ## Checklist
 
 - [ ] `experimental = true`; `pitchfork` and `jq` pinned in `[tools]`
-- [ ] Each service is a preset, else a custom daemon, else a container daemon; compose only for the rest; containers behind a Docker doctor check
+- [ ] An existing compose file kept as one compose daemon (ports from env, a stop timeout); else each service a preset, a custom daemon, a container daemon, or a compose daemon; containers behind a
+      Docker doctor check
 - [ ] One port block: `base = B+k` and `stride = 10` on every daemon, the block named in a comment
 - [ ] Custom daemons: the plain process with `exec` and its port in the command, `watch`, `proxy = false`, `ready_cmd` and `health_cmd` with a timeout, `depends`
 - [ ] `retry = 3` on every daemon but oneshots, never `true`

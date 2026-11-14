@@ -34,8 +34,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
 - **Git 2.54+ uses config-based hooks**: install writes `hook.<name>.command` into git
   config and leaves `.git/hooks/` untouched, so hk coexists with other hook managers;
   older Git falls back to script shims (`--legacy` forces them). Don't hand-edit
-  `.git/hooks`. Beware: a forced per-repo install on top of a global one (`--force-local`)
-  fires hooks **twice** per event.
+  `.git/hooks`. Beware: a forced per-repo install on top of a global one (`--force-local`,
+  or `--legacy` on Git 2.54+) fires hooks **twice** per event.
 - **Repo-scoped install stays the default** (`[hooks] postinstall = "hk install --mise"`): every
   contributor gets hooks from `mise install` with no machine step. hk's docs also offer a
   once-per-machine `hk install --global --mise` (Git 2.54+, no-op in repos without hk config);

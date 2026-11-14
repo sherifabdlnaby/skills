@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C073%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,073 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-116%2C018%20tokens-2ea44f?style=flat-square" alt="All Markdown: 116,018 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C074%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,074 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-116%2C668%20tokens-2ea44f?style=flat-square" alt="All Markdown: 116,668 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -38,7 +38,7 @@ than read, so they are left out.
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
-| [`mise-fy`](skills/mise-fy/)                                                           |  `2,524` | `37,451` |
+| [`mise-fy`](skills/mise-fy/)                                                           |  `2,525` | `38,101` |
 | [`review`](skills/review/)                                                             |    `325` |    `325` |
 | [`skill-fy`](skills/skill-fy/)                                                         |  `2,901` |  `6,389` |
 | [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
