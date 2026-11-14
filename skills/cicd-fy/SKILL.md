@@ -103,6 +103,7 @@ each live in [`platforms/github.md`](references/platforms/github.md); demonstrat
 - **Pin dependencies immutably** (actions by commit SHA, tools/packages by lockfile).
 - **Least privilege**: read-only by default, each job widened to only what it uses.
 - **Credentials don't outlive the step that needs them.**
-- **Concurrency by intent.** PR/check runs cancel superseded. Publish jobs **queue, never cancel**.
-  why: cancelling mid-publish leaves a half-pushed tag or image.
+- **Concurrency by intent.** PR/check runs cancel superseded. Publish jobs and jobs behind a required
+  check **queue, never cancel**. why: cancelling mid-publish leaves a half-pushed tag or image, and a
+  run cancelled mid-job leaves a cancelled required check that blocks the merge.
 - **Authenticate tool installs and API calls** so they dodge anonymous rate limits.
