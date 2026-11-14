@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C063%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,063 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-115%2C566%20tokens-2ea44f?style=flat-square" alt="All Markdown: 115,566 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C073%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,073 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-116%2C018%20tokens-2ea44f?style=flat-square" alt="All Markdown: 116,018 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -50,7 +50,7 @@ than read, so they are left out.
 | [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |    `781` |  `1,939` |
 | [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,282` |  `8,014` |
 | [`vendor/handoff`](skills/vendor/handoff/)                                             |    `198` |    `198` |
-| [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `7,056` |  `9,335` |
+| [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `7,066` |  `9,787` |
 | [`vendor/i-have-adhd`](skills/vendor/i-have-adhd/)                                     |  `1,743` |  `1,743` |
 | [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |  `1,354` |  `2,950` |
 | [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
