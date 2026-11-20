@@ -48,6 +48,7 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["taplo"] = Builtins.taplo // TOML lint + format (no config file; nothing to route)
   ["ryl"] = Builtins.ryl // YAML structure only — .config/ryl.toml, discovered natively
   ["mise"] = Builtins.mise // validate mise.toml
+  ["mise-lock"] { glob = List("mise.toml", "mise.lock"); check = "mise lock --check" } // a [tools] change without `mise lock` fails here, not in CI's locked install
   ["hk-validate"] { glob = ".config/hk.pkl"; check = "hk validate --deny-warnings" } // a typo in hk.pkl leaves a step that checks nothing
 
   // spelling — accepted words / excludes live in .config/typos.toml (no env var for it, so splice --config in)
