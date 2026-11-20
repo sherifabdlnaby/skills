@@ -92,7 +92,7 @@ the user):
 - [ ] Actions SHA-pinned with `# vX.Y.Z` comments; `jactionlint` + `zizmor` pass
 - [ ] Top-level read-only `permissions`, widened per job only
 - [ ] `persist-credentials: false` except jobs that push with the checkout token (justified inline)
-- [ ] Concurrency by intent: PR runs cancel superseded, publish runs queue
+- [ ] Concurrency by intent: PR runs cancel superseded; publish runs and required-check runs queue
 - [ ] No `${{ }}` interpolation inside `run:` blocks
 - [ ] Tokens fed to tool installs / API calls ([`platforms/github.md`](platforms/github.md))
 

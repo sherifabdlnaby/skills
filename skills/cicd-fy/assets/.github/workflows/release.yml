@@ -57,14 +57,15 @@ permissions:
   contents: read
 
 # Release runs queue WHOLE (version + release), so back-to-back merges compute their tags serially —
-# unqueued version jobs would read the same latest tag and collide on it. PR runs (autolabel) keep
-# per-PR cancel-superseded. Caveat: without `queue: max` (it needs cancel-in-progress off, and this group
-# sets that per event), GitHub keeps at most ONE pending run per group, so on rapid merges
-# a superseded pending run is dropped; its changes still land in the next release's notes, but its
-# bump label isn't consumed (re-run the dropped run from the UI if that bump mattered).
+# unqueued version jobs would read the same latest tag and collide on it. PR runs (autolabel) queue
+# too: a run cancelled mid-job leaves a cancelled `autolabel` check, which blocks the merge while
+# `autolabel` is a required check (a label burst, e.g. Dependabot's right after `opened`, cancels one).
+# Caveat: GitHub keeps at most ONE pending run per group (unless it sets `queue: max`), so on rapid
+# merges a superseded pending run is dropped; its changes still land in the next release's notes,
+# but its bump label isn't consumed (re-run the dropped run from the UI if that bump mattered).
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('autolabel-{0}', github.event.pull_request.number) || 'release' }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
 
 jobs:
   # ── Autolabel PRs + bump gate/preview (category labels for the notes; nothing is released here) ──
@@ -95,7 +96,6 @@ jobs:
       - name: Bump gate & version preview
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }} # via env, never interpolated (zizmor: template-injection)
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
@@ -122,6 +122,9 @@ jobs:
             esac
           }
           PREV="$(last_stable)"
+          # Live labels, not the event payload: Dependabot adds labels right after `opened`, so the
+          # payload of an early or re-run event has none.
+          LABELS="$(gh api "repos/$REPO/issues/$PR_NUMBER/labels" --jq 'map(.name) | join(",")')"
           BUMP="$(bump_of "$LABELS")"
           # Preview as a table; the marker stays first so the sticky-comment lookup still matches.
           NOTE=""

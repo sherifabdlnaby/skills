@@ -50,6 +50,11 @@ Surface errors as annotations:
 - **`pull_request` default types miss `edited`**, so title-regex autolabels go stale on retitle. Add
   `types: [opened, reopened, synchronize, edited]` where labels come from titles (plus
   `labeled, unlabeled` where a job reacts to label changes, like the bump gate/preview).
+- **A run cancelled mid-job leaves a cancelled check run**, and a required check fails on it even when a
+  later run of the same check passes. A burst of events (e.g. Dependabot adds labels right after
+  `opened`) cancels one under `cancel-in-progress: true`, so a workflow behind a required check queues.
+  A run cancelled while still pending leaves no check run. Read state the job depends on (labels)
+  live from the API, not from the event payload: a re-run replays the old payload.
 - **One pending run per concurrency group, unless it sets `queue: max`.** By default, on rapid merges a
   superseded queued release run is dropped, not queued behind: its changes still land in the next
   release's notes, but its bump label isn't consumed — re-run the dropped run from the UI if that bump
