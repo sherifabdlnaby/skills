@@ -5,27 +5,27 @@ Skills other people wrote, copied in by `mise run skills:sync` from the sources 
 skill's own `SKILL.md` is its documentation.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-19%2C297%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 19,297 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-35%2C833%20tokens-2ea44f?style=flat-square" alt="All Markdown: 35,833 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-19%2C614%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 19,614 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-36%2C453%20tokens-2ea44f?style=flat-square" alt="All Markdown: 36,453 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
 other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
 than read, so they are left out.
 
-| Skill                                                             | Upstream                                                    | SKILL.md |   Total |
-| ----------------------------------------------------------------- | ----------------------------------------------------------- | -------: | ------: |
-| [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `781` | `1,939` |
-| [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)       |  `2,282` | `8,014` |
-| [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `198` |   `198` |
-| [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)     |  `7,066` | `9,787` |
-| [`i-have-adhd`](i-have-adhd/)                                     | [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) |  `1,743` | `1,743` |
-| [`improve-codebase-architecture`](improve-codebase-architecture/) | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `1,354` | `2,950` |
-| [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `642` | `3,546` |
-| [`show-me`](show-me/)                                             | [humanlayer/skills](https://github.com/humanlayer/skills)   |    `783` |   `783` |
-| [`teach`](teach/)                                                 | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `1,997` | `3,855` |
-| [`wait-what`](wait-what/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `102` |   `102` |
-| [`writing-for-agents`](writing-for-agents/)                       | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `2,349` | `2,916` |
+| Skill                                                             | Upstream                                                    | SKILL.md |    Total |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- | -------: | -------: |
+| [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `781` |  `1,939` |
+| [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)       |  `2,282` |  `8,014` |
+| [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `198` |    `198` |
+| [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)     |  `7,383` | `10,407` |
+| [`i-have-adhd`](i-have-adhd/)                                     | [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) |  `1,743` |  `1,743` |
+| [`improve-codebase-architecture`](improve-codebase-architecture/) | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `1,354` |  `2,950` |
+| [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `642` |  `3,546` |
+| [`show-me`](show-me/)                                             | [humanlayer/skills](https://github.com/humanlayer/skills)   |    `783` |    `783` |
+| [`teach`](teach/)                                                 | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `1,997` |  `3,855` |
+| [`wait-what`](wait-what/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `102` |    `102` |
+| [`writing-for-agents`](writing-for-agents/)                       | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `2,349` |  `2,916` |
 
 ### Files
 
@@ -40,8 +40,8 @@ than read, so they are left out.
 | `gh-stack`                      | [`references/troubleshooting.md`](gh-stack/references/troubleshooting.md) | `2,087` |
 | `handoff`                       | [`SKILL.md`](handoff/SKILL.md)                                            |   `198` |
 | `humanizer`                     | [`AGENTS.md`](humanizer/AGENTS.md)                                        |   `799` |
-| `humanizer`                     | [`CHANGELOG.md`](humanizer/CHANGELOG.md)                                  | `1,922` |
-| `humanizer`                     | [`SKILL.md`](humanizer/SKILL.md)                                          | `7,066` |
+| `humanizer`                     | [`CHANGELOG.md`](humanizer/CHANGELOG.md)                                  | `2,225` |
+| `humanizer`                     | [`SKILL.md`](humanizer/SKILL.md)                                          | `7,383` |
 | `i-have-adhd`                   | [`SKILL.md`](i-have-adhd/SKILL.md)                                        | `1,743` |
 | `improve-codebase-architecture` | [`HTML-REPORT.md`](improve-codebase-architecture/HTML-REPORT.md)          | `1,596` |
 | `improve-codebase-architecture` | [`SKILL.md`](improve-codebase-architecture/SKILL.md)                      | `1,354` |
