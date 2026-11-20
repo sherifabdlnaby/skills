@@ -4,7 +4,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/SKILL.md-2%2C525%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,525 tokens" />
-  <img src="https://img.shields.io/badge/Total-38%2C550%20tokens-2ea44f?style=flat-square" alt="Total: 38,550 tokens" />
+  <img src="https://img.shields.io/badge/Total-38%2C813%20tokens-2ea44f?style=flat-square" alt="Total: 38,813 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -14,7 +14,7 @@ than read, so they are left out.
 | File                                                                                       |  Tokens |
 | ------------------------------------------------------------------------------------------ | ------: |
 | [`SKILL.md`](SKILL.md)                                                                     | `2,525` |
-| [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `828` |
+| [`assets/AGENTS.md`](assets/AGENTS.md)                                                     |   `838` |
 | [`assets/README.md`](assets/README.md)                                                     | `1,185` |
 | [`references/ci/github.md`](references/ci/github.md)                                       | `2,594` |
 | [`references/ci.md`](references/ci.md)                                                     | `2,076` |
@@ -24,11 +24,11 @@ than read, so they are left out.
 | [`references/hk.md`](references/hk.md)                                                     | `6,057` |
 | [`references/hooks.md`](references/hooks.md)                                               |   `503` |
 | [`references/install.md`](references/install.md)                                           |   `441` |
-| [`references/mise-fy.md`](references/mise-fy.md)                                           | `2,415` |
+| [`references/mise-fy.md`](references/mise-fy.md)                                           | `2,516` |
 | [`references/reference-setup-and-patterns.md`](references/reference-setup-and-patterns.md) | `2,558` |
 | [`references/runtimes/node.md`](references/runtimes/node.md)                               | `1,462` |
 | [`references/tasks.md`](references/tasks.md)                                               | `3,574` |
-| [`references/tools.md`](references/tools.md)                                               | `4,211` |
+| [`references/tools.md`](references/tools.md)                                               | `4,363` |
 
 <!-- token-estimates:end -->
 
