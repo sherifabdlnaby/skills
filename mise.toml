@@ -1,6 +1,6 @@
 # Minimum `mise` version. If not matched, mise guides the user to update.
 # -> Bump when relying on a newly introduced setting.
-min_version = "2026.10.13"
+min_version = "2026.11.10"
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
@@ -209,6 +209,12 @@ postinstall = "hk install --mise"
 # ── ⚙️ settings ───────────────────────────────────────────────────────────────────────────────────────────────────────
 [settings]
 lockfile = true # write/commit mise.lock — REQUIRED before any pin resolves reproducibly
+lockfile_platforms = [
+  "macos-arm64",
+  "linux-x64",
+  "linux-arm64",
+  "windows-x64",
+] # where contributors and CI run
 minimum_release_age = "7d" # ignore releases <7d old (supply-chain cooldown)
 disable_backends = [
   "asdf",

@@ -23,6 +23,11 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
     glob = ".config/hk.pkl"
     check = "hk validate --deny-warnings"
   }
+  // A [tools] change without `mise lock` fails here, not later at a locked install in CI.
+  ["mise-lock"] {
+    glob = List("mise.toml", "mise.lock")
+    check = "mise lock --check"
+  }
   ["shfmt"] = Builtins.shfmt
   ["jactionlint"] = Builtins.jactionlint
   // pinact resolves Action tags to SHAs via the GitHub API, so it needs a token or it hits the

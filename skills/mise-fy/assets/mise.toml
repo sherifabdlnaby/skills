@@ -4,7 +4,7 @@
 
 # Minimum `mise` version. If not matched, will guide user to update.
 # -> Remember to update when relying on newly introduced setting.
-min_version = "2026.10.13" # oldest mise that supports everything in this file
+min_version = "2026.11.10" # oldest mise that supports everything in this file
 
 # ── 🛠️ tools ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 [tools]
@@ -188,6 +188,7 @@ postinstall = "hk install --mise" # canonical hook install: runs after every `mi
 [settings]
 experimental = true                  # [daemons]
 lockfile = true                      # keep mise.lock updated; create it once with `mise lock`, commit it
+lockfile_platforms = ["macos-arm64", "linux-x64", "linux-arm64"]  # add windows-x64 or linux-x64-musl only when the project runs there
 minimum_release_age = "7d"           # ignore releases <7d old (supply-chain cooldown)
 disable_backends = ["asdf", "vfox"]  # resolve only via verified backends; drop "vfox" if you need a vfox-only tool
 

@@ -51,6 +51,8 @@ How to build or improve mise Tasks.
   sequences. Stops on first failure (`set -e`); `mise run -c`/`--continue-on-error` keeps going.
 - **Freshness is mtime-based, per-clone**: `touch` alone re-runs;
   state lives in `~/.local/state/mise/`, so fresh clones/worktrees start stale.
+- **A broad `sources` glob also matches what the task writes** (`src/**` over `src/dist/`), so each run makes the next one stale. Add `"!@gitignore"` after it (mise 2026.11.10+) to drop
+  git-ignored, untracked files; entries apply in order, so a later one can add a path back.
 - Explicit `outputs` compare make-style: outputs older than sources re-run the task
   every invocation until the outputs are refreshed.
 - **Auto outputs are blind to your real artifacts** — the marker only tracks
@@ -62,9 +64,9 @@ How to build or improve mise Tasks.
   artifact tasks.
 - **`depends` run in parallel** (default 4 jobs; `--jobs`/`MISE_JOBS`); `depends_post` run after. `wait_for` only waits _if_ that task is already in the run. A task's `env` is **not** seen by its
   `depends`.
-- **`lock` is a mutex (a semaphore of 1) between task runs** (mise 2026.11.0+). Tasks that name the same lock run one at a time: a string name is shared by every task on the machine, and `lock = true`
-  covers the repo and all its worktrees. Add it only when runs compete for one resource that each worktree can't have its own copy of (a simulator, a device, a shared remote DB, etc.), or when the
-  user asks for it.
+- **`lock` is a mutex (a semaphore of 1) between task runs** (mise 2026.11.0+). Tasks that name the same lock run one at a time: a string name is shared by every task on the machine (from mise
+  2026.11.9 it is a template, so `"db-{{ config_root | hash(len=8) }}"` keeps it to one checkout), and `lock = true` covers the repo and all its worktrees. Add it only when runs compete for one
+  resource that each worktree can't have its own copy of (a simulator, a device, a shared remote DB, etc.), or when the user asks for it.
 - **No-spec args go to the _last_ `run` entry only** (with a `usage` spec they're parsed instead; see Task Arguments).
 - **Output is line-buffered + label-prefixed.** Change with `--output
   interleave|keep-order|summary|silent` (or `MISE_TASK_OUTPUT`). `summary` (mise 2026.11.2+) prints one line per

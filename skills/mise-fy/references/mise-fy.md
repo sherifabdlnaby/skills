@@ -32,6 +32,8 @@ Explore Development and or Contribution section in README.md, AGENTS.md, or CLAU
 3. Explore if Repository relies on Docker (or Podman), check if it's installed.
 4. Flag lazy / uncommon tools. For each tool, ask "does *everyone* need this on `mise install`, or only some workflows?" then place it by the decision order (and lockfile gotchas) in
    [`tools.md`](tools.md#lazy-install-for-uncommon-tools).
+5. Pick the lockfile platforms. The default is macOS arm64 and Linux glibc. Interactive: ask whether the project also runs on Windows (`windows-x64`) or Alpine/musl (`linux-x64-musl`), e.g. a
+   Windows contributor or CI runner, an Alpine image. Autonomous: keep the default and name it in the summary.
 
 #### Tasks
 Explore how the repo manage repetitive tasks. Look for Makefile, package.json (or similar) scripts. Check tasks run by the CI or references in README.md or AGENTS.md. **Flag watch candidates** while
@@ -55,7 +57,8 @@ When there is no user to ask, pick the gradual path, keep the old managers, and 
 
 Depending on user request, you might suggest new additions (like introduction of hk for pre-commit, as well as other linters)
 
-Map each service to a preset, a custom daemon, a container daemon, or (for what those cannot run) a compose file, per [`dev.md`](dev.md).
+A project that already has a compose file keeps it, as one compose daemon with its host ports in the port block. Map every other service to a preset, a custom daemon, a container daemon, or a
+compose daemon, per [`dev.md`](dev.md).
 
 ### 3. Convert
 
@@ -102,7 +105,7 @@ The mise-fy isn't done until every box is accounted for:
 - [ ] `mise.toml` `[tools]` covers all runtimes; old version files removed
 - [ ] Lazy/uncommon tools placed by the decision order in [`tools.md`](tools.md#lazy-install-for-uncommon-tools)
 - [ ] Lockfile decision made (`mise.lock`, plus anything `mise lock` writes beside it, committed if enabled); an older lockfile revision upgraded (`mise lock --upgrade`) with `min_version` raised to
-      match
+      match; `lockfile_platforms` set and `mise lock --check` passing as the `mise-lock` commit gate
 - [ ] Prerequisites mise can't install declared as `[doctor.checks]`, run first by setup
       ([`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#prerequisite-checks))
 - [ ] `[env]` replaces `.envrc`/manual exports; secrets policy applied; shell `${VAR:-default}` fallbacks converted to `{ default = ... }`.

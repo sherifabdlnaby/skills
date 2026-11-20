@@ -25,14 +25,20 @@ Guidance on Installing Tools and Runtimes via Mise.
    fast-moving tools via `minimum_release_age_excludes` if needed). An exact pin already in `mise.lock` installs regardless of the cutoff.
 10. If a tool/runtime needed **just for a single task** define it just for the task.
 11. Use and enable Lockfile whenever possible, unless the user told you not to. Commit everything `mise lock` writes beside `mise.lock` (e.g. a `locks/` dir of per-tool dependency lockfiles), not
-    just the file itself; `mise lock --sidecars` lists those paths.
+    just the file itself; `mise lock --sidecars` lists those paths. Set `lockfile_platforms` to where the project runs (default: macOS arm64 and Linux glibc, see
+  [assets/mise.toml](../assets/mise.toml)).
 
 ## Notes & Gotchas:
 
 - **An existing `mise.lock` is not read-only.** Plain installs, `mise use`, and first-run auto-installs from `mise run`/`mise x` rebuild it from the current requests (adding missing entries, dropping
-  stale ones); only locked mode (`--locked`, `MISE_LOCKED=1`) leaves it alone. `lockfile = true` also creates the file, unset only updates an existing one, `false` stops writes. Run `mise lock` after
-  every `[tools]` change so the committed file is complete; a `mise.lock` diff after `mise install` means the commit missed entries (e.g. the `npm:` provenance pin, which only install writes), so
-  commit it.
+  stale ones); only locked mode (`--locked`, `MISE_LOCKED=1`, or `[tool_config] locked = true` from mise 2026.11.10) leaves it alone. `lockfile = true` also creates the file, unset only updates an
+  existing one, `false` stops writes. Run `mise lock` after every `[tools]` change; a `mise.lock` diff after `mise install` means the commit missed entries (e.g. the `npm:` provenance pin, which
+  only install writes), so commit it.
+- **The `mise-lock` commit gate runs `mise lock --check`** (mise 2026.11.10+, in [assets/.config/hk.pkl](../assets/.config/hk.pkl)). Offline and in milliseconds, it fails a commit whose lockfile a
+  `--locked` install would reject (e.g. a `[tools]` change without `mise lock`). It checks every platform the lockfile targets, and a tool with no build for one (e.g. hk 2.8.1 on `macos-x64`)
+  fails it for good, because `mise lock` resolves nothing there: drop that platform from `lockfile_platforms`.
+- **`[tool_config] locked = true` makes `mise use` fail** for a tool not yet in `mise.lock`, and `MISE_LOCKED=0` does not override it. Add a tool by editing `[tools]`, then `mise lock`, then
+  `mise install`. Suggest it only for a repo that wants that friction.
 - **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the version that
   wrote it (revision 2 needs mise 2026.9.7, revision 3 needs 2026.9.16, revision 4 needs 2026.11.1). mise keeps an existing revision when it rewrites the file and warns when a newer one would store
   more; `mise lock --upgrade` moves it to the current one. From revision 2, `npm:` and `pypi:` tools also get a dependency graph in `.mise/locks/` (commit it), and a `pypi:` tool then installs only
@@ -84,6 +90,10 @@ A blocked backend errors instead of falling back, forcing an explicit, verified 
 [settings]
 disable_backends = ["asdf", "vfox"]   # resolve only via verified backends; drop "vfox" if you need a vfox-only tool
 ```
+
+Suggest, never default, the stricter allowlist `enable_backends = ["core", "packslip", "aqua", "github", …]` (mise 2026.11.10+): a registry shorthand falls back to its next allowed backend,
+and a tool on any other backend fails. It must name every backend the project's tools use. Always keep `packslip`: without it, the tools the registry serves from it (e.g. hk, pitchfork)
+fall back to `aqua`.
 
 ## Runtime Integration
 

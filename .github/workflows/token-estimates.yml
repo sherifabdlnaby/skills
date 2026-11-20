@@ -46,7 +46,7 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
         with:
-          version: "2026.10.18" # pin mise itself, not just the action
+          version: "2026.11.10" # pin mise itself, not just the action
           install: true
           cache: false # see the step above
           experimental: true
