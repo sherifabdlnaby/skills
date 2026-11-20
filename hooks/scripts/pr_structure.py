@@ -23,7 +23,7 @@ import re
 import sys
 
 import hooklib
-from gh_disclosure import UNREADABLE, extract_body, tokenize
+from gh_disclosure import UNREADABLE, Files, extract_body, tokenize
 
 # The skeleton's blocks, in body order. Human Note is absent on purpose: it is the
 # user's to open, so its absence is never the agent's call.
@@ -66,7 +66,7 @@ def receipts(body):
     return written, dropped
 
 
-def missing_receipts(command):
+def missing_receipts(command, cwd):
     """Blocks with no receipt in the PR body posted by `command`, in body order.
 
     Returns [] when the command isn't a PR-body post, the body opted out, or the
@@ -83,7 +83,9 @@ def missing_receipts(command):
             continue
         if (tokens[i + 1], tokens[i + 2]) not in BODY_ACTIONS:
             continue
-        body = extract_body(tokens[i + 3 :], bodies)
+        body = extract_body(
+            tokens[i + 3 :], bodies, Files.before(tokens, i, bodies, cwd)
+        )
         if body is None or body is UNREADABLE:
             return []
         if BYPASS_RE.search(body):
@@ -115,7 +117,7 @@ def main():
     if not command:
         return 0
 
-    missing = missing_receipts(command)
+    missing = missing_receipts(command, hooklib.cwd(data))
     if not missing:
         return 0
 

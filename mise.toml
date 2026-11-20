@@ -171,11 +171,11 @@ run = [
 ]
 
 [tasks.test]
-description = "Run tests (no automated tests yet — no-op placeholder)"
+description = "Run the hook tests"
 depends = [
   "lint",
 ] # ordering only; depends run in parallel, don't see this task's env
-run = "echo 'no tests yet'"
+run = "python3 -m unittest discover -s hooks/tests"
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
 description = "One-time, idempotent project bootstrap: check prerequisites, install tools, then runtime deps"
