@@ -54,7 +54,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # full history so `check --pr` can diff against the default branch
-          ref: ${{ github.head_ref || github.ref_name }} # the branch we fix and target
+          # Fork PRs: head_ref only exists on the fork, so check out the merge ref that
+          # lives in this repo. Same-repo PRs and non-PR runs keep head_ref / ref_name.
+          ref: ${{ github.event.pull_request.head.repo.fork && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.head_ref || github.ref_name }}
           persist-credentials: false
 
       # Cache downloads, not installs: `--locked` re-checks each download against mise.lock.

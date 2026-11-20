@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "[commit|branch|pr|attach|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.5.1"
+  version: "0.5.2"
 ---
 
 # Git
@@ -31,7 +31,7 @@ Pre-staging walk, file confirmation, message style, hook-failure handling, scopi
 post-create lines, finishing PRs after `gh stack submit`, updating a body without clobbering it.
 
 **PR body** (write or rewrite a description) -> [`references/pr-body.md`](references/pr-body.md) Voice for the product and engineer blocks, each block's rule in body order, where a visual
-sits and when to take a screenshot, receipts and the structure hook, the skeleton, linking, AI footers.
+sits and when to take a screenshot, receipts and the structure hook, the skeleton, linking, AI headers.
 
 **Attach a screenshot or video** -> [`references/attach.md`](references/attach.md)
 `--attach` on create/edit/comment, body-file placement, screenshot framing guidance.
@@ -55,7 +55,7 @@ The last-resort empty commit: when it beats retrying the check, and the zero-fil
 
 ## Always
 
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI footer**. Commit messages carry no footer.
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI header**. Commit messages carry no disclosure.
 The PR-body template lives in [`references/pr-body.md`](references/pr-body.md);
 the post templates, one per tier of human judgment behind the post (Agent Decided, Human Planned,
 Human Guided), live in [AI Disclosure](#ai-disclosure) below.
@@ -101,11 +101,11 @@ Carry `<OWNER/REPO>`, `<trunk>` and `<GITHUB_USERNAME>` through the session from
 
 ## AI Disclosure
 
-Every post on the user's behalf (comment, reply, issue) ends with an AI footer: a `---`, then one
-line copied verbatim from the templates below. The PR-**body** variants live in
-[`references/pr-body.md`](references/pr-body.md) and follow the same rule.
+Every post on the user's behalf (comment, reply, issue) opens with an AI header: one line copied
+verbatim from the templates below, then a `---`, before the rest of the content. The PR-**body**
+variants live in [`references/pr-body.md`](references/pr-body.md) and follow the same rule.
 
-Placeholders, the same in every footer:
+Placeholders, the same in every header:
 
 - `<TOOL>`: the tool you're running as, e.g. Claude, Cursor.
 - `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
@@ -113,7 +113,7 @@ Placeholders, the same in every footer:
 
 ### Picking the variant
 
-The footer answers one question for whoever reads the post: how much human judgment stands behind
+The header answers one question for whoever reads the post: how much human judgment stands behind
 it? Judge the decisions the post carries, not the request that produced them. The tiers go from
 least to most human judgment.
 
@@ -152,5 +152,5 @@ Still 🤖, however it feels:
 **Direction does not reach what they never saw.** On a long run, a post about a part the user was
 never in is 🤖, and a push that changes what they planned or guided drops back to 🤖.
 
-**Understate, never overstate.** Torn between two tiers, take the lower one. A footer claiming human
+**Understate, never overstate.** Torn between two tiers, take the lower one. A header claiming human
 judgment that never happened is the failure that matters.
