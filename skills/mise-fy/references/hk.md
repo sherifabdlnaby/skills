@@ -69,6 +69,8 @@ Read [assets/mise.toml](../assets/mise.toml) and [assets/.config/hk.pkl](../asse
   adds no finding. Many builtins set one (e.g. `jactionlint`, `shellcheck`, `ruff`, `eslint`, `cargo_clippy`, etc.) and each release adds more, so ask the config instead of a list:
   `mise x pkl -- pkl eval -f json .config/hk.pkl | jq '.hooks.check.steps | map_values(.diagnostic_format)'` (`null` = no findings). Your own step sets one, e.g. `diagnostic_format = "gcc"` for
   `file:line:col: message` output ([formats](https://hk.jdx.dev/configuration#diagnostics)). Run with `--no-fail-fast`: a step cancelled by an earlier failure reports nothing.
+- **`cache = true` skips a check that passed on the same file contents** (hk 2.13.0+), e.g. when `pre-commit` re-runs what `hk check` just passed. The key holds only the step's own files, not
+  tool versions: a step that reads more (a workspace build, `cargo clippy`) lists those inputs in `cache_inputs`, plus `mise.toml` for the tool pin. Otherwise a stale pass hides a failure.
 - **CI "must be already formatted" gate**: `fail_on_fix = true` + `stage = false` makes a fixing hook fail (without staging) when it changes anything, so CI rejects unformatted code.
 - **Pin hk to a full `MAJOR.MINOR.PATCH`** in `[tools]` _and_ match it in `hk.pkl`'s `amends`/`import` URLs. The URLs need the exact release tag, and hk ships the Pkl package for its own
   version, so a matching pair validates offline on a cold cache.
