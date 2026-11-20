@@ -11,7 +11,7 @@ tool or task instead.
 
 ```sh
 mise run check          # all linters/formatters/validators (alias: lint); add --fix to auto-fix
-mise run test           # placeholder (no automated tests yet)
+mise run test           # the hook tests
 mise tasks              # discover every task
 mise run <task> --help  # a task's flags
 ```

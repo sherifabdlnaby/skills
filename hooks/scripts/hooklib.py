@@ -20,6 +20,7 @@ permission flow); emit the tool-specific JSON to DENY or REWRITE.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -59,6 +60,16 @@ def is_claude(data):
 def is_post_tool_use(data):
     """True when the payload is from a post-tool hook (Cursor postToolUse)."""
     return "tool_output" in data
+
+
+def cwd(data):
+    """Directory the shell command runs in.
+
+    Claude and Cursor beforeShell send `cwd`; otherwise the hook's own directory,
+    which the tool starts in the workspace.
+    """
+    value = data.get("cwd")
+    return value if isinstance(value, str) and value else os.getcwd()
 
 
 def command(data):
