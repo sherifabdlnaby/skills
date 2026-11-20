@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-2%2C414%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,414 tokens" />
-  <img src="https://img.shields.io/badge/Total-14%2C814%20tokens-2ea44f?style=flat-square" alt="Total: 14,814 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-2%2C419%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,419 tokens" />
+  <img src="https://img.shields.io/badge/Total-14%2C948%20tokens-2ea44f?style=flat-square" alt="Total: 14,948 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,11 +13,11 @@ than read, so they are left out.
 
 | File                                                               |  Tokens |
 | ------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                             | `2,414` |
+| [`SKILL.md`](SKILL.md)                                             | `2,419` |
 | [`references/attach.md`](references/attach.md)                     |   `563` |
 | [`references/branches.md`](references/branches.md)                 | `1,791` |
 | [`references/commits.md`](references/commits.md)                   |   `873` |
-| [`references/pr-body.md`](references/pr-body.md)                   | `2,677` |
+| [`references/pr-body.md`](references/pr-body.md)                   | `2,806` |
 | [`references/pull-requests.md`](references/pull-requests.md)       | `1,546` |
 | [`references/rebase.md`](references/rebase.md)                     |   `835` |
 | [`references/review-responses.md`](references/review-responses.md) | `1,427` |
@@ -38,7 +38,7 @@ The skill selects detailed guidance for the operation in progress:
 
 - Branch work preserves a dirty tree, uses consistent ticket-based names, and supports both regular and stacked pull requests.
 - Commits are coherent checkpoints built from an inspected staging area. Hook failures are fixed and retried rather than bypassed.
-- Pull requests use concise titles, draft status by default, a stable review-oriented body, links where available, and a disclosure footer for AI-authored GitHub posts.
+- Pull requests use concise titles, draft status by default, a stable review-oriented body, links where available, and a disclosure header for AI-authored GitHub posts.
 - Rebases preserve a recovery point when conflicts occur and use `range-diff` to verify content before a force-push.
 - Reviews trace the whole change, classify feedback by source, answer in the original thread, and separate clear fixes from decisions that need human input.
 - PR watching uses the included standard-library Python script to report only new CI, review, comment, and state events. Saved watcher state and adaptive polling avoid noisy sleep loops.
