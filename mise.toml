@@ -167,9 +167,9 @@ run = [
 
 [tasks.test]
 description = "Run the hook tests"
-depends = [
+wait_for = [
   "lint",
-] # ordering only; depends run in parallel, don't see this task's env
+] # in `mise run lint test`, test after lint; alone, test runs only the tests
 run = ["python -m unittest discover -s hooks/tests"]
 tools.python = "3.9" # the oldest python the hooks support
 
