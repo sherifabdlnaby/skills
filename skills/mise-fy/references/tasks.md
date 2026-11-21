@@ -143,6 +143,7 @@ mise watch test --once         # block until one change, run once, exit with its
 ```
 
 Flags pass through to watchexec (`mise watch --help`); `-r/--restart` is the one dev servers need, and `--poll` is for filesystems whose native events don't fire.
+Tasks joined with `:::` share one watcher: a change to any one's sources reruns all of them. Run one `mise watch` per task to restart them independently.
 
 Worth wiring watch for: tight edit -> rebuild/retest loops, dev servers, doc/asset rebuilds.
 

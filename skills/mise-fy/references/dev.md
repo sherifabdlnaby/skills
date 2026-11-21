@@ -67,7 +67,7 @@ mise daemons register | prune [--dry-run] | tui
 - **Exported** to the shell, tasks, `mise x` and every daemon: `<NAME>_PORT`, and each preset's connection vars (e.g. `DATABASE_URL`, `PG*`, `REDIS_URL`; the presets page lists them). Inside a daemon,
   pitchfork also sets `PORT`/`PORT0` to that daemon's own port.
 - **Templates:** `run` renders mise's (`{{ env.X }}`, `{{ vars.X }}`). Fields that pitchfork renders (a daemon's `env`, `ready_http`, etc.) know `{{ daemons.<name>.port }}` and similar, not
-  `{{ env.* }}`.
+  `{{ env.* }}`. A `proxy = false` daemon has no proxy URL; give it `url = "http://127.0.0.1:{{ port }}"` (pitchfork 2.36+) and `{{ daemons.<name>.url }}` resolves to it.
 - **Elsewhere:** a task's `daemons = [...]` starts daemons before it runs (rule 10 says why the `dev:*` tasks don't use it), and `[daemon_groups]` names sets of daemons (`default` is what `start` uses
   with no names).
 
