@@ -35,8 +35,9 @@ Guidance on Installing Tools and Runtimes via Mise.
   existing one, `false` stops writes. Run `mise lock` after every `[tools]` change; a `mise.lock` diff after `mise install` means the commit missed entries (e.g. the `npm:` provenance pin, which
   only install writes), so commit it.
 - **The `mise-lock` commit gate runs `mise lock --check`** (mise 2026.11.10+, in [assets/.config/hk.pkl](../assets/.config/hk.pkl)). Offline and in milliseconds, it fails a commit whose lockfile a
-  `--locked` install would reject (e.g. a `[tools]` change without `mise lock`). It checks every platform the lockfile targets, and a tool with no build for one (e.g. hk 2.8.1 on `macos-x64`)
-  fails it for good, because `mise lock` resolves nothing there: drop that platform from `lockfile_platforms`.
+  `--locked` install would reject (e.g. a `[tools]` change without `mise lock`). It checks every platform the lockfile targets. From mise 2026.11.12, `mise lock` records a platform a tool has no
+  build for (e.g. hk 2.8.1 on `macos-x64`) under `unsupported_platforms` and `--check` passes; an older mise fails it for good and drops that list when it rewrites the file, so keep `min_version` at
+  2026.11.12 or above when the list is present.
 - **`[tool_config] locked = true` makes `mise use` fail** for a tool not yet in `mise.lock`, and `MISE_LOCKED=0` does not override it. Add a tool by editing `[tools]`, then `mise lock`, then
   `mise install`. Suggest it only for a repo that wants that friction.
 - **Lockfile format is versioned** (`lockfile_version` at the top). An older mise fails `install --locked` on a newer revision, so keep `min_version` and CI's pinned mise at or above the version that

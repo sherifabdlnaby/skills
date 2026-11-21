@@ -85,6 +85,7 @@ mise daemons register | prune [--dry-run] | tui
    `env = { HTTP_PORT = "{{ daemons.api.port }}" }`, which reaches only that process. `[env]` holds what the shell, tasks and tests need; a daemon's `env` holds settings for that process only.
 5. **`proxy = false` on custom daemons.** Otherwise mise exports `<NAME>_URL` with a `https://<name>.<project>.localhost` hostname that only the machine-wide pitchfork proxy serves. (why: hostnames
    need global pitchfork config, a supervisor restart and certificate trust, none of which a project can set up.)
+   Such a daemon has no URL; when another field needs `{{ daemons.<name>.url }}`, set `url = "http://127.0.0.1:{{ port }}"` on it (pitchfork 2.36+).
 6. **Run the plain server process, and let pitchfork reload it.** `exec` the server itself and list its sources in `watch = ["src/**", …]`, not a dev server that runs its own watcher (`node --watch`,
    nodemon, etc.). The app must not exit 0 on SIGTERM. (why: pitchfork never retries a clean exit, and a watcher survives the crash and exits 0 when stopped, so the daemon never heals.)
 7. **Readiness, health, and a bounded retry** on every custom daemon:
