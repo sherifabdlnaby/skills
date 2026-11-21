@@ -27,6 +27,11 @@ uv = "0.12"     # locked Python dependencies
 # pre-commit
 hk = "2.8.1" # keep in sync with the pin in .config/hk.pkl
 
+# on demand: installed on first use, not by `mise install`
+"github:charmbracelet/freeze" = { version = "0.2", lazy = true, lazy_bins = [
+  "freeze",
+] } # terminal output to PNG/SVG, for PR screenshots — 0.x, pin minor
+
 # ── 🌳 environment variables ──────────────────────────────────────────────────────────────────────────────────────────
 [env]
 #EXAMPLE_ENV=X
