@@ -19,6 +19,8 @@ Platform-specific setup lives under [`ci/`](ci/):
    step alone misses lazy and task tools, which `mise run` installs later without it.
 4. Set a CI token (e.g. `GITHUB_TOKEN`) so tool installs don't hit provider API rate limits. Locally the same is achieved via `[settings] github.gh_cli_tokens`/`github.use_git_credentials` (see
    SKILL.md "Always applies").
+5. **Gate on known vulnerabilities with `mise audit`** (mise 2026.11.12+): it checks each configured tool version against OSV.dev and exits 1 on a match. It needs network, so it runs in CI, never
+   in the commit gate. Tools it cannot check (e.g. private registries) are listed as unchecked, not clean. `mise upgrade --vulnerable` upgrades only the affected tools.
 
 ## Notes & Gotchas:
 
