@@ -115,6 +115,14 @@ local pushGates: Mapping<String, Step> = new Mapping<String, Step> {
 
 exclude = commonIgnores
 
+// Test gates: tests are not lint, so they stay out of `check`; pre-push and CI run them.
+local testGates: Mapping<String, Step> = new Mapping<String, Step> {
+  ["test"] {
+    glob = "hooks/**"
+    check = "mise run test"
+  }
+}
+
 hooks {
   // `hk check` / `mise run check` — the union: everything this repo enforces, and the only
   // hook CI runs. Read-only; `--fix` applies to the tree and never stages. (No ["fix"] hook on
@@ -136,10 +144,13 @@ hooks {
     steps = commitGates
   }
 
-  // `git push` — push gates only (every commit already passed the commit gates). Best-effort
-  // locally (`--no-verify` skips); CI's union run is the authoritative gate.
+  // `git push` — push gates only (every commit already passed the commit gates), plus the tests.
+  // Best-effort locally (`--no-verify` skips); CI runs `check` and `test` as the authoritative gate.
   ["pre-push"] {
-    steps = pushGates
+    steps {
+      ...pushGates
+      ...testGates
+    }
   }
 
   // Commit message ({{commit_msg_file}}) — no-op.
