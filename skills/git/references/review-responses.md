@@ -46,8 +46,7 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 7. After a round is fully addressed (fix pushed, replies posted), re-request review so it lands
    back in the reviewer's queue: `gh pr edit <num> --add-reviewer <login>`.
    Skip for bots; they re-review on push.
-8. End every reply with the AI disclosure footer, its tier picked per reply by
-   [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure), since one round routinely mixes all three.
+8. Every reply carries the AI disclosure, per [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
 
 **A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply
 mutation takes no file. So a picture goes on the PR-level comment or in the body, and the thread reply

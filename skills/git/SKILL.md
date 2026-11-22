@@ -55,10 +55,8 @@ The last-resort empty commit: when it beats retrying the check, and the zero-fil
 
 ## Always
 
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI disclosure**. Commit messages carry no disclosure.
-The templates, one per tier of human judgment behind the post (Agent Decided, Human Planned,
-Human Guided), live in [AI Disclosure](#ai-disclosure) below.
-Use them as verbatim as possible, do not write from memory.
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI disclosure**, per [AI Disclosure](#ai-disclosure) below. Commit messages carry
+none.
 
 **Reach for `gh` first.** Every GitHub action goes through the `gh` CLI; the GitHub MCP server is
 the fallback for what `gh` cannot do.
@@ -100,82 +98,13 @@ Carry `<OWNER/REPO>` and `<trunk>` through the session from that.
 
 ## AI Disclosure
 
-Every post on the user's behalf (PR body, issue, comment, review comment, reply) carries one
-disclosure line, copied from the templates below. Where it goes depends on the post:
-
-- **PR body, issue, top-level comment:** a chip in the top-right corner, before everything else.
-  The table floats beside the text, so it takes no line of its own. Keep the blank lines inside
-  the cell: without them GitHub prints the `_` as text.
-
-  ```markdown
-  <table align="right"><tr><td>
-
-  _<sub>🤖 Agent Decided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
-
-  </td></tr></table>
-
-  The post starts here.
-  ```
-
-- **Review comment, thread reply:** a footer on the line right under the last paragraph, no blank
-  line between. After a list or a code block, leave one blank line, or the footer joins the last
-  item.
-
-  ```markdown
-  Fixed in a1b2c3d.
-  <sub>&emsp;╰</sub> _<sub>🤖 Agent Decided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
-  ```
-
-Placeholders, the same in every line:
-
-- `<TOOL>`: the harness you run in, e.g. Claude Code, Cursor.
-- `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
-- `<EFFORT>`: the reasoning effort, when the harness exposes it (Claude Code: `$CLAUDE_EFFORT`).
-  Never guess it; when unknown, drop ` (<EFFORT>)`.
-
-A short ` · <what the user decided>` may follow, when it tells the reader something the tier
-does not, e.g. `· approach picked in review`.
-
-### Picking the variant
-
-The line answers one question for whoever reads the post: how much human judgment stands behind
-it? Judge the decisions the post carries, not the request that produced them. The tiers go from
-least to most human judgment.
-
-**🤖 Agent Decided.** You chose the change, position, or wording. No human guidance on the how of it.
+Load the **ai-disclosure** skill before the first post: it owns the disclosure line, its tier, and
+where it goes in each kind of post. Without that skill, end every post with this line:
 
 ```markdown
 _<sub>🤖 Agent Decided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
 ```
 
-**📋 Human Planned.** The user worked through the plan with you, in a grill session or a plan that
-covers many decisions, and the post carries it out. The implementation details are yours. A short
-"go do this" is not a plan: that stays 🤖.
-
-```markdown
-_<sub>📋 Human Planned: <TOOL> · <MODEL> (<EFFORT>)</sub>_
-```
-
-**🤝 Human Guided.** A back and forth on a technical decision happened, and its outcome is in this
-post: the user picked one of the options you laid out, answered the question that settled the
-design, or named what to do.
-
-```markdown
-_<sub>🤝 Human Guided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
-```
-
-Still 🤖, however it feels:
-
-- A task, however specific. "Fix the flaky test", "file an issue about X": naming what to work on is not deciding what it says.
-- A rule the user wrote earlier, in a skill, in CLAUDE.md, in memory. Their instruction set is not a call on this post.
-- Delegation. "Do whatever you think is best" is the opposite of direction.
-- A yes on the final post with no other input. They signed off, but shaped nothing.
-- Direction from anyone but the user. The post goes out under their name, so the tier reports what they did.
-- A Human Note. It is context in the body, not a decision about the change.
-- A reply posted from a watch loop. The user was not in it.
-
-**Direction does not reach what they never saw.** On a long run, a post about a part the user was
-never in is 🤖, and a push that changes what they planned or guided drops back to 🤖.
-
-**Understate, never overstate.** Torn between two tiers, take the lower one. A disclosure claiming human
-judgment that never happened is the failure that matters.
+`<TOOL>` is the harness you run in (e.g. Claude Code, Cursor); `<MODEL>` is your model's friendly
+name (e.g. `Opus 5.5`); `<EFFORT>` is the reasoning effort when the harness exposes it (Claude Code:
+`$CLAUDE_EFFORT`), else drop ` (<EFFORT>)`.

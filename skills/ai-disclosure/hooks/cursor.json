@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "type": "command",
+        "command": "./ai-disclosure/hooks/run.sh cursor"
+      }
+    ]
+  }
+}

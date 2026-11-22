@@ -79,50 +79,45 @@ hide = true
 run = 'uv run --locked python -c "import tiktoken; tiktoken.get_encoding(\"o200k_base\")"'
 
 [tasks."version:check"]
-# Guard against a stale marketplace cache: Claude/Cursor key the installed plugin on the `version`
-# string in the manifests, so shipped changes with an unchanged version never re-vendor. A pushGates
+# Guard against a stale marketplace cache: Claude/Cursor key an installed plugin on the `version`
+# string in its manifests, so shipped changes with an unchanged version never re-vendor. A pushGates
 # step in .config/hk.pkl routes here (pre-push + the `check` hook CI runs); also callable standalone.
-description = "Fail if shipped plugin content changed vs the base without a manifest version bump"
+description = "Fail if a plugin's shipped content changed vs the base without a manifest version bump"
 usage = 'flag "--base <ref>" help="ref to compare against (default: $BASE_REF or origin/main)"'
 run = '''
 set -eu
 base="${usage_base:-${BASE_REF:-origin/main}}"            # default matches default_branch in .config/hk.pkl
-content="skills hooks"                                    # + manifests below = the version-bump glob in .config/hk.pkl; keep in sync
-manifests=".claude-plugin/plugin.json .cursor-plugin/plugin.json"
+git rev-parse --verify --quiet "$base" >/dev/null || { echo "⚠️  base ref '$base' not found, skipping the bump check"; base=""; }
 
-# Version-parity: every manifest must carry the same version — a split version is a broken
-# contract (the release workflow tags off one of them), not a per-run concern, so this runs
-# before the "no content changed" early exit below.
-prev=""
-for m in $manifests; do
-  v="$(jq -r .version "$m")"
-  if [ -n "$prev" ] && [ "$v" != "$prev" ]; then
-    echo "❌ manifest version mismatch: $m is $v, expected $prev (every manifest must match)" >&2
-    exit 1
-  fi
-  prev="$v"
-done
-
-git rev-parse --verify --quiet "$base" >/dev/null || { echo "⚠️  base ref '$base' not found — skipping"; exit 0; }
-if git diff --quiet "$base"...HEAD -- $content; then
-  echo "✅ no shipped plugin content changed vs $base — no version bump needed"; exit 0
-fi
+# Every plugin the marketplace lists, by root. Its content is what its manifest ships: the skill
+# paths and the hook config's folder. Manifest folders are left out; changing one is the bump.
+roots="$(jq -r '.plugins[].source | ltrimstr("./") | rtrimstr("/") | if . == "" then "." else . end' .claude-plugin/marketplace.json)"
+excludes=""
+for r in $roots; do excludes="$excludes :(exclude)$r/.claude-plugin :(exclude)$r/.cursor-plugin"; done
 
 fail=0
-for m in $manifests; do
-  cur="$(jq -r .version "$m")"
-  was="$(git show "$base:$m" 2>/dev/null | jq -r .version 2>/dev/null || echo "")"  # empty ⇒ manifest is new, counts as bumped
-  if [ -n "$was" ] && [ "$cur" = "$was" ]; then
-    echo "❌ $m: still $cur but skills/hooks changed vs $base — bump the version" >&2; fail=1
+for r in $roots; do
+  m="$r/.claude-plugin/plugin.json"
+  v="$(jq -r .version "$m")"
+  for other in "$r/.cursor-plugin/plugin.json"; do   # version-parity: a split version is a broken contract
+    [ "$(jq -r .version "$other")" = "$v" ] || { echo "❌ $r: $other is $(jq -r .version "$other"), $m is $v (every manifest must match)" >&2; fail=1; continue 2; }
+  done
+  [ -n "$base" ] || continue
+
+  content="$(jq -r --arg r "$r" '([.skills] | flatten) + [.hooks | select(type == "string") | sub("/[^/]*$"; "")]
+    | .[] | $r + "/" + ltrimstr("./") | sub("^\\./"; "")' "$m")"
+  if git diff --quiet "$base"...HEAD -- $content $excludes; then
+    echo "✅ $r: no shipped content changed vs $base"; continue
+  fi
+  was="$(git show "$base:${m#./}" 2>/dev/null | jq -r .version 2>/dev/null || echo "")"  # empty ⇒ new manifest, counts as bumped
+  if [ -n "$was" ] && [ "$v" = "$was" ]; then
+    echo "❌ $r: still $v but its content changed vs $base, bump the version" >&2; fail=1
+  else
+    echo "✅ $r: manifests bumped past $base"
   fi
 done
-[ "$fail" -eq 0 ] && echo "✅ plugin manifests bumped past $base"
 exit "$fail"
 '''
-
-# Vendored skills. The `skills` CLI owns skills-lock.json; each task edits it, then re-runs
-# skills:sync to make skills/vendor match. Unlike every other tool here, it needs node on PATH:
-# it ships as an npm package only.
 
 [tasks."skills:update"]
 description = "Refetch vendored skills from upstream"
@@ -147,7 +142,7 @@ usage = '''
     complete "skill" run="ls skills/vendor"
 '''
 run = [
-  'rm -rf .agents .claude/skills',
+  'rm -rf .agents/skills .claude/skills',
   'npx -y skills@latest remove{% for s in usage.skill %} -s "{{s}}"{% endfor %} -a universal --yes',
   { task = "skills:sync" },
 ]
@@ -163,7 +158,7 @@ run = [
   npx -y skills@latest experimental_install
   rm -rf skills/vendor                 # replace wholesale: a dropped entry has to leave the tree too
   cp -R .agents/skills skills/vendor
-  rm -rf .agents .claude/skills
+  rm -rf .agents/skills .claude/skills
   ''',
   { task = "tokens", args = [
     "--fix",
@@ -175,7 +170,8 @@ description = "Run the hook tests"
 depends = [
   "lint",
 ] # ordering only; depends run in parallel, don't see this task's env
-run = "python3 -m unittest discover -s hooks/tests"
+run = ["python -m unittest discover -s hooks/tests"]
+tools.python = "3.9" # the oldest python the hooks support
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
 description = "One-time, idempotent project bootstrap: check prerequisites, install tools, then runtime deps"

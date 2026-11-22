@@ -3,7 +3,7 @@ mise.local.toml
 mise.*.local.toml
 
 # Where the `skills` CLI installs; `mise run skills:sync` copies into skills/vendor and clears these.
-.agents/
+.agents/skills/
 .claude/skills/
 
 # hk findings the check workflow writes; kept out of the auto-fix patch (`git add -A`)

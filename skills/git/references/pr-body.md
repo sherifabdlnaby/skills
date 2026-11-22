@@ -23,9 +23,8 @@ for the second one; the diff does not carry them.
 
 In body order. Write each block, or drop it with a reason ([Receipts](#receipts)).
 
-- **AI disclosure.** The corner chip, first, before everything else. Template and tier in
-  [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
-- **Human Note.** The user's own words, verbatim, in the `[!NOTE]` callout right after the chip. Wait
+- **AI disclosure.** What it says and where it goes: [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
+- **Human Note.** The user's own words, verbatim, in the `[!NOTE]` callout at the top of the body. Wait
   for the user to open it: they hand you a note, or they ask for one. Offer it as one more option
   only in a question you already ask. No paraphrase, no typo fixes, no punctuation changes.
 - **Summary.** One paragraph, two to four sentences, in this order: the ticket link, one sentence
@@ -87,7 +86,7 @@ In body order. Write each block, or drop it with a reason ([Receipts](#receipts)
   Human Note has none; it is the user's to open. (why: without a reason, a dropped block and a
   forgotten one look the same.)
 - **The structure hook denies a post that misses a receipt**, where it is installed beside this
-  skill, the same way the disclosure hook denies a missing disclosure. The message names the blocks.
+  skill. The message names the blocks.
   Add the marker or the dropped entry, then retry.
 - **Repo template** (`<!-- pr:skeleton-off: <reason> -->`): when the repo ships a
   `PULL_REQUEST_TEMPLATE`, or its own instructions say how a body reads, theirs is the shape and
@@ -95,7 +94,7 @@ In body order. Write each block, or drop it with a reason ([Receipts](#receipts)
   into the sections they fit: summary into their description, changes and review guide under the
   nearest heading, our collapsibles and links after their last section.
   `gh pr create --body-file` does not apply the template for you: read the file and merge by hand.
-  The AI disclosure chip still opens the body, before their template; the template governs
+  The AI disclosure still opens the body, before their template; the template governs
   everything after that. This marker, with its reason, replaces the receipts and
   silences the hook. Use the same marker for a body you did not shape (another author's PR).
 - **Markdown inside `<details>` needs a blank line after `</summary>`**, as in the skeleton. Without
@@ -107,12 +106,7 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 `<!-- pr:x -->` markers and the `pr:dropped` line survive into the body.
 
 ```markdown
-<table align="right"><tr><td>
-
-_<sub>🤖 Agent Decided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
-
-</td></tr></table>
-<!-- tier by how much human judgment is behind the PR: 🤖 Agent Decided, 📋 Human Planned, 🤝 Human Guided; see SKILL.md AI Disclosure -->
+<!-- AI disclosure: the ai-disclosure skill places it; without that skill, the fallback line from SKILL.md goes at the end -->
 
 > [!NOTE]
 >

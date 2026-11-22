@@ -1,18 +1,19 @@
-# Auto-tag on version change: no label-driven bumping. A human bumps BOTH manifest versions
-# (.claude-plugin/plugin.json, .cursor-plugin/plugin.json, kept equal) in the PR; version:check
-# (mise.toml, wired as an hk pushGate) already blocks a merge that ships content without the bump.
-# This workflow reacts to the merge itself.
+# Auto-tag on version change: no label-driven bumping. Each plugin in .claude-plugin/marketplace.json
+# versions on its own: the repo-root plugin tags `v<version>`, any other `<name>-v<version>`. A human bumps BOTH of a plugin's manifest
+# versions (.claude-plugin/plugin.json, .cursor-plugin/plugin.json, kept equal) in the PR;
+# version:check (mise.toml, wired as an hk pushGate) already blocks a merge that ships content
+# without the bump. This workflow reacts to the merge itself.
 #
 # The version contract (this file is the single source of truth for it):
 #   open PR ........................ preview: one sticky comment shows the tag a merge would cut,
 #                                    or that no bump ships no release; refreshed on every push
-#   push to main, version bumped ... tag `v<version>` + a GitHub release with generated notes,
+#   push to main, version bumped ... tag `<prefix><version>` + a GitHub release with generated notes,
 #                                    created in one shot (immutable-friendly: never edited after)
 #   push to main, version unchanged  clean no-op
 #   manifests disagree ............. fail loudly — a split version is a broken contract, not a
 #                                    release decision
 #   dispatch, empty version ........ re-run the same push-to-main logic on demand
-#   dispatch, explicit `version` ... tag it verbatim (v-prefixed if missing); a `-` marks a
+#   dispatch, explicit `version` ... tag the chosen `plugin` verbatim (prefixed if missing); a `-` marks a
 #                                    pre-release (`--prerelease`, never `--latest`). A stable
 #                                    version that disagrees with the manifests warns loudly:
 #                                    marketplaces keep reading the manifests, the tag is for humans.
@@ -30,9 +31,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Explicit version to tag (e.g. 0.4.0 or v0.4.0-rc.1). Empty = read from the manifests."
+        description: "Explicit version to tag (e.g. 0.4.0 or 0.4.0-rc.1). Empty = read from the manifests."
         required: false
         type: string
+      plugin:
+        description: "Plugin an explicit version tags, by its marketplace name."
+        required: false
+        type: string
+        default: skills
 
 # Top-level read-only; each job widens only what it needs.
 permissions:
@@ -46,16 +52,44 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # ── The plugins, read from the marketplace: name, root, tag prefix ──
+  plugins:
+    name: 📦 Plugins
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      list: ${{ steps.list.outputs.list }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .claude-plugin/marketplace.json
+          sparse-checkout-cone-mode: false
+
+      - name: List plugins
+        id: list
+        run: |
+          set -euo pipefail
+          jq -c '[.plugins[] | (.source | ltrimstr("./") | rtrimstr("/")) as $r
+            | {name, root: (if $r == "" then "." else $r end), prefix: (if $r == "" then "v" else .name + "-v" end)}]' \
+            .claude-plugin/marketplace.json | sed 's/^/list=/' >> "$GITHUB_OUTPUT"
+
   # ── PR preview: what a merge would cut, kept as one sticky comment ──
   # Fork PRs carry a read-only token, so the comment API 403s there — skip rather than fail the run.
   preview:
     name: 🔖 Release preview
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+    needs: plugins
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: ${{ fromJSON(needs.plugins.outputs.list) }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -68,23 +102,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          NAME: ${{ matrix.plugin.name }}
+          ROOT: ${{ matrix.plugin.root }}
+          P: ${{ matrix.plugin.prefix }}
         run: |
           set -euo pipefail
-          CLAUDE_VERSION="$(jq -r .version .claude-plugin/plugin.json)"
-          CURSOR_VERSION="$(jq -r .version .cursor-plugin/plugin.json)"
-          MARKER="<!-- release-preview -->"
+          CLAUDE_VERSION="$(jq -r .version "$ROOT/.claude-plugin/plugin.json")"
+          CURSOR_VERSION="$(jq -r .version "$ROOT/.cursor-plugin/plugin.json")"
+          MARKER="<!-- release-preview:$NAME -->"
 
           if [ "$CLAUDE_VERSION" != "$CURSOR_VERSION" ]; then
-            BODY="$MARKER"$'\n'"⚠️ Manifest versions disagree: \`.claude-plugin/plugin.json\` is \`$CLAUDE_VERSION\`, \`.cursor-plugin/plugin.json\` is \`$CURSOR_VERSION\`. Fix before merge — the release job fails loudly on this."
+            BODY="$MARKER"$'\n'"⚠️ \`$NAME\` manifest versions disagree: \`.claude-plugin/plugin.json\` is \`$CLAUDE_VERSION\`, \`.cursor-plugin/plugin.json\` is \`$CURSOR_VERSION\`. Fix before merge — the release job fails loudly on this."
           else
-            LATEST_TAG="$(git tag -l 'v*' --sort=-v:refname | head -1)"
-            if [ -n "$LATEST_TAG" ] && [ "v$CLAUDE_VERSION" = "$LATEST_TAG" ]; then
-              BODY="$MARKER"$'\n'"No version bump — merge ships no release (still \`$LATEST_TAG\`)."
-            elif git rev-parse -q --verify "refs/tags/v$CLAUDE_VERSION" >/dev/null; then
+            LATEST_TAG="$(git tag -l "${P}[0-9]*" --sort=-v:refname | head -1)"
+            if [ -n "$LATEST_TAG" ] && [ "$P$CLAUDE_VERSION" = "$LATEST_TAG" ]; then
+              BODY="$MARKER"$'\n'"\`$NAME\`: no version bump, merge ships no release (still \`$LATEST_TAG\`)."
+            elif git rev-parse -q --verify "refs/tags/$P$CLAUDE_VERSION" >/dev/null; then
               # Mirrors the release job's existence check: an older, already-tagged version no-ops.
-              BODY="$MARKER"$'\n'"⚠️ \`v$CLAUDE_VERSION\` is already tagged (latest is \`$LATEST_TAG\`) — merge ships no release; bump past \`$LATEST_TAG\` to cut one."
+              BODY="$MARKER"$'\n'"⚠️ \`$P$CLAUDE_VERSION\` is already tagged (latest is \`$LATEST_TAG\`), merge ships no release; bump past \`$LATEST_TAG\` to cut one."
             else
-              BODY="$MARKER"$'\n'"🏷️ Merging cuts release \`v$CLAUDE_VERSION\`."
+              BODY="$MARKER"$'\n'"🏷️ Merging cuts release \`$P$CLAUDE_VERSION\`."
             fi
           fi
 
@@ -102,10 +139,16 @@ jobs:
     # The ref guard covers workflow_dispatch, which can be pointed at any branch — a dispatch off a
     # topic branch must not tag that branch's manifest version. (push is already filtered to main.)
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    needs: plugins
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write # push the tag + create the release
+    strategy:
+      fail-fast: false
+      max-parallel: 1 # tags and releases one at a time, like the run-level concurrency
+      matrix:
+        plugin: ${{ fromJSON(needs.plugins.outputs.list) }}
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -120,31 +163,38 @@ jobs:
         id: version
         env:
           INPUT_VERSION: ${{ inputs.version }} # user-controllable; via env, never interpolated (zizmor: template-injection)
+          INPUT_PLUGIN: ${{ inputs.plugin }}
+          NAME: ${{ matrix.plugin.name }}
+          ROOT: ${{ matrix.plugin.root }}
+          P: ${{ matrix.plugin.prefix }}
         run: |
           set -euo pipefail
-          CLAUDE_VERSION="$(jq -r .version .claude-plugin/plugin.json)"
-          CURSOR_VERSION="$(jq -r .version .cursor-plugin/plugin.json)"
+          CLAUDE_VERSION="$(jq -r .version "$ROOT/.claude-plugin/plugin.json")"
+          CURSOR_VERSION="$(jq -r .version "$ROOT/.cursor-plugin/plugin.json")"
           if [ "$CLAUDE_VERSION" != "$CURSOR_VERSION" ]; then
-            echo "::error::manifest version mismatch: .claude-plugin/plugin.json=$CLAUDE_VERSION vs .cursor-plugin/plugin.json=$CURSOR_VERSION"
+            echo "::error::$NAME manifest version mismatch: .claude-plugin/plugin.json=$CLAUDE_VERSION vs .cursor-plugin/plugin.json=$CURSOR_VERSION"
             exit 1
           fi
 
-          if [ -n "$INPUT_VERSION" ]; then
+          if [ -n "$INPUT_VERSION" ] && [ "$INPUT_PLUGIN" != "$NAME" ]; then
+            echo "Explicit version is for $INPUT_PLUGIN, nothing to release for $NAME."
+            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          elif [ -n "$INPUT_VERSION" ]; then
             # Explicit dispatch version wins, used verbatim.
-            TAG="$INPUT_VERSION"; [ "${TAG#v}" = "$TAG" ] && TAG="v$TAG"
-            case "$TAG" in
-              *-*) PRE=true ;; # a '-' marks a pre-release (e.g. v0.4.0-rc.1)
+            TAG="${INPUT_VERSION#v}"; TAG="$P${TAG#"$P"}"
+            case "${TAG#"$P"}" in
+              *-*) PRE=true ;; # a '-' after the version marks a pre-release (e.g. v0.4.0-rc.1)
               *)   PRE=false
-                   [ "$TAG" != "v$CLAUDE_VERSION" ] && echo "::warning::dispatch version $TAG disagrees with the manifests (v$CLAUDE_VERSION) — marketplaces keep reading the manifests" ;;
+                   [ "$TAG" != "$P$CLAUDE_VERSION" ] && echo "::warning::dispatch version $TAG disagrees with the manifests ($P$CLAUDE_VERSION), marketplaces keep reading the manifests" ;;
             esac
           else
-            TAG="v$CLAUDE_VERSION"
+            TAG="$P$CLAUDE_VERSION"
             PRE=false
           fi
 
           # Stable notes start from the last stable tag so an rc line is covered whole; an rc lets
           # gh pick its own previous tag. Empty on the first release.
-          LATEST_STABLE="$(git tag -l 'v*' --sort=-v:refname | grep -v -- - | head -1 || true)"
+          LATEST_STABLE="$(git tag -l "${P}[0-9]*" --sort=-v:refname | grep -v -- "^$P.*-" | head -1 || true)"
           PREVIOUS_TAG=""
           [ "$PRE" = false ] && PREVIOUS_TAG="$LATEST_STABLE"
 
@@ -183,11 +233,14 @@ jobs:
         env:
           TAG: ${{ steps.version.outputs.tag }}
           PRE: ${{ steps.version.outputs.prerelease }}
+          ROOT: ${{ matrix.plugin.root }}
           PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
         run: |
           set -euo pipefail
           args=(--title "$TAG" --generate-notes)
-          # An rc must never take `latest` from the last stable release.
-          if [ "$PRE" = true ]; then args+=(--prerelease); else args+=(--latest); fi
+          # GitHub keeps one `latest` per repo: it stays with the repo-root plugin, and an rc never takes it.
+          if [ "$PRE" = true ]; then args+=(--prerelease)
+          elif [ "$ROOT" = . ]; then args+=(--latest)
+          else args+=(--latest=false); fi
           [ -n "$PREVIOUS_TAG" ] && args+=(--notes-start-tag "$PREVIOUS_TAG")
           gh release create "$TAG" "${args[@]}"
