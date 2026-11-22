@@ -10,9 +10,9 @@ Classify who left each comment first, because it sets how much you defer. Then r
 1. **Automated review (bot / AI tool).** Copilot, CodeQL, Sonar, Snyk, and other review bots.
    2. Signal: author: GitHub `user.type == Bot`, or name says it's a bot/review tool, or CI comment.
 2. **AI-disclosed (an agent behind a human account).** A comment from a person's account whose body
-   carries AI authorship: a 🤖 emoji, or an explicit line like "on behalf of @...", "created with
+   carries AI authorship: a 🤖 emoji, or an explicit line like "on behalf of @...", a harness and model name, "created with
    assistance from", "generated with/by". Agents post under their operator's GitHub identity (the
-   same header convention this skill prepends), so `user.type` reads `User` while the content is
+   same disclosure convention this skill adds), so `user.type` reads `User` while the content is
    machine-written. Detect it by reading the body, not the author.
 3. **Human.** A person, no AI disclosure in the body.
 
@@ -46,7 +46,7 @@ When you can't tell 2 from 3, treat it as human; a real person is accountable fo
 7. After a round is fully addressed (fix pushed, replies posted), re-request review so it lands
    back in the reviewer's queue: `gh pr edit <num> --add-reviewer <login>`.
    Skip for bots; they re-review on push.
-8. Open every reply with the AI header, its tier picked per reply by
+8. End every reply with the AI disclosure footer, its tier picked per reply by
    [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure), since one round routinely mixes all three.
 
 **A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply

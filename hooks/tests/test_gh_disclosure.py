@@ -12,8 +12,8 @@ import gh_disclosure  # noqa: E402
 
 ALLOW, MISSING, UNREADABLE = "allow", "missing", "unreadable"
 
-FOOTER = "_<sub>🤖 Agent Decided: Posted by Claude (Opus 5.5) autonomously on behalf of @octocat.</sub>_"
-BODY = "Looks good.\n\n---\n" + FOOTER
+DISCLOSURE = "_<sub>🤖 Agent Decided: Claude Code · Opus 5.5 (high)</sub>_"
+BODY = "Looks good.\n<sub>&emsp;╰</sub> " + DISCLOSURE
 
 
 def verdict(command, cwd):
@@ -32,7 +32,7 @@ class Case(unittest.TestCase):
         for name, text in (
             ("good.md", BODY),
             ("sub/good.md", BODY),
-            ("bad.md", "no footer"),
+            ("bad.md", "no disclosure"),
         ):
             with open(os.path.join(self.cwd, name), "w", encoding="utf-8") as fh:
                 fh.write(text)
@@ -96,12 +96,12 @@ class BodyFiles(Case):
                     gh pr comment 7 --body-file new.md
                     """,
                 ),
-                # A footer on disk must not stand in for what the line writes over it.
+                # A disclosure on disk must not stand in for what the line writes over it.
                 (
                     MISSING,
                     """
                     cat > good.md <<'EOF'
-                    no footer
+                    no disclosure
                     EOF
                     gh pr comment 7 --body-file good.md
                     """,
@@ -146,7 +146,7 @@ class Heredocs(Case):
                     cat > notes.txt <<'EOF'
                     scratch
                     EOF
-                    gh pr comment 7 --body 'no footer'
+                    gh pr comment 7 --body 'no disclosure'
                     """,
                 ),
             ]
@@ -162,7 +162,7 @@ class Heredocs(Case):
                     Has "quotes" and a $dollar inside.
 
                     ---
-                    {FOOTER}
+                    {DISCLOSURE}
                     EOF
                     )"
                     """,
@@ -179,7 +179,7 @@ class Heredocs(Case):
                     MISSING,
                     """
                     gh pr comment 7 --body-file - <<'EOF'
-                    no footer
+                    no disclosure
                     EOF
                     """,
                 ),
@@ -189,3 +189,50 @@ class Heredocs(Case):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DisclosureLine(Case):
+    """Any placement the skill teaches passes; a body without a tier line does not."""
+
+    def assertBodies(self, cases):
+        for expected, body in cases:
+            with self.subTest(body=body):
+                path = os.path.join(self.cwd, "body.md")
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.write(body)
+                self.assertEqual(
+                    verdict("gh pr comment 7 --body-file body.md", self.cwd), expected
+                )
+
+    def test_placements(self):
+        chip = f'<table align="right"><tr><td>\n\n{DISCLOSURE}\n\n</td></tr></table>\n\nSummary.'
+        self.assertBodies(
+            [
+                (ALLOW, chip),
+                (ALLOW, f"Fixed.\n<sub>&emsp;╰</sub> {DISCLOSURE}"),
+                (ALLOW, f"Fixed.\n\n---\n\n{DISCLOSURE}"),
+            ]
+        )
+
+    def test_older_wording_still_passes(self):
+        self.assertBodies(
+            [
+                (
+                    ALLOW,
+                    "Fixed.\n\n_<sub>📋 Human Planned: Posted by Claude (Opus 5.5) on behalf of @octocat.</sub>_",
+                ),
+                (
+                    ALLOW,
+                    "_<sub>🤝 Human Guided PR: Created with Cursor (Composer) on behalf of @octocat.</sub>_\n\n---\n\nBody.",
+                ),
+            ]
+        )
+
+    def test_a_tier_emoji_alone_is_not_a_disclosure(self):
+        self.assertBodies(
+            [
+                (MISSING, "Fixed 🤖"),
+                (MISSING, "_<sub>Claude Code · Opus 5.5</sub>_"),
+                (MISSING, "_<sub>🤖 Agent Decided\nClaude Code</sub>_"),
+            ]
+        )
