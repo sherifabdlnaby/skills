@@ -24,9 +24,8 @@ BASE=<trunk, or the branch below in a stack>
 Read the answers: clean tree, or only intended changes; the branch is the one you mean; upstream set,
 else push it; the intended commits are present and nothing else is.
 
-Two more, batched with it:
+One more, batched with it:
 
-- `gh api user --jq '.login'`: cache as `<GITHUB_USERNAME>` for the AI header.
 - Repo template or PR instructions? `PULL_REQUEST_TEMPLATE*` under `.github/` or the root, and the repo's own agent
   instructions. Either one changes the body shape: see **Repo template** under [Receipts](./pr-body.md#receipts).
 
@@ -106,7 +105,7 @@ drafts you meant to keep.
 **New commits during review:** address feedback with new commits, not amends or history-rewriting force-pushes; reviewers read incremental changes more easily. The scoping rule from
 [`commits.md`](./commits.md) still applies. A restack force-pushes the layers above by design; this rule is about the layer you edited.
 
-**`gh pr edit --body` is destructive:** the flag replaces the whole body, so anything missing from your payload (Human Note, AI header, receipts, links, collapsibles) is erased. Always:
+**`gh pr edit --body` is destructive:** the flag replaces the whole body, so anything missing from your payload (Human Note, AI disclosure, receipts, links, collapsibles) is erased. Always:
 
 1. Read the current body: `gh pr view <num> --json body --jq .body`. Skip this read when `updatedAt` still matches what your last edit returned; nothing has changed since. A mismatch means re-read,
    not that the body itself changed (comments, labels and pushes move it too).

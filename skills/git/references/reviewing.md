@@ -13,6 +13,6 @@ The other direction, responding to review comments on your _own_ PR, is [`review
 5. Trace the change until you can say, per file, what it does and why it belongs in this PR. A file you cannot place is a finding, not a gap to skip.
 6. Give the user a summary and a review guide: where to start, what carries risk, what to check by hand.
 
-Post to GitHub only when the user asks. Each comment carries the AI header per
+Post to GitHub only when the user asks. Each comment carries the AI disclosure per
 [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure), and replies go into the thread per
 [`review-responses.md`](./review-responses.md#batching).

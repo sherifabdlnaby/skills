@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "[commit|branch|pr|attach|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.5.2"
+  version: "0.5.3"
 ---
 
 # Git
@@ -31,7 +31,7 @@ Pre-staging walk, file confirmation, message style, hook-failure handling, scopi
 post-create lines, finishing PRs after `gh stack submit`, updating a body without clobbering it.
 
 **PR body** (write or rewrite a description) -> [`references/pr-body.md`](references/pr-body.md) Voice for the product and engineer blocks, each block's rule in body order, where a visual
-sits and when to take a screenshot, receipts and the structure hook, the skeleton, linking, AI headers.
+sits and when to take a screenshot, receipts and the structure hook, the skeleton, linking.
 
 **Attach a screenshot or video** -> [`references/attach.md`](references/attach.md)
 `--attach` on create/edit/comment, body-file placement, screenshot framing guidance.
@@ -55,9 +55,8 @@ The last-resort empty commit: when it beats retrying the check, and the zero-fil
 
 ## Always
 
-**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI header**. Commit messages carry no disclosure.
-The PR-body template lives in [`references/pr-body.md`](references/pr-body.md);
-the post templates, one per tier of human judgment behind the post (Agent Decided, Human Planned,
+**Disclose AI.** Anything posted on GitHub on the user's behalf (PR body, comment, issue, ticket update) carries an **AI disclosure**. Commit messages carry no disclosure.
+The templates, one per tier of human judgment behind the post (Agent Decided, Human Planned,
 Human Guided), live in [AI Disclosure](#ai-disclosure) below.
 Use them as verbatim as possible, do not write from memory.
 
@@ -81,13 +80,13 @@ your call when a one-off is cheaper:
 - **Bodies travel by file.** PR body or GraphQL query to a file, then `--body-file` / `-F query=@file`. (why: shell quoting eats backticks and `$`, and a file stays editable for the next update.)
   Hooks that ship beside this skill check PR bodies deterministically, and they refuse a body they cannot read from a file.
 
-**Resolve once per session, reuse everywhere.** One line for all three:
+**Resolve once per session, reuse everywhere.** One line for both:
 
 ```bash
-gh repo view --json nameWithOwner,defaultBranchRef --jq '"repo  \(.nameWithOwner)\ntrunk \(.defaultBranchRef.name)"'; gh api user --jq '"user  \(.login)"'
+gh repo view --json nameWithOwner,defaultBranchRef --jq '"repo  \(.nameWithOwner)\ntrunk \(.defaultBranchRef.name)"'
 ```
 
-Carry `<OWNER/REPO>`, `<trunk>` and `<GITHUB_USERNAME>` through the session from that.
+Carry `<OWNER/REPO>` and `<trunk>` through the session from that.
 
 **Voice** for everything public (commit messages, PR titles and bodies, comments, issues):
 
@@ -101,26 +100,52 @@ Carry `<OWNER/REPO>`, `<trunk>` and `<GITHUB_USERNAME>` through the session from
 
 ## AI Disclosure
 
-Every post on the user's behalf (comment, reply, issue) opens with an AI header: one line copied
-verbatim from the templates below, then a `---`, before the rest of the content. The PR-**body**
-variants live in [`references/pr-body.md`](references/pr-body.md) and follow the same rule.
+Every post on the user's behalf (PR body, issue, comment, review comment, reply) carries one
+disclosure line, copied from the templates below. Where it goes depends on the post:
 
-Placeholders, the same in every header:
+- **PR body, issue, top-level comment:** a chip in the top-right corner, before everything else.
+  The table floats beside the text, so it takes no line of its own. Keep the blank lines inside
+  the cell: without them GitHub prints the `_` as text.
 
-- `<TOOL>`: the tool you're running as, e.g. Claude, Cursor.
+  ```markdown
+  <table align="right"><tr><td>
+
+  _<sub>🤖 Agent Decided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
+
+  </td></tr></table>
+
+  The post starts here.
+  ```
+
+- **Review comment, thread reply:** a footer on the line right under the last paragraph, no blank
+  line between. After a list or a code block, leave one blank line, or the footer joins the last
+  item.
+
+  ```markdown
+  Fixed in a1b2c3d.
+  <sub>&emsp;╰</sub> _<sub>🤖 Agent Decided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
+  ```
+
+Placeholders, the same in every line:
+
+- `<TOOL>`: the harness you run in, e.g. Claude Code, Cursor.
 - `<MODEL>`: the friendly name of the model you're running, e.g. `Opus 4.8`.
-- `<GITHUB_USERNAME>`: resolve once per session with `gh api user --jq '.login'`.
+- `<EFFORT>`: the reasoning effort, when the harness exposes it (Claude Code: `$CLAUDE_EFFORT`).
+  Never guess it; when unknown, drop ` (<EFFORT>)`.
+
+A short ` · <what the user decided>` may follow, when it tells the reader something the tier
+does not, e.g. `· approach picked in review`.
 
 ### Picking the variant
 
-The header answers one question for whoever reads the post: how much human judgment stands behind
+The line answers one question for whoever reads the post: how much human judgment stands behind
 it? Judge the decisions the post carries, not the request that produced them. The tiers go from
 least to most human judgment.
 
 **🤖 Agent Decided.** You chose the change, position, or wording. No human guidance on the how of it.
 
 ```markdown
-_<sub>🤖 Agent Decided: Posted by <TOOL> (<MODEL>) autonomously on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤖 Agent Decided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
 ```
 
 **📋 Human Planned.** The user worked through the plan with you, in a grill session or a plan that
@@ -128,7 +153,7 @@ covers many decisions, and the post carries it out. The implementation details a
 "go do this" is not a plan: that stays 🤖.
 
 ```markdown
-_<sub>📋 Human Planned: Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>📋 Human Planned: <TOOL> · <MODEL> (<EFFORT>)</sub>_
 ```
 
 **🤝 Human Guided.** A back and forth on a technical decision happened, and its outcome is in this
@@ -136,7 +161,7 @@ post: the user picked one of the options you laid out, answered the question tha
 design, or named what to do.
 
 ```markdown
-_<sub>🤝 Human Guided: Posted by <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+_<sub>🤝 Human Guided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
 ```
 
 Still 🤖, however it feels:
@@ -152,5 +177,5 @@ Still 🤖, however it feels:
 **Direction does not reach what they never saw.** On a long run, a post about a part the user was
 never in is 🤖, and a push that changes what they planned or guided drops back to 🤖.
 
-**Understate, never overstate.** Torn between two tiers, take the lower one. A header claiming human
+**Understate, never overstate.** Torn between two tiers, take the lower one. A disclosure claiming human
 judgment that never happened is the failure that matters.
