@@ -123,6 +123,11 @@ jobs:
           path: ${{ runner.temp }}/autofix.patch
           retention-days: 1
 
+      # Also after a red check: a lint failure must not hide a test failure.
+      - name: Run tests
+        if: ${{ !cancelled() }}
+        run: mise run test
+
   # Applies `check`'s patch to bot/ci/<target> and syncs its PR + sticky comment. Runs nothing from the PR.
   fix-pr:
     name: fix-pr
