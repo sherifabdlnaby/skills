@@ -12,18 +12,27 @@ Escape hatch: a body carrying a `<!-- pr:skeleton-off: <reason> -->` marker pass
 untouched. For a body merged into a repo PULL_REQUEST_TEMPLATE or any imposed
 shape, where the receipts may not survive. The reason keeps it a conscious choice.
 
-Command parsing and body extraction are shared with gh_disclosure (same dir,
-launcher puts it on sys.path), so both hooks read the same body out of the same
-command, heredocs included. A body this guard cannot read stays quiet here:
-gh_disclosure already denies it with the right reason. stdlib only. Exit 0 always;
-"allow" is emitting nothing, "deny" is hooklib.deny().
+Command parsing and body extraction come from the ai-disclosure guard
+(skills/ai-disclosure/hooks/guard), so both read the same body out of
+the same command, heredocs and `gh api` included. A PR body this guard cannot read
+is denied with its own reason. stdlib only. Exit 0 always; "allow" is emitting
+nothing, "deny" is hooklib.deny().
 """
 
+import os
 import re
 import sys
 
 import hooklib
-from gh_disclosure import UNREADABLE, Files, extract_body, tokenize
+
+sys.path.insert(
+    0,
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        *("..", "..", "skills", "ai-disclosure", "hooks", "guard"),
+    ),
+)
+import github  # noqa: E402
 
 # The skeleton's blocks, in body order. Human Note is absent on purpose: it is the
 # user's to open, so its absence is never the agent's call.
@@ -42,7 +51,10 @@ BLOCKS = (
 )
 
 # Only bodies of the PR itself carry the skeleton; comments and reviews don't.
-BODY_ACTIONS = {("pr", "create"), ("pr", "edit")}
+BODY_POSTS = {"gh pr create", "gh pr edit"}
+
+# Sentinel from missing_receipts: a PR body was posted, but its text never reached us.
+UNREADABLE = object()
 
 # Whitespace-tolerant so a reformatted marker still counts.
 MARKER_RE = re.compile(r"<!--\s*pr:([a-z-]+)\s*-->")
@@ -69,30 +81,28 @@ def receipts(body):
 def missing_receipts(command, cwd):
     """Blocks with no receipt in the PR body posted by `command`, in body order.
 
-    Returns [] when the command isn't a PR-body post, the body opted out, or the
-    body is uninspectable (editor mode, unreadable --body-file, opaque shell
-    expansion): gh_disclosure denies those with a reason of its own.
+    Returns [] when the command isn't a PR-body post or the body opted out, and
+    UNREADABLE when gh would post a body we never see (editor mode, an unreadable
+    --body-file, an opaque shell expansion).
     """
-    parsed = tokenize(command)
-    if parsed is None:
-        return []
-    tokens, bodies = parsed
-
-    for i in range(len(tokens) - 2):
-        if tokens[i] != "gh":
+    for _, post in github.posts(command, cwd):
+        if post.what not in BODY_POSTS:
             continue
-        if (tokens[i + 1], tokens[i + 2]) not in BODY_ACTIONS:
-            continue
-        body = extract_body(
-            tokens[i + 3 :], bodies, Files.before(tokens, i, bodies, cwd)
-        )
-        if body is None or body is UNREADABLE:
+        (body,) = post.bodies  # gh posts one PR body
+        if BYPASS_RE.search(body.text):
             return []
-        if BYPASS_RE.search(body):
-            return []
-        written, dropped = receipts(body)
-        return [name for name in BLOCKS if name not in written | dropped]
+        written, dropped = receipts(body.text)
+        missing = [name for name in BLOCKS if name not in written | dropped]
+        return UNREADABLE if missing and not body.complete else missing
     return []
+
+
+UNREADABLE_REASON = (
+    "PR-structure guard: this command posts a PR body the guard cannot read, so it "
+    "cannot check the body for its receipts. Pass the body as a file "
+    "(`--body-file <path>`), inline (`--body '<text>'`), or as an inline heredoc into "
+    "`--body-file -`, then retry."
+)
 
 
 def format_reason(missing):
@@ -114,16 +124,20 @@ def main():
         return 0
 
     command = hooklib.command(data)
-    if not command:
+    if "gh" not in command:  # runs on every shell command; skip the parse for most
         return 0
 
     missing = missing_receipts(command, hooklib.cwd(data))
-    if not missing:
-        return 0
-
-    hooklib.deny(
-        data, format_reason(missing), "Blocked a PR body missing structure receipts."
-    )
+    if missing is UNREADABLE:
+        hooklib.deny(
+            data, UNREADABLE_REASON, "Blocked a PR body this hook could not read."
+        )
+    elif missing:
+        hooklib.deny(
+            data,
+            format_reason(missing),
+            "Blocked a PR body missing structure receipts.",
+        )
     return 0
 
 

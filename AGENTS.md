@@ -64,7 +64,7 @@ The lock names a source, not a version: no entry carries a ref, and `computedHas
 upgrade and read `git diff skills/vendor` before committing it.
 
 Linters skip the directory (`**/vendor/**` in `.config/hk.pkl`), which is what lets upstream formatting survive a sync. The CLI installs into agent dirs and takes no flag to aim elsewhere, so the
-sync moves its output out of `.agents/` and `.claude/skills/` and deletes both; they stay gitignored because in the tree they load every vendored skill a second time, as project skills.
+sync moves its output out of `.agents/skills/` and `.claude/skills/` and deletes both; they stay gitignored because in the tree they load every vendored skill a second time, as project skills.
 
 ## Skills stand alone
 
@@ -91,9 +91,16 @@ Beyond `.github/workflows/`: CodeQL default setup, Dependabot alerts + security 
 scanning with push protection, and a `main` ruleset requiring the `check` job are configured in
 repo settings. Don't scaffold replacements for them.
 
+## Plugins
+
+The marketplaces (`.claude-plugin/`, `.cursor-plugin/`, Codex's `.agents/plugins/`) list every plugin.
+The repo root is the `skills` plugin. `skills/` is also the `ai-disclosure` plugin: its manifests pick
+`./ai-disclosure` only. A plugin carries only what sits inside its own folder (Codex and Cursor load
+nothing outside it), and Cursor needs a plugin's `skills` as a list.
+
 ## Releases
 
-Shipping a change under `skills/` or `hooks/` needs both manifest versions bumped to the same
-value (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`) — `mise run version:check`
-enforces this pre-push and in CI. A release cuts itself: merging a version bump to `main` tags and
+Each plugin versions on its own. Shipping a change to what a plugin's manifest points at needs both
+of its manifest versions bumped to the same value (`.claude-plugin/plugin.json`,
+`.cursor-plugin/plugin.json`) — `mise run version:check` enforces this pre-push and in CI. A release cuts itself: merging a version bump to `main` tags and
 publishes automatically; there's no separate release step to run by hand.

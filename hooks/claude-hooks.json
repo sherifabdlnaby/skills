@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/run.sh gh_disclosure.py"
+            "command": "${CLAUDE_PLUGIN_ROOT}/skills/ai-disclosure/hooks/run.sh claude"
           },
           {
             "type": "command",

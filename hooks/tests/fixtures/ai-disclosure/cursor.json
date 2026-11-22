@@ -1,0 +1,13 @@
+{
+  "conversation_id": "c0ffee00-0000-4000-8000-000000000001",
+  "generation_id": "9e1f0000-0000-4000-8000-000000000002",
+  "model": "claude-opus-5-5",
+  "hook_event_name": "beforeShellExecution",
+  "cursor_version": "3.4.0",
+  "workspace_roots": ["/Users/me/code/demo"],
+  "user_email": "me@example.com",
+  "transcript_path": null,
+  "command": "",
+  "cwd": "",
+  "sandbox": false
+}

@@ -1,0 +1,32 @@
+{
+  "name": "sherif-plugins",
+  "interface": {
+    "displayName": "Sherif's Plugins"
+  },
+  "plugins": [
+    {
+      "name": "skills",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "ai-disclosure",
+      "source": {
+        "source": "local",
+        "path": "./skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

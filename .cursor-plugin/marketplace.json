@@ -12,6 +12,11 @@
       "name": "skills",
       "source": ".",
       "description": "Opinionated git and mise skills, plus boilerplate commands, agents, and hooks."
+    },
+    {
+      "name": "ai-disclosure",
+      "source": "skills",
+      "description": "Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking effort."
     }
   ]
 }

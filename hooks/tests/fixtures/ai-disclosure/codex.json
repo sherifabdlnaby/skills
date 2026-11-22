@@ -1,0 +1,14 @@
+{
+  "session_id": "0199a2b4-1c2d-7e3f-8a9b-0c1d2e3f4a5b",
+  "transcript_path": "/Users/me/.codex/sessions/2026/10/31/rollout.jsonl",
+  "cwd": "/Users/me/code/demo",
+  "hook_event_name": "PreToolUse",
+  "model": "gpt-5.5",
+  "turn_id": "turn_7",
+  "tool_use_id": "call_42",
+  "permission_mode": "default",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": ""
+  }
+}

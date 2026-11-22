@@ -1,0 +1,17 @@
+{
+  "description": "Blocks a GitHub post whose body has no AI disclosure line.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/ai-disclosure/hooks/run.sh\" claude",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

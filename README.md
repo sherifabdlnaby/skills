@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C617%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,617 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-118%2C153%20tokens-2ea44f?style=flat-square" alt="All Markdown: 118,153 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C988%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,988 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-118%2C441%20tokens-2ea44f?style=flat-square" alt="All Markdown: 118,441 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -31,10 +31,11 @@ than read, so they are left out.
 | Skill                                                                                  | SKILL.md |    Total |
 | -------------------------------------------------------------------------------------- | -------: | -------: |
 | [`afk`](skills/afk/)                                                                   |    `228` |    `228` |
+| [`ai-disclosure`](skills/ai-disclosure/)                                               |  `1,182` |  `1,182` |
 | [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,542` | `15,981` |
 | [`coding`](skills/coding/)                                                             |  `1,048` |  `1,048` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
-| [`git`](skills/git/)                                                                   |  `2,615` | `14,824` |
+| [`git`](skills/git/)                                                                   |  `1,804` | `13,930` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `578` |    `578` |
 | [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
@@ -81,6 +82,10 @@ than read, so they are left out.
 8. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
 9. [grilling](skills/grilling/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool instead of markdown.
    - [grill-me](skills/grill-me/) | Start the interview by hand.
+10. [ai-disclosure](skills/ai-disclosure/) | Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking
+    effort. Also its own plugin.
+
+The skills depend on each other. Every plugin stands alone: it ships everything its skills need, and keeping it that way is on the author.
 
 ### Vendored
 
@@ -114,6 +119,7 @@ npx skills list sherifabdlnaby/skills             # see what's available
 ```bash
 /plugin marketplace add sherifabdlnaby/skills
 /plugin install skills@sherif-plugins
+/plugin install ai-disclosure@sherif-plugins   # or just this one
 ```
 
 Update with `/plugin marketplace update sherif-plugins`; manage from `/plugin`.
@@ -171,13 +177,13 @@ Commits run the fast commit gates on staged files, a push runs the slower push g
 
 ## Releases
 
-Claude/Cursor marketplaces install straight from git and key the plugin on the `version` field in
-`.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` — there's no published artifact.
-Cutting a release:
+Claude/Cursor marketplaces install straight from git and key each plugin on the `version` field in
+its `.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` — there's no published artifact.
+Each plugin versions on its own: `skills` tags `vX.Y.Z`, any other `<name>-vX.Y.Z`. Cutting a release:
 
-1. Bump both manifests' `version` to the same value in your PR. `mise run version:check` (also an
-   `hk` pre-push gate) fails if shipped `skills/`/`hooks/` content changed without the bump.
-2. Merge to `main`. CI notices the version moved past the latest `vX.Y.Z` tag and cuts the tag plus
+1. Bump both of the plugin's manifests to the same `version` in your PR. `mise run version:check`
+   (also an `hk` pre-push gate) fails if a plugin's shipped content changed without the bump.
+2. Merge to `main`. CI notices the version moved past the plugin's latest tag and cuts the tag plus
    a GitHub release, with notes generated from merged PRs and grouped by label: `skill`, `hooks`,
    `fix`, `docs`, `ci`, `deps`.
 3. No version bump ships no release. A PR's sticky comment previews which outcome a merge would

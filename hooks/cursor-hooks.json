@@ -18,7 +18,7 @@
     "beforeShellExecution": [
       {
         "type": "command",
-        "command": "./hooks/scripts/run.sh gh_disclosure.py"
+        "command": "./skills/ai-disclosure/hooks/run.sh cursor"
       },
       {
         "type": "command",
