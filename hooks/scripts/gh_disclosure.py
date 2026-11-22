@@ -2,11 +2,12 @@
 """AI-disclosure guard for GitHub posts.
 
 Single source of truth for the rule "anything posted to GitHub on the user's
-behalf carries an AI footer" (see skills/git/SKILL.md -> AI Disclosure). Wired to
+behalf opens with an AI header" (see skills/git/SKILL.md -> AI Disclosure). Wired to
 the pre-shell hook (PreToolUse:Bash / beforeShellExecution) so it catches the case
-where the agent forgets the footer; it does NOT pick the footer variant (the tier of
-human judgment behind a post is the agent's call) and never rewrites the command, it
-only blocks when a posted body is missing disclosure.
+where the agent forgets the header, or tacks it on at the end instead of the top; it
+does NOT pick the header variant (the tier of human judgment behind a post is the
+agent's call) and never rewrites the command, it only blocks when a posted body is
+missing disclosure or has it in the wrong place.
 
 Cross-tool stdin/stdout plumbing (Claude vs Cursor payload shapes, the deny
 verdicts) lives in hooklib; this file owns only the disclosure decision. stdlib
@@ -18,7 +19,7 @@ pair anywhere in the body closes the outer quote and splits the value mid-body.
 Heredoc bodies are therefore lifted out of the raw string first (see
 `split_heredocs`) and spliced back into the flag value, so the guard checks the
 text gh will actually post. A body we still cannot resolve denies with its own
-reason rather than claiming the footer is missing.
+reason rather than claiming the header is missing.
 
 The guard fails closed. gh has many ways to supply a body the guard cannot see
 (`--fill` off commit messages, `--template`, `--editor`, a prompt when no body flag
@@ -33,13 +34,13 @@ import sys
 
 import hooklib
 
-# A valid footer line per SKILL.md -> AI Disclosure: `_<sub>` + a tier emoji
+# A valid header line per SKILL.md -> AI Disclosure: `_<sub>` + a tier emoji
 # (🤖 Agent Decided / 📋 Human Planned / 🤝 Human Guided) + attribution
 # ("on behalf of @user") + `</sub>_`.
 # We validate the skeleton, not the full template text, so the templates stay owned
 # by SKILL.md and the agent keeps the tier choice; requiring the emoji is what forces
 # that choice to be made at all.
-FOOTER_RE = re.compile(
+HEADER_RE = re.compile(
     r"_<sub>\s*[\U0001f916\U0001f4cb\U0001f91d][^:\n]*:"
     r".*?\bon behalf of @[A-Za-z0-9-]+\b.*?</sub>_",
     re.DOTALL,
@@ -91,23 +92,35 @@ EXEMPT_FLAGS = {"--dry-run", "--delete-last", "--web", "-w"}
 
 REASON = (
     "AI-disclosure guard: this command posts a body to GitHub but the body has no "
-    "valid disclosure footer (`_<sub>\U0001f916|\U0001f4cb|\U0001f91d ... on behalf of "
-    "@user ... </sub>_`). Per the git skill (SKILL.md -> AI Disclosure), append the footer "
-    "after a `---`, picking the tier by how much human judgment stands behind this post: "
-    "\U0001f916 Agent Decided (you chose, no human shaped it), \U0001f4cb Human Planned "
-    "(the user worked through the plan with you, the details are yours), \U0001f91d Human Guided "
-    "(the user shaped the decisions in a back and forth). A general request to handle the "
-    "task is not human judgment on the decisions inside it. For a PR body use the `Created with ...` "
-    "footer in references/pr-body.md. Add it, then retry."
+    "valid disclosure header (`_<sub>\U0001f916|\U0001f4cb|\U0001f91d ... on behalf of "
+    "@user ... </sub>_`). Per the git skill (SKILL.md -> AI Disclosure), open the body "
+    "with the header, then a `---`, picking the tier by how much human judgment stands "
+    "behind this post: \U0001f916 Agent Decided (you chose, no human shaped it), "
+    "\U0001f4cb Human Planned (the user worked through the plan with you, the details are "
+    "yours), \U0001f91d Human Guided (the user shaped the decisions in a back and forth). "
+    "A general request to handle the task is not human judgment on the decisions inside "
+    "it. For a PR body use the `Created with ...` header in references/pr-body.md. Add "
+    "it, then retry."
 )
 
-# Distinct from REASON on purpose: "I cannot see your body" and "your footer is
+# Distinct from REASON: a present-but-misplaced header is a different mistake than a
+# missing one, and reporting "missing" here sends the agent off writing a second
+# header instead of moving the one it already wrote.
+REASON_POSITION = (
+    "AI-disclosure guard: this command posts a body to GitHub whose disclosure header "
+    "is present but not at the top. Per the git skill (SKILL.md -> AI Disclosure), the "
+    "header opens the body (the first thing in it, before a `---` separator and the rest "
+    "of the content), it is no longer appended at the end. Move the header to the top of "
+    "the body, then retry."
+)
+
+# Distinct from REASON on purpose: "I cannot see your body" and "your header is
 # missing" are different problems, and reporting the second for the first sends the
-# agent off rewriting a footer that was already correct.
+# agent off rewriting a header that was already correct.
 REASON_UNREADABLE = (
     "AI-disclosure guard: this command posts a body to GitHub that the guard cannot "
-    "read, so it cannot check the body for a disclosure footer. This is NOT a claim "
-    "that your footer is wrong. Pass the body one of these ways instead: write it to a "
+    "read, so it cannot check the body for a disclosure header. This is NOT a claim "
+    "that your header is wrong. Pass the body one of these ways instead: write it to a "
     "file and use `--body-file <path>`, put it inline as `--body '<text>'`, or feed an "
     "inline heredoc with `--body-file - <<'EOF' ... EOF`. None of these ever reach the "
     "guard, so none of them are allowed: `--fill`, `--fill-first`, `--fill-verbose`, "
@@ -141,6 +154,15 @@ APPEND = {">>", "&>>"}
 
 # extract_body sentinel: a body flag was given, but its text is not recoverable.
 UNREADABLE = object()
+
+
+def _header_is_leading(body, match):
+    """True when `match` opens `body`: nothing but whitespace precedes it.
+
+    Position only matters relative to the body's own start, not to a Human Note or
+    any other block; those are content, and content comes after the header now.
+    """
+    return not body[: match.start()].strip()
 
 
 def split_heredocs(command):
@@ -390,9 +412,9 @@ def extract_body(tokens, bodies, files):
             unreadable = True
 
     joined = "\n".join(body_parts)
-    # A footer we can see is one gh will post: whatever the part we cannot read adds,
-    # the visible text still carries the footer. Only fall back when it does not.
-    if unreadable and not FOOTER_RE.search(joined):
+    # A header we can see is one gh will post: whatever the part we cannot read adds,
+    # the visible text still carries the header. Only fall back when it does not.
+    if unreadable and not HEADER_RE.search(joined):
         return UNREADABLE
     return joined if body_parts else None
 
@@ -425,7 +447,10 @@ def deny_reason(command, cwd):
             # No body flag. A create or comment still gets one, from a prompt or
             # $EDITOR; an edit or review with no body posts none.
             return REASON_UNREADABLE if action in BODY_REQUIRED else None
-        return None if FOOTER_RE.search(body) else REASON
+        match = HEADER_RE.search(body)
+        if match is None:
+            return REASON
+        return None if _header_is_leading(body, match) else REASON_POSITION
     return None
 
 
@@ -442,11 +467,14 @@ def main():
     if reason is None:
         return 0
 
-    user_message = (
-        "Blocked a GitHub post whose body this hook could not read."
-        if reason is REASON_UNREADABLE
-        else "Blocked a GitHub post missing its AI-disclosure footer."
-    )
+    if reason is REASON_UNREADABLE:
+        user_message = "Blocked a GitHub post whose body this hook could not read."
+    elif reason is REASON_POSITION:
+        user_message = (
+            "Blocked a GitHub post whose AI-disclosure header isn't at the top."
+        )
+    else:
+        user_message = "Blocked a GitHub post missing its AI-disclosure header."
     hooklib.deny(data, reason, user_message)
     return 0
 

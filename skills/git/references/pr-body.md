@@ -1,6 +1,6 @@
 # PR body
 
-Covers: voice, blocks in body order, visuals, receipts and the structure hook, skeleton, linking, AI footers.
+Covers: voice, blocks in body order, visuals, receipts and the structure hook, skeleton, linking, AI headers.
 
 Apply [SKILL.md](../SKILL.md) voice to every block. The body has two readers: the reviewer today,
 and whoever resumes the work later, a person or an agent. Decisions, Not covered and Follow-ups are
@@ -23,7 +23,9 @@ for the second one; the diff does not carry them.
 
 In body order. Write each block, or drop it with a reason ([Receipts](#receipts)).
 
-- **Human Note.** The user's own words, verbatim, in the `[!NOTE]` callout at the very top. Wait
+- **AI header.** First, before everything else, a `---` divider follows it. Templates in
+  [AI headers](#ai-headers).
+- **Human Note.** The user's own words, verbatim, in the `[!NOTE]` callout right after the header. Wait
   for the user to open it: they hand you a note, or they ask for one. Offer it as one more option
   only in a question you already ask. No paraphrase, no typo fixes, no punctuation changes.
 - **Summary.** One paragraph, two to four sentences, in this order: the ticket link, one sentence
@@ -56,7 +58,6 @@ In body order. Write each block, or drop it with a reason ([Receipts](#receipts)
 - **Follow-ups / out of scope** (collapsible). Seen and left for later on purpose, so the
   reviewer does not ask for it here.
 - **Relevant Links.** Parent ticket or epic, docs used, related PRs. Forms in [Linking](#linking).
-- **AI footer.** Last, after a `---`. Templates in [AI footers](#ai-footers).
 
 ## Visuals
 
@@ -86,16 +87,17 @@ In body order. Write each block, or drop it with a reason ([Receipts](#receipts)
   Human Note has none; it is the user's to open. (why: without a reason, a dropped block and a
   forgotten one look the same.)
 - **The structure hook denies a post that misses a receipt**, where it is installed beside this
-  skill, the same way the disclosure hook denies a missing footer. The message names the blocks.
+  skill, the same way the disclosure hook denies a missing header. The message names the blocks.
   Add the marker or the dropped entry, then retry.
 - **Repo template** (`<!-- pr:skeleton-off: <reason> -->`): when the repo ships a
   `PULL_REQUEST_TEMPLATE`, or its own instructions say how a body reads, theirs is the shape and
   ours is the content. Keep every heading and checkbox of theirs, in their order. Fold our blocks
   into the sections they fit: summary into their description, changes and review guide under the
-  nearest heading, our collapsibles and links after their last section, the AI footer last.
+  nearest heading, our collapsibles and links after their last section.
   `gh pr create --body-file` does not apply the template for you: read the file and merge by hand.
-  This marker, with its reason, replaces the receipts and silences the hook. Use the same marker
-  for a body you did not shape (another author's PR).
+  The AI header still opens the body, before their template, with its own `---` divider; the
+  template governs everything after that. This marker, with its reason, replaces the receipts and
+  silences the hook. Use the same marker for a body you did not shape (another author's PR).
 - **Markdown inside `<details>` needs a blank line after `</summary>`**, as in the skeleton. Without
   it a fenced code block renders as literal backticks.
 
@@ -105,6 +107,11 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 `<!-- pr:x -->` markers and the `pr:dropped` line survive into the body.
 
 ```markdown
+_<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
+<!-- header emoji by how much human judgment is behind the PR: 🤖 Agent Decided, 📋 Human Planned, 🤝 Human Guided; see AI headers -->
+
+---
+
 > [!NOTE]
 >
 > ### 🧍🏻 Human Note
@@ -181,11 +188,6 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 <parent ticket or epic, docs, related PRs, prev/next PR (manual stacks only; gh-stack renders the stack)>
 
 <!-- pr:dropped <block>: <reason> | <block>: <reason> -->
-
----
-
-_<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
-<!-- footer emoji by how much human judgment is behind the PR: 🤖 Agent Decided, 📋 Human Planned, 🤝 Human Guided; see AI footers -->
 ```
 
 ## Linking
@@ -196,12 +198,19 @@ _<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB
 - Docs (Notion, Confluence, RFC, README): clickable Markdown links, never raw URLs.
 - Stacked PRs, manual path only: previous and next PR in `### Relevant Links`; return to edit once the next PR's URL exists. Under gh-stack, GitHub renders the stack itself.
 
-## AI footers
+## AI headers
 
-These are the PR-**body** footers, one per tier. Which tier to pick, the placeholders, and the
-comment and reply footers all live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure). Append at
-the very end, after a `---` separator. Where the disclosure hook that ships beside this skill is
-installed, a post is denied when the footer is missing, so it goes in before the first `gh pr create`.
+These are the PR-**body** headers, one per tier. Which tier to pick, the placeholders, and the
+comment and reply headers all live in [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure). Open the
+body with it, the very first thing, then a `---` separator before the rest of the content. Where the
+disclosure hook that ships beside this skill is installed, a post is denied when the header is
+missing or not at the top, so it goes in before the first `gh pr create`.
+
+A reviewer reads a PR top to bottom, and the first lines set how they read the rest. Putting the
+tier (Agent Decided, Human Planned, or Human Guided) first tells them whether to weight intent or
+mechanics before they form a judgment. Placement is a judgment call; this convention puts the
+header first because a disclosure at the bottom is easy to miss after the review has already
+started.
 
 ```markdown
 _<sub>🤖 Agent Decided PR: Created with <TOOL> (<MODEL>) on behalf of @<GITHUB_USERNAME>.</sub>_
