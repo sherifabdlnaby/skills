@@ -110,5 +110,5 @@ Needs: `gh`; `python3` 3.9 or newer for the hook.
 Hosts: Claude Code, Codex, Cursor on macOS and Linux: yes, with the hook. Other agents that post
 through a shell: the skill works, nothing enforces it. Windows: no hook.
 
-When a block says the hook needs python3 or its guard failed: tell the user to install python3 3.9
-or newer (macOS `xcode-select --install`, Linux the distro's `python3` package).
+When a block says the hook needs python3 or its guard failed: tell the user, with the install step
+or the error the block names.
