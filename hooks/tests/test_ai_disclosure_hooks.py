@@ -11,6 +11,7 @@ import os
 import shutil
 import stat
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -129,11 +130,22 @@ class EveryHarness(unittest.TestCase):
                     denial(harness, run(harness, "gh pr comment 7 --body x", env))
                 )
 
+    def test_every_posting_verb_reaches_the_guard(self):
+        """run.sh filters before Python; it must pass every verb the guard checks."""
+        sys.path.insert(0, os.path.join(os.path.dirname(RUN), "guard"))
+        import github
+
+        for noun, verb in sorted(github._POSTING):
+            command = f"gh {noun} {verb} 7 --body x"
+            for harness in HARNESSES:
+                with self.subTest(harness=harness, command=command):
+                    self.assertIsNotNone(denial(harness, run(harness, command)))
+
 
 class WithoutTheGuard(unittest.TestCase):
     """When Python cannot run the guard, a possible post is blocked, never let through."""
 
-    BASE_TOOLS = ["sh", "cat", "dirname", "grep"]
+    BASE_TOOLS = ["sh", "cat", "dirname", "grep", "head", "tr"]
 
     def run_without(self, extra=None):
         env = {"PATH": sandbox_path(self.BASE_TOOLS, extra)}
@@ -141,7 +153,7 @@ class WithoutTheGuard(unittest.TestCase):
             yield (
                 harness,
                 run(harness, "gh pr comment 7 --body x", env),
-                run(harness, "ls", env),
+                run(harness, "gh pr view 7", env),
             )
 
     def test_no_python(self):
@@ -152,10 +164,40 @@ class WithoutTheGuard(unittest.TestCase):
 
     def test_guard_crash(self):
         for harness, post, other in self.run_without(
-            {"python3": "#!/bin/sh\nexit 1\n"}
+            {"python3": "#!/bin/sh\necho 'shim: config not trusted' >&2\nexit 1\n"}
         ):
             with self.subTest(harness=harness):
-                self.assertIn("guard failed", denial(harness, post))
+                reason = denial(harness, post)
+                self.assertIn("guard failed", reason)
+                self.assertIn("(error: shim: config not trusted)", reason)
+                self.assertIsNone(denial(harness, other))
+
+    def test_opt_out_without_the_guard(self):
+        """The opt-out the denial offers works even when the guard cannot run."""
+        env = {
+            "PATH": sandbox_path(self.BASE_TOOLS, {"python3": "#!/bin/sh\nexit 1\n"})
+        }
+        for harness in HARNESSES:
+            with self.subTest(harness=harness):
+                command = "AI_DISCLOSURE=off gh pr comment 7 --body x"
+                self.assertIsNone(denial(harness, run(harness, command, env)))
+
+    def test_guard_starts_outside_the_hook_directory(self):
+        """A shim that reads config from its working directory (mise, pyenv) works from `/`."""
+        shim = f'#!/bin/sh\n[ "$(pwd)" = / ] || exit 1\nexec {sys.executable} "$@"\n'
+        for harness, post, other in self.run_without({"python3": shim}):
+            with self.subTest(harness=harness):
+                self.assertIn("`ai-disclosure` skill", denial(harness, post))
+                self.assertIsNone(denial(harness, other))
+
+    def test_broken_python3_falls_back_to_uv(self):
+        """A python3 that cannot start does not block a post uv can check."""
+        uv = f'#!/bin/sh\nwhile [ "$1" != python3 ]; do shift; done\nshift\nexec {sys.executable} "$@"\n'
+        for harness, post, other in self.run_without(
+            {"python3": "#!/bin/sh\nexit 1\n", "uv": uv}
+        ):
+            with self.subTest(harness=harness):
+                self.assertIn("`ai-disclosure` skill", denial(harness, post))
                 self.assertIsNone(denial(harness, other))
 
 
