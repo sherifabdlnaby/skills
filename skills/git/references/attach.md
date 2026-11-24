@@ -15,7 +15,7 @@ from the thread. That constraint is [`review-responses.md`](./review-responses.m
 
 **The body file decides where it lands.** Write the Markdown reference where you want the media, then
 attach the same path: `gh` swaps the reference for the uploaded URL and keeps the alt text you wrote.
-In a PR body that place is the **Visuals** block, or the changelog bullet or review guide stop that
+In a PR body that place is the **Proof** block, or the changelog bullet or review guide stop that
 the picture supports.
 
 ```bash

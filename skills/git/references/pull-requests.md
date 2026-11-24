@@ -72,11 +72,12 @@ so keep it. A literal `N` stays literal. A merged stack keeps `[2/N]` forever
 
 The number and URL come from the create command's output; carry them forward.
 
-1. **Slack-ready line**, in a fenced block for copy-paste (drop the parenthesized ticket suffix when there's no ticket):
+1. **Link the review guide stops** to their diffs, in one body edit: [Linking](./pr-body.md#linking).
+2. **Slack-ready line**, in a fenced block for copy-paste (drop the parenthesized ticket suffix when there's no ticket):
    ```
    [#<PR_Number>](<PR_URL>): <PR_Title> - ([<TICKET>](<TICKET_URL>))
    ```
-2. **Clickable PR link**, separate from the Slack line:
+3. **Clickable PR link**, separate from the Slack line:
    ```
    [<PR_Title>](<PR_URL>)
    ```

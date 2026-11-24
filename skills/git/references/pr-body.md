@@ -2,18 +2,23 @@
 
 Covers: voice, blocks in body order, visuals, receipts and the structure hook, skeleton, linking.
 
-Apply [SKILL.md](../SKILL.md) voice to every block. The body has two readers: the reviewer today,
-and whoever resumes the work later, a person or an agent. Decisions, Not covered and Follow-ups are
-for the second one; the diff does not carry them.
+Apply [SKILL.md](../SKILL.md) voice to every block. The body has two readers. The first decides
+whether to merge, often without reading the diff. The open blocks are theirs: what changed, the
+proof, where to look, what is not proven, what they must decide. The second resumes the work
+later, a person or an agent. The collapsibles are their record; the diff does not carry them.
 
 ## Voice
 
-- **Summary and Changes are for a product person.** They know the product. They do not read code.
-  Use Simplified Technical English, short sentences, and the product's own terms
-  (`CONTEXT.md` when the repo has one; `CONTEXT-MAP.md` points to the right one). The other
+- **Summary and the top-level Changes bullets are for a product person.** They know the product.
+  They do not read code. Use Simplified Technical English, short sentences, and the product's own
+  terms (`CONTEXT.md` when the repo has one; `CONTEXT-MAP.md` points to the right one). The other
   blocks are for engineers.
 - **Name the few things that matter. The diff has the rest.** A changelog says what a person
   notices. A review guide says where to look.
+- **A change carries its check.** A check says what was run, then what was seen, in plain words
+  (e.g. `Imported a 2 GB file: done in 40 s.`, `A new test fails without the fix.`). Report only
+  runs that happened. `CI is green` says neither: name what the tests prove. A change with no
+  check is named in Not checked.
 - **Emphasis.** Bold the words a skimmer must catch: one phrase per block at most, never a whole
   sentence. Italic for a label the reader looks for on screen (a button, a menu, a page). A GitHub
   alert (`> [!NOTE]`, `> [!WARNING]` and the rest) for what the reviewer must not miss. Style
@@ -21,38 +26,46 @@ for the second one; the diff does not carry them.
 
 ## Blocks
 
-In body order. Write each block, or drop it with a reason ([Receipts](#receipts)).
+In body order. Write each block, or drop it with a reason ([Receipts](#receipts)). Not checked
+and Your call are always written: `None.` is an answer.
 
 - **AI disclosure.** What it says and where it goes: [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
 - **Human Note.** The user's own words, verbatim, in the `[!NOTE]` callout at the top of the body. Wait
   for the user to open it: they hand you a note, or they ask for one. Offer it as one more option
   only in a question you already ask. No paraphrase, no typo fixes, no punctuation changes.
 - **Summary.** One paragraph, two to four sentences, in this order: the ticket link, one sentence
-  that places the reader when the title does not (the feature or flow, in product terms), what
-  used to happen, what changed. The prior behavior is a fact: read it from the diff. A motive
-  needs a source (the ticket, a bug report, a failing test, the user). Without a source, write no
-  motive. Say what changed, and leave the how to the review guide. A one-change PR is described
-  here and drops Changes.
-- **Visuals.** The one picture or diagram that carries the whole change, open. The rest collapsed
-  under it. Rules in [Visuals](#visuals).
-- **Changes.** The changelog, for the product reader. Each bullet leads with what a person
-  notices. The mechanism follows in parentheses when it helps. Internal work reads
-  `No user-visible change: <what moved>`. Flat up to about six bullets. Past that, group under
-  bold product-area names (e.g. Search, Billing), never code layers.
+  that places the reader when the title does not (the feature or flow, in product terms), the
+  problem (what happens today), the solution (what this PR changes), the improvement (what a
+  person now sees or can measure; left out when there is none to name). The problem is a fact:
+  read it from the diff. A motive needs a source (the ticket, a bug report, a failing test, the user).
+  Without a source, write no motive. Say what changed, and leave the how to Why it works. A
+  one-change PR is described here and drops Changes; its check goes in Proof.
+- **Proof.** The one picture, recording or pasted output that shows the result, open. A fix shows
+  before and after. The rest collapsed under it. Rules in [Visuals](#visuals).
+- **Changes.** The changelog. Each top-level bullet leads with what a person notices, and reads
+  complete alone. Sub-bullets, one level deep, carry the mechanism when it helps, and the check.
+  Internal work reads `No user-visible change: <what moved>`. Three bullets or fewer stay flat.
+  More are grouped under bold product-area names (e.g. Search, Billing), never code layers.
 - **Breaking.** A `> [!WARNING]` that names what breaks and what the reader must do about it.
-- **Review guide.** Numbered, one line per stop: a file or area, then what to look at there.
-  Order: the core change, then what changes because of it, then mechanical work (renames,
-  generated code, CI) marked safe to skim. A diagram goes under its stop only when prose cannot
+- **Review guide.** Small: five stops at most, numbered, the most important first. A stop is a
+  file where the logic changed, linked to its diff in the PR ([Linking](#linking)), then what to
+  look at there. Mechanical work (renames, generated code, version bumps, etc.) gets no stop: one
+  closing line names it as safe to skim. A diagram goes under its stop only when prose cannot
   carry the shape.
-- **Decisions.** Top level. One bullet per real choice: `Chose X over Y: Z`. A constraint from
+- **Not checked.** What the reader must not assume was checked: a change with no check, an
+  environment not tried, a case skipped. `None.` only when every change carries a check.
+- **Your call.** What only the reader can decide before the merge: a tradeoff taken for them,
+  work beyond the ask, a gap left open (e.g. `Merge without a run on staging?`). Three at most,
+  each with the fact behind it. A file to read belongs in the review guide.
+- **Why it works** (collapsible). The mechanism as behavior, with no file paths. A fix: the root
+  cause, then why the change removes it. A feature: how the parts work together. A diagram goes
+  here when the order or the shape is the point. Drop it when Changes already says it.
+- **Decisions** (collapsible). One bullet per real choice: `Chose X over Y: Z`. A constraint from
   the user is a Z. Write it as a fact about the system, never as who asked. A dead end appears
-  only as the Y that lost. Drop the block when no alternative was weighed.
+  only as the Y that lost. What got worse reads `Cost: <what, and how much>`. A choice the reader
+  must approve goes in Your call. Drop the block when no alternative was weighed.
 - **How to test locally** (collapsible). Setup the reader would not guess (e.g. a flag, seed data,
   an exact input). Written for the reader, not a record of what you did.
-- **Verification** (collapsible). Three lines; each may say `none`. `Automated:` what the tests
-  prove, never a count. `Manual:` the scenario, then what you observed; write `per How to test`
-  when the steps are above. `Not covered:` what the reviewer must not assume was checked. Report
-  only runs that happened.
 - **Examples** (collapsible). Only when an example makes the diff clearer.
 - **Follow-ups / out of scope** (collapsible). Seen and left for later on purpose, so the
   reviewer does not ask for it here.
@@ -60,16 +73,16 @@ In body order. Write each block, or drop it with a reason ([Receipts](#receipts)
 
 ## Visuals
 
-- **A visual sits next to the shortest text it supports.** The whole change: the Visuals block.
+- **A visual sits next to the shortest text it supports.** The whole change: the Proof block.
   One changelog bullet: under that bullet. One review guide stop: under that stop. Two or more in
   one slot: the first open, the rest in a collapsible.
 - **A picture earns its place when prose cannot carry the outcome:** UI before and after, an
   error state, rendered output, or a flow where the order is the point. When a code fence or a
   diagram says it better, use that.
-- **Take shots from a dev env that already runs, or after the user asks.** An ask holds for the
-  rest of the session: start what you need. Never start a server, an app or a browser on your own
-  for a picture. A file already on disk is free (e.g. your own debugging shot, a recording the
-  user gave).
+- **Start the app for a picture only when it starts smoothly.** A dev env that already runs and
+  a file already on disk (e.g. your own debugging shot, a recording the user gave) are free.
+  Otherwise use the run command the repo documents, once. A failed start ends the attempt: name
+  the missing picture under Not checked and move on. Stop what you started.
 - **A Before | After pair goes under a bullet when its words alone do not make the change clear**,
   and shots are available. A layout change passes; a label change does not. A PR where most
   bullets pass is a *guided diff*.
@@ -82,7 +95,7 @@ In body order. Write each block, or drop it with a reason ([Receipts](#receipts)
 
 - **Every block leaves a receipt.** A written block keeps its hidden `<!-- pr:x -->` marker where
   the skeleton puts it. A dropped block is named, with its reason, in one hidden line:
-  `<!-- pr:dropped visuals: no UI | decisions: none weighed -->`. Both are invisible on GitHub.
+  `<!-- pr:dropped proof: nothing to observe | decisions: none weighed -->`. Both are invisible on GitHub.
   Human Note has none; it is the user's to open. (why: without a reason, a dropped block and a
   forgotten one look the same.)
 - **The structure hook denies a post that misses a receipt**, where it is installed beside this
@@ -118,11 +131,11 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 
 <!-- pr:summary -->
 
-[TICKET-123](link) | <one sentence placing the reader, when the title does not>. <What used to happen.> <What changed.> <!-- no ticket, no prefix -->
+[TICKET-123](link) | <one sentence placing the reader, when the title does not>. <The problem: what happens today.> <The solution: what this PR changes.> <The improvement a person sees or can measure.> <!-- no ticket, no prefix -->
 
-**Visuals** <!-- pr:visuals -->
+**Proof** <!-- pr:proof -->
 
-<the one picture or diagram that carries the change>
+<the one picture, recording or pasted output that shows the result>
 
 <details><summary>More</summary>
 
@@ -132,7 +145,11 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 
 **Changes** <!-- pr:changes -->
 
-- <What a person notices> (<mechanism, when it helps>).
+**<Product area>**
+
+- <What a person notices>.
+  - <The mechanism, when it helps>.
+  - <What was run, then what was seen>.
 - No user-visible change: <what moved>.
 
 <!-- pr:breaking -->
@@ -141,27 +158,37 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 
 **Review guide** <!-- pr:review-guide -->
 
-1. `<core file or area>`: <the real change>.
-2. `<what changes because of it>`: <what to look at>.
-3. Everything else is <renames, generated code, CI>, safe to skim.
+1. [`<file where the logic changed>`](<its diff in the PR>): <what to look at>.
+2. [`<the next one>`](<its diff in the PR>): <what to look at>.
 
-**Decisions** <!-- pr:decisions -->
+Everything else is <renames, generated code, version bumps>, safe to skim.
 
-- Chose <X> over <Y>: <Z>.
+**Not checked** <!-- pr:not-checked -->
+
+- <What the reader must not assume was checked>.
+
+**Your call** <!-- pr:your-call -->
+
+1. <A decision only the reader can make, with the fact behind it>.
 
 ---
+
+<details><summary>Why it works</summary> <!-- pr:why-it-works -->
+
+<the root cause and why the change removes it, or how the parts work together>
+
+</details>
+
+<details><summary>Decisions</summary> <!-- pr:decisions -->
+
+- Chose <X> over <Y>: <Z>.
+- Cost: <what got worse, and how much>.
+
+</details>
 
 <details><summary>How to test locally</summary> <!-- pr:how-to-test -->
 
 <setup the reader would not guess>
-
-</details>
-
-<details><summary>Verification</summary> <!-- pr:verification -->
-
-**Automated:** <what the tests prove>.
-**Manual:** <the scenario, then what you observed>.
-**Not covered:** <what the reviewer must not assume was checked>.
 
 </details>
 
@@ -192,4 +219,13 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 - Ticket URL: from the user, a repo config, or an earlier PR in the repo. None known means plain `TICKET-123` with no link, never a guessed base URL.
 - Related PR, same repo: `#<num>` (GitHub auto-links). Another repo: `org/repo#<num>`.
 - Docs (Notion, Confluence, RFC, README): clickable Markdown links, never raw URLs.
+- Review guide stop: the file's diff in the PR, `<PR URL>/files#diff-<SHA-256 of the path>` (verified on github.com, 2026-11).
+  The URL exists only after `gh pr create`: create with plain paths, then link them in one body edit.
+
+  ```sh
+  url=$(gh pr view --json url --jq .url)
+  for f in <path>...; do
+    printf '[`%s`](%s/files#diff-%s)\n' "$f" "$url" "$(printf %s "$f" | shasum -a 256 | cut -d' ' -f1)"
+  done
+  ```
 - Stacked PRs, manual path only: previous and next PR in `### Relevant Links`; return to edit once the next PR's URL exists. Under gh-stack, GitHub renders the stack itself.

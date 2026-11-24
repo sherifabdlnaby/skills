@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C804%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,804 tokens" />
-  <img src="https://img.shields.io/badge/Total-13%2C930%20tokens-2ea44f?style=flat-square" alt="Total: 13,930 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-1%2C819%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,819 tokens" />
+  <img src="https://img.shields.io/badge/Total-14%2C588%20tokens-2ea44f?style=flat-square" alt="Total: 14,588 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,12 +13,12 @@ than read, so they are left out.
 
 | File                                                               |  Tokens |
 | ------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                             | `1,804` |
-| [`references/attach.md`](references/attach.md)                     |   `563` |
+| [`SKILL.md`](SKILL.md)                                             | `1,819` |
+| [`references/attach.md`](references/attach.md)                     |   `562` |
 | [`references/branches.md`](references/branches.md)                 | `1,791` |
 | [`references/commits.md`](references/commits.md)                   |   `873` |
-| [`references/pr-body.md`](references/pr-body.md)                   | `2,437` |
-| [`references/pull-requests.md`](references/pull-requests.md)       | `1,523` |
+| [`references/pr-body.md`](references/pr-body.md)                   | `3,050` |
+| [`references/pull-requests.md`](references/pull-requests.md)       | `1,554` |
 | [`references/rebase.md`](references/rebase.md)                     |   `835` |
 | [`references/review-responses.md`](references/review-responses.md) | `1,416` |
 | [`references/reviewing.md`](references/reviewing.md)               |   `229` |
@@ -38,7 +38,8 @@ The skill selects detailed guidance for the operation in progress:
 
 - Branch work preserves a dirty tree, uses consistent ticket-based names, and supports both regular and stacked pull requests.
 - Commits are coherent checkpoints built from an inspected staging area. Hook failures are fixed and retried rather than bypassed.
-- Pull requests use concise titles, draft status by default, a stable review-oriented body, links where available, and an AI disclosure on every GitHub post.
+- Pull requests use concise titles, draft status by default, a stable body built for a fast merge decision (proof first, a short review guide, what was not checked), links where available, and an AI
+  disclosure on every GitHub post.
 - Rebases preserve a recovery point when conflicts occur and use `range-diff` to verify content before a force-push.
 - Reviews trace the whole change, classify feedback by source, answer in the original thread, and separate clear fixes from decisions that need human input.
 - PR watching uses the included standard-library Python script to report only new CI, review, comment, and state events. Saved watcher state and adaptive polling avoid noisy sleep loops.

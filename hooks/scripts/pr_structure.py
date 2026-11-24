@@ -38,13 +38,15 @@ import github  # noqa: E402
 # user's to open, so its absence is never the agent's call.
 BLOCKS = (
     "summary",
-    "visuals",
+    "proof",
     "changes",
     "breaking",
     "review-guide",
+    "not-checked",
+    "your-call",
+    "why-it-works",
     "decisions",
     "how-to-test",
-    "verification",
     "examples",
     "follow-ups",
     "links",
