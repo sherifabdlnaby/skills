@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-33%2C970%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 33,970 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-118%2C619%20tokens-2ea44f?style=flat-square" alt="All Markdown: 118,619 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-40%2C843%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 40,843 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-126%2C638%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,638 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -33,7 +33,7 @@ than read, so they are left out.
 | [`afk`](skills/afk/)                                                                   |    `228` |    `228` |
 | [`ai-disclosure`](skills/ai-disclosure/)                                               |  `1,164` |  `1,164` |
 | [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,542` | `15,981` |
-| [`coding`](skills/coding/)                                                             |  `1,048` |  `1,048` |
+| [`coding`](skills/coding/)                                                             |  `1,463` |  `1,463` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
 | [`git`](skills/git/)                                                                   |  `1,804` | `13,930` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
@@ -48,16 +48,23 @@ than read, so they are left out.
 | [`variants/watch-pr`](skills/variants/watch-pr/)                                       |    `660` |    `660` |
 | [`variants/watch-pr-ci`](skills/variants/watch-pr-ci/)                                 |    `261` |    `261` |
 | [`variants/watch-pr-comments`](skills/variants/watch-pr-comments/)                     |    `256` |    `256` |
+| [`vendor/blast-radius`](skills/vendor/blast-radius/)                                   |    `890` |    `890` |
+| [`vendor/codebase-design`](skills/vendor/codebase-design/)                             |  `1,349` |  `2,495` |
+| [`vendor/correct`](skills/vendor/correct/)                                             |    `544` |    `544` |
+| [`vendor/diagnosing-bugs`](skills/vendor/diagnosing-bugs/)                             |  `2,034` |  `2,034` |
 | [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |    `781` |  `1,939` |
 | [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,282` |  `8,014` |
 | [`vendor/handoff`](skills/vendor/handoff/)                                             |    `198` |    `198` |
 | [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `7,383` | `10,407` |
 | [`vendor/i-have-adhd`](skills/vendor/i-have-adhd/)                                     |  `1,743` |  `1,743` |
 | [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |  `1,354` |  `2,950` |
+| [`vendor/in-your-own-words`](skills/vendor/in-your-own-words/)                         |     `72` |     `72` |
+| [`vendor/ketchup`](skills/vendor/ketchup/)                                             |  `1,445` |  `1,445` |
 | [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
 | [`vendor/show-me`](skills/vendor/show-me/)                                             |    `783` |    `783` |
 | [`vendor/teach`](skills/vendor/teach/)                                                 |  `1,997` |  `3,855` |
 | [`vendor/wait-what`](skills/vendor/wait-what/)                                         |    `102` |    `102` |
+| [`vendor/why`](skills/vendor/why/)                                                     |    `124` |    `124` |
 | [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |  `2,349` |  `2,916` |
 
 </details>

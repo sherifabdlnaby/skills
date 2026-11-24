@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: sherifabdlnaby
-  version: "0.1.1"
+  version: "0.2.0"
 ---
 
 # Coding
@@ -23,6 +23,22 @@ metadata:
 - **Don't name a general structure after its first occupant**: once something is a shared slot or grouping, name it for the axis it opens — not for today's only member. Specificity belongs on the
   leaves.
 - **Tidy/Refactor separate from feature work**: an opportunistic refactor is in its own commit. Each stays reviewable.
+- **Guard at the boundary, trust inside**: validate and parse raw data into domain types where it enters (CLI args, config, network, external APIs); inside, no re-validation and no redundant nil
+  checks.
+- **Migrate callers, then delete the old API**: in the same change, when no external user depends on it. No compatibility shim kept "just in case".
+- **Converge, don't replay**: a state-changing operation reads the current state and applies only the difference, so it is safe to run twice or after a crash at any point. Leftovers (locks, temp
+  files, claimed jobs) are recognizable as stale; write to a temp path and rename into place.
+- **Separate before you serialize**: concurrent writers get their own file, key, or branch, merged where read. A lock or single writer only when one shared target is a real invariant.
+- **Encode a repeated correction**: a rule that needed saying twice becomes a type, lint, or check whose error names the fix. Prose is for judgment calls only.
+
+## Debugging and Verifying
+
+- **Fix the root cause**: the first place the system did something wrong. Ask whether the triggering state is legitimate: if yes, handle it where it broke; if not, a guard there hides the bug, so fix
+  what produced it. Fix every instance of the pattern.
+- **Attack the premise**: when two fixes that share one assumption fail the same check, write the assumption down and test it before a third fix.
+- **Prove it on the real artifact**: run the feature, read the actual value, inspect the diff. "It compiles", a self-report, or cached output is not proof. When a check passes too easily, suspect the
+  check.
+- **Explain the number**: before you trust a measured number, name what limits it and rule out that it measured errors, cached or skipped work, or noise. Report it with run count and spread.
 
 ## Code Comments
 
