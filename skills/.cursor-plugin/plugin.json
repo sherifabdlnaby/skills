@@ -2,7 +2,7 @@
   "name": "ai-disclosure",
   "displayName": "AI Disclosure",
   "description": "Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking effort.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "Sherif Abdel-Naby",
     "email": "sherifabdlnaby@gmail.com"
