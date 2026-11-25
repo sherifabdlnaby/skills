@@ -33,8 +33,6 @@ _<sub>🤝 Human Guided: <TOOL> · <MODEL> (<EFFORT>)</sub>_
 - `<EFFORT>`: the reasoning effort, when the harness exposes it (Claude Code: `$CLAUDE_EFFORT`).
   Unknown: drop ` (<EFFORT>)`.
 
-An optional ` · <what the user decided>` may follow, e.g. `· approach picked in review`.
-
 ## Tier
 
 Judge the decisions the post carries, not the request behind it.
