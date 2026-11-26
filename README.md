@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C539%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,539 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C223%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,223 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C669%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,669 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-124%2C353%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,353 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -61,9 +61,9 @@ than read, so they are left out.
 | [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
 | [`vendor/show-me`](skills/vendor/show-me/)                                             |    `783` |    `783` |
 | [`vendor/teach`](skills/vendor/teach/)                                                 |  `1,997` |  `3,855` |
-| [`vendor/wait-what`](skills/vendor/wait-what/)                                         |    `102` |    `102` |
 | [`vendor/why`](skills/vendor/why/)                                                     |    `124` |    `124` |
 | [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |  `2,349` |  `2,916` |
+| [`wait-what`](skills/wait-what/)                                                       |    `232` |    `232` |
 | [`what-happened`](skills/what-happened/)                                               |  `1,090` |  `1,090` |
 
 </details>
@@ -84,6 +84,7 @@ than read, so they are left out.
    - [afk-yolo](skills/variants/afk-yolo/) | Max non-destructive autonomy.
    - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
 6. [what-happened](skills/what-happened/) | Catch me up on what changed since my last message, and what waits on me.
+   - [wait-what](skills/wait-what/) | That last message did not land: say it again, plainer.
 7. [review](skills/review/) | WIP: Review patterns.
 8. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
 9. [grilling](skills/grilling/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool instead of markdown.

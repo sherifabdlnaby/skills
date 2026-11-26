@@ -92,13 +92,6 @@
       "skillPath": "skills/productivity/teach/SKILL.md",
       "computedHash": "31bb3eed09dd2787e290e933def99fbf7d65044a29119c224af47c01404ab228"
     },
-    "wait-what": {
-      "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
-      "sourceType": "github",
-      "skillPath": "skills/productivity/wait-what/SKILL.md",
-      "computedHash": "70c9bf9f5a84b6849760f9492f569d5aa12307a0310323fde5f583144730c26c"
-    },
     "why": {
       "source": "cursor/plugins",
       "commit": "005d8f6e8ec057b738adcd08a08b30db0478402d",
