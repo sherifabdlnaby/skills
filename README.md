@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-38%2C803%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 38,803 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-123%2C477%20tokens-2ea44f?style=flat-square" alt="All Markdown: 123,477 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C424%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,424 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-124%2C098%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,098 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -34,7 +34,7 @@ than read, so they are left out.
 | [`ai-disclosure`](skills/ai-disclosure/)                                               |  `1,141` |  `1,141` |
 | [`ask-me`](skills/ask-me/)                                                             |    `336` |    `336` |
 | [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,542` | `15,981` |
-| [`coding`](skills/coding/)                                                             |  `1,463` |  `1,463` |
+| [`coding`](skills/coding/)                                                             |  `2,084` |  `2,084` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
 | [`git`](skills/git/)                                                                   |  `1,817` | `13,314` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
