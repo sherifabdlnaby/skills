@@ -91,12 +91,22 @@ run = 'printf %s "{{vars.setup_version}}" > .config/mise/setup && echo "✅ Setu
 [tasks.dev]
 alias = "dev:up"
 description = "Start the local stack in the background (safe to run again), then show its status"
-depends = ["deps"]                                   # a new worktree has no node_modules yet; a no-op when they are fresh
+depends = ["deps", "dev:setup"]                      # a new worktree has no node_modules yet; a no-op when they are fresh
 usage = '''
     arg "[daemons]" var=#true double_dash="automatic" help="Daemon names (default: all), or flags for mise daemons start"
     complete "daemons" run="mise daemons ls --json | jq -r '.[].name'"
 '''
 run = ["mise daemons start {{usage.daemons | join(sep=' ')}}", { task = "dev:status" }]
+
+[tasks."dev:setup"]
+description = "Prepare the local stack's data before its services start (migrations, etc.)"
+depends = ["deps", "db:migrate"]                     # every important step, transitive ones too: this list is what runs
+
+[tasks."db:migrate"]
+description = "Apply new database migrations to the local database"
+depends = ["deps"]
+daemons = ["postgres"]                               # a preset needs nothing from deps, so it may start first
+run = "npm run db:migrate"                           # must skip applied migrations; no sources: dev:reset empties the database without the cache knowing
 
 [tasks."dev:status"]
 description = "Show the state of the local dev environment"
@@ -149,11 +159,6 @@ version = "8"
 port = { auto = true, base = 14102, stride = 10 }
 retry = 3
 
-[daemons.migrate]
-run = "npm run db:migrate"                        # must skip applied migrations: it runs on every `mise run dev`
-oneshot = true                                    # runs to completion; the daemons that use the schema depend on it
-depends = ["postgres"]
-
 [daemons.api]
 run = "exec node src/server.js --port $API_PORT"  # the plain process: a watcher (node --watch, nodemon) exits 0 on stop, and a clean exit is never restarted
 watch = ["src/**"]                                # restart on a code change
@@ -161,7 +166,7 @@ port = { auto = true, base = 14100, stride = 10 }
 proxy = false                                     # no hostname: that needs the machine-wide pitchfork proxy
 ready_cmd = "curl -sf -m 2 http://127.0.0.1:$API_PORT/health"
 health_cmd = "curl -sf -m 2 http://127.0.0.1:$API_PORT/health"
-depends = ["migrate", "redis"]
+depends = ["postgres", "redis"]
 retry = 3
 # env = { HTTP_PORT = "{{ daemons.api.port }}" }  # for an app that can't take its port in the command
 
