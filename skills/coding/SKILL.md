@@ -44,6 +44,8 @@ metadata:
 - **Attack the premise**: when two fixes that share one assumption fail the same check, write the assumption down and test it before a third fix.
 - **Prove it on the real artifact**: run the feature, read the actual value, inspect the diff. "It compiles", a self-report, or cached output is not proof. When a check passes too easily, suspect the
   check.
+- **Clean the diff before handoff**: before you hand work back to the user or push for review, run the **no-comments** and **no-docs** skills on the diff once, and say in the handoff that
+  you did. Between intermediate commits you may skip them; the last step before the handoff may not.
 - **Explain the number**: before you trust a measured number, name what limits it and rule out that it measured errors, cached or skipped work, or noise. Report it with run count and spread.
 
 ## Tests
