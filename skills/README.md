@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C797%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,797 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C584%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,584 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C750%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,750 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-124%2C537%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,537 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -31,7 +31,7 @@ than read, so they are left out.
 | [`variants/watch-pr`](variants/watch-pr/)                   |    `660` |    `660` |
 | [`variants/watch-pr-ci`](variants/watch-pr-ci/)             |    `261` |    `261` |
 | [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `256` |    `256` |
-| [`wait-what`](wait-what/)                                   |    `232` |    `232` |
+| [`wait-what`](wait-what/)                                   |    `185` |    `185` |
 | [`what-happened`](what-happened/)                           |  `1,090` |  `1,090` |
 | [`vendor/`](vendor/README.md) (15 skills)                   | `22,782` | `40,767` |
 
@@ -99,5 +99,5 @@ than read, so they are left out.
 | `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `660` |
 | `variants/watch-pr-ci`       | [`SKILL.md`](variants/watch-pr-ci/SKILL.md)                                                        |   `261` |
 | `variants/watch-pr-comments` | [`SKILL.md`](variants/watch-pr-comments/SKILL.md)                                                  |   `256` |
-| `wait-what`                  | [`SKILL.md`](wait-what/SKILL.md)                                                                   |   `232` |
+| `wait-what`                  | [`SKILL.md`](wait-what/SKILL.md)                                                                   |   `185` |
 | `what-happened`              | [`SKILL.md`](what-happened/SKILL.md)                                                               | `1,090` |

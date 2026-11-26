@@ -1,22 +1,22 @@
 ---
 name: wait-what
-description: Re-pitch your last message; it did not land.
+description: Say that again, plainer.
 license: MIT
 disable-model-invocation: true
 metadata:
   author: sherifabdlnaby
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # wait-what
 
-Your last message did not land. Re-pitch it:
+I didn't follow your last message. Say it again:
 
-- **Point first**: one sentence with the answer, or the decision you need from the user.
-- **Add the context it skipped**: what we are doing and where this fits, in a line or two.
-- **Plain words**, like one person talking to another: Simplified Technical English, no jargon, no labels you made up. Use the project's own terms (its `GLOSSARY.md` when it has one) and say what
-  each one means the first time.
-- **Shorter than the original.** Drop what does not serve the point.
-- **A small view** when the point is structure or flow: a tree, a diff, a diagram.
+- Start with the point: the answer, or what you need me to decide.
+- Fill in what you skipped: what we're doing, and where this fits.
+- Write in ASD-STE100 Simplified Technical English. No jargon, and no names you made up. Use the project's own terms (from its `GLOSSARY.md` if it has one), and explain each one the first
+  time.
+- Make it shorter than before.
+- If it's about structure or flow, show a small tree, diff, or diagram.
 
-Re-pitch only: no new work, and no tool calls unless a fact needs checking.
+Just explain it again. Don't start new work.

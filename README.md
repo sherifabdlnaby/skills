@@ -28,7 +28,7 @@ Each line is a skill, then its variants, then what it does.
    instead of markdown. `grill-me` starts it by hand.
 7. [ask-me](skills/ask-me/) | How to ask me questions: in rounds, through the harness's question tool, with explanations where I can see them.
 8. [what-happened](skills/what-happened/) | Catch me up on what changed since my last message, and what waits on me.
-9. [wait-what](skills/wait-what/) | That last message did not land: say it again, plainer.
+9. [wait-what](skills/wait-what/) | Say that again, plainer: I did not follow your last message.
 10. [fast-feedback-mode](skills/fast-feedback-mode/) | Act fast and keep me in the zone; tests, lints, and commits wait until I say finalize.
 11. [review](skills/review/) | WIP: Review patterns.
 12. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
