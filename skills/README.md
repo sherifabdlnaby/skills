@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C669%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,669 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C353%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,353 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C697%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,697 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-124%2C484%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,484 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -19,7 +19,7 @@ than read, so they are left out.
 | [`cicd-fy`](cicd-fy/)                                       |  `1,542` | `15,981` |
 | [`coding`](coding/)                                         |  `2,084` |  `2,084` |
 | [`fast-feedback-mode`](fast-feedback-mode/)                 |    `394` |    `394` |
-| [`git`](git/)                                               |  `1,818` | `13,325` |
+| [`git`](git/)                                               |  `1,846` | `13,456` |
 | [`grill-me`](grill-me/)                                     |     `61` |     `61` |
 | [`grilling`](grilling/)                                     |    `664` |    `664` |
 | [`mise-fy`](mise-fy/)                                       |  `2,525` | `39,790` |
@@ -58,11 +58,11 @@ than read, so they are left out.
 | `cicd-fy`                    | [`references/security.md`](cicd-fy/references/security.md)                                         |   `814` |
 | `coding`                     | [`SKILL.md`](coding/SKILL.md)                                                                      | `2,084` |
 | `fast-feedback-mode`         | [`SKILL.md`](fast-feedback-mode/SKILL.md)                                                          |   `394` |
-| `git`                        | [`SKILL.md`](git/SKILL.md)                                                                         | `1,818` |
+| `git`                        | [`SKILL.md`](git/SKILL.md)                                                                         | `1,846` |
 | `git`                        | [`references/attach.md`](git/references/attach.md)                                                 |   `546` |
 | `git`                        | [`references/branches.md`](git/references/branches.md)                                             | `1,791` |
 | `git`                        | [`references/commits.md`](git/references/commits.md)                                               |   `873` |
-| `git`                        | [`references/pr-body.md`](git/references/pr-body.md)                                               | `1,773` |
+| `git`                        | [`references/pr-body.md`](git/references/pr-body.md)                                               | `1,876` |
 | `git`                        | [`references/pull-requests.md`](git/references/pull-requests.md)                                   | `1,531` |
 | `git`                        | [`references/rebase.md`](git/references/rebase.md)                                                 |   `835` |
 | `git`                        | [`references/review-responses.md`](git/references/review-responses.md)                             | `1,416` |

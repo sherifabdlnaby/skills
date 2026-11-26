@@ -89,6 +89,7 @@ Carry `<OWNER/REPO>` and `<trunk>` through the session from that.
 **Voice** for everything public (commit messages, PR titles and bodies, comments, issues):
 
 - Omit needless words. Concise sentences, no padding paragraphs.
+- Point first, in plain words: Simplified Technical English, no jargon, no names you made up. Use the project's own terms.
 - Emojis sparingly, only where one helps the reader catch something while glancing.
 - NO em dashes in any public-facing text. Use commas, parentheses, or periods. (why: em dashes are a classic AI tell and repel readers.)
 - No vague reaffirmations like "for accountability", "for performance", "for resiliency" unless that reason is already in the conversation. (why: invented justification misrepresents the change.)
