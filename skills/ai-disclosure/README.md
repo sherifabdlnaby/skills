@@ -1,21 +1,6 @@
 # ai-disclosure
 
-<!-- token-estimates:start -->
-
-<p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C141%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,141 tokens" />
-  <img src="https://img.shields.io/badge/Total-1%2C141%20tokens-2ea44f?style=flat-square" alt="Total: 1,141 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
-other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
-than read, so they are left out.
-
-| File                   |  Tokens |
-| ---------------------- | ------: |
-| [`SKILL.md`](SKILL.md) | `1,141` |
-
-<!-- token-estimates:end -->
+[All skills](../)
 
 Disclosing AI is etiquette. Sure, "You're absolutely right!" and three em dashes per sentence already gave it away.
 What readers can't tell is whether you were behind it, or just said "go handle this for me." Saying how involved you

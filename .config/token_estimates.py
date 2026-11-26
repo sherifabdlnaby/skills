@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,10 +11,12 @@ from urllib.parse import quote
 import tiktoken
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[1]
-START_MARKER = "<!-- token-estimates:start -->"
-END_MARKER = "<!-- token-estimates:end -->"
 DIFF_MARKER = "<!-- token-estimates:diff -->"
 ENCODING_NAME = "o200k_base"
+
+SKILLS_HEADER = """# Skills
+
+What each skill costs an agent's context window. The [project README](../README.md) says what each one does."""
 
 VENDOR_HEADER = """# Vendored skills
 
@@ -154,9 +155,9 @@ def signed(delta: int) -> str:
     return f"`{delta:+,}`" if delta else "`0`"
 
 
-def report_intro(skill_tokens: int, total_tokens: int, *, plural: bool = False) -> str:
-    skill_label = "All SKILL.md" if plural else "SKILL.md"
-    total_label = "All Markdown" if plural else "Total"
+def report_intro(skill_tokens: int, total_tokens: int) -> str:
+    skill_label = "All SKILL.md"
+    total_label = "All Markdown"
     return "\n".join(
         (
             "<p>",
@@ -171,24 +172,6 @@ def report_intro(skill_tokens: int, total_tokens: int, *, plural: bool = False) 
     )
 
 
-def skill_block(estimate: SkillEstimate) -> str:
-    rows = []
-    for file in estimate.files:
-        relative_path = file.path.relative_to(estimate.directory).as_posix()
-        rows.append(
-            (f"[`{relative_path}`]({quote(relative_path)})", count(file.tokens))
-        )
-    table = markdown_table(("File", "Tokens"), rows, {1})
-    return "\n\n".join(
-        (
-            START_MARKER,
-            report_intro(estimate.skill_tokens, estimate.total_tokens),
-            table,
-            END_MARKER,
-        )
-    )
-
-
 def display_name(estimate: SkillEstimate, base: Path) -> str:
     # Inside skills/vendor/ the prefix is the directory you are already reading.
     return (
@@ -198,14 +181,9 @@ def display_name(estimate: SkillEstimate, base: Path) -> str:
     )
 
 
-def summary_table(
+def summary_rows(
     estimates: tuple[SkillEstimate, ...], base: Path, *, sources: dict[str, str] | None
-) -> str:
-    headers = ("Skill", "SKILL.md", "Total")
-    right = {1, 2}
-    if sources is not None:
-        headers = ("Skill", "Upstream", "SKILL.md", "Total")
-        right = {2, 3}
+) -> list[tuple[str, ...]]:
     rows: list[tuple[str, ...]] = []
     for estimate in estimates:
         link = quote(estimate.directory.relative_to(base).as_posix())
@@ -215,7 +193,7 @@ def summary_table(
             cells.append(f"[{source}](https://github.com/{source})")
         cells.extend((count(estimate.skill_tokens), count(estimate.total_tokens)))
         rows.append(tuple(cells))
-    return markdown_table(headers, rows, right)
+    return rows
 
 
 def files_table(estimates: tuple[SkillEstimate, ...], base: Path) -> str:
@@ -241,32 +219,16 @@ def totals(estimates: tuple[SkillEstimate, ...]) -> tuple[int, int]:
     )
 
 
-def collapsed(*parts: str) -> str:
-    return "\n\n".join(
-        (
-            "<details>",
-            "<summary><strong>Token estimates</strong></summary>",
-            *parts,
-            "</details>",
-        )
-    )
-
-
-def root_block(estimates: tuple[SkillEstimate, ...], root: Path) -> str:
-    skill_tokens, total_tokens = totals(estimates)
-    details = collapsed(
-        report_intro(skill_tokens, total_tokens, plural=True),
-        summary_table(estimates, root, sources=None),
-    )
-    return "\n\n".join((START_MARKER, details, END_MARKER))
-
-
 def vendor_readme(estimates: tuple[SkillEstimate, ...], vendor_dir: Path) -> str:
     skill_tokens, total_tokens = totals(estimates)
     body = (
-        report_intro(skill_tokens, total_tokens, plural=True),
-        summary_table(
-            estimates, vendor_dir, sources=upstream_sources(vendor_dir.parents[1])
+        report_intro(skill_tokens, total_tokens),
+        markdown_table(
+            ("Skill", "Upstream", "SKILL.md", "Total"),
+            summary_rows(
+                estimates, vendor_dir, sources=upstream_sources(vendor_dir.parents[1])
+            ),
+            {2, 3},
         ),
         "### Files",
         files_table(estimates, vendor_dir),
@@ -274,48 +236,26 @@ def vendor_readme(estimates: tuple[SkillEstimate, ...], vendor_dir: Path) -> str
     return "\n\n".join((VENDOR_HEADER, *body)) + "\n"
 
 
-def replace_generated_block(content: str, block: str) -> str | None:
-    starts = content.count(START_MARKER)
-    ends = content.count(END_MARKER)
-    if starts == ends == 0:
-        return None
-    if starts != 1 or ends != 1:
-        raise ValueError("expected one complete token estimate block")
-    pattern = re.compile(
-        f"{re.escape(START_MARKER)}.*?{re.escape(END_MARKER)}", re.DOTALL
+def skills_readme(
+    owned: tuple[SkillEstimate, ...],
+    vendored: tuple[SkillEstimate, ...],
+    skills_dir: Path,
+) -> str:
+    skill_tokens, total_tokens = totals((*owned, *vendored))
+    vendor_skill, vendor_total = totals(vendored)
+    vendor_row = (
+        f"[`vendor/`](vendor/README.md) ({len(vendored)} skills)",
+        count(vendor_skill),
+        count(vendor_total),
     )
-    match = pattern.search(content)
-    if match is None:
-        raise ValueError("token estimate block markers are out of order")
-    return f"{content[: match.start()]}{block}{content[match.end() :]}"
-
-
-def insert_after_heading(content: str, block: str) -> str:
-    heading = re.search(r"(?m)^# .+\n", content)
-    if heading is None:
-        return f"{block}\n\n{content.lstrip()}"
-    return f"{content[: heading.end()]}\n{block}\n\n{content[heading.end() :].lstrip()}"
-
-
-def skill_readme(estimate: SkillEstimate, block: str, root: Path) -> str:
-    path = estimate.directory / "README.md"
-    if not path.exists() or path.is_symlink():
-        raise ValueError(f"{path.relative_to(root)} must be a regular README")
-    content = path.read_text(encoding="utf-8")
-    replaced = replace_generated_block(content, block)
-    return replaced if replaced is not None else insert_after_heading(content, block)
-
-
-def root_readme(block: str, root: Path) -> str:
-    content = (root / "README.md").read_text(encoding="utf-8")
-    replaced = replace_generated_block(content, block)
-    if replaced is not None:
-        return replaced
-
-    anchor = "\n## Skills\n"
-    if anchor not in content:
-        raise ValueError("README.md has no Skills section")
-    return content.replace(anchor, f"\n{block}{anchor}", 1)
+    rows = [*summary_rows(owned, skills_dir, sources=None), vendor_row]
+    body = (
+        report_intro(skill_tokens, total_tokens),
+        markdown_table(("Skill", "SKILL.md", "Total"), rows, {1, 2}),
+        "### Files",
+        files_table(owned, skills_dir),
+    )
+    return "\n\n".join((SKILLS_HEADER, *body)) + "\n"
 
 
 def snapshot(estimates: tuple[SkillEstimate, ...]) -> dict[str, dict[str, int]]:
@@ -378,17 +318,9 @@ def write_reports(
     vendor_dir = root / "skills" / "vendor"
 
     expected = {
-        root / "README.md": root_readme(root_block(estimates, root), root),
+        root / "skills" / "README.md": skills_readme(owned, vendored, root / "skills"),
         vendor_dir / "README.md": vendor_readme(vendored, vendor_dir),
     }
-    expected.update(
-        {
-            estimate.directory / "README.md": skill_readme(
-                estimate, skill_block(estimate), root
-            )
-            for estimate in owned
-        }
-    )
     stale = [
         path
         for path, content in expected.items()

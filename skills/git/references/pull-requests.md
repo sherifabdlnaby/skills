@@ -1,6 +1,6 @@
 # Pull Requests
 
-Covers: pre-flight, title (with the stacked `[n/N]` marker), `gh pr create` flags, post-create lines, finishing PRs after `gh stack submit`, updating an open PR.
+Covers: pre-flight, title (with the stacked `[n/N]` marker), `gh pr create` flags, the post-create link, finishing PRs after `gh stack submit`, updating an open PR.
 
 Mechanics for opening and updating PRs. The body has its own page, [`pr-body.md`](./pr-body.md).
 Read it before you draft.
@@ -68,18 +68,15 @@ so keep it. A literal `N` stays literal. A merged stack keeps `[2/N]` forever
 - `--draft` by default unless told otherwise; lets the user inspect first.
 - `--base <branch>` for any PR above the bottom of a stack. The stack relationship lives in `--base`; without it the PR targets `<trunk>` and the stack collapses.
 
-## After `gh pr create` (in order, no waiting)
+## After `gh pr create`
 
-The number and URL come from the create command's output; carry them forward.
+Give the PR as one rendered link in the reply, its title as the text: plain Markdown in the prose, never inside a code block, never a bare URL. The URL comes from the create command's output.
 
-1. **Slack-ready line**, in a fenced block for copy-paste (drop the parenthesized ticket suffix when there's no ticket):
-   ```
-   [#<PR_Number>](<PR_URL>): <PR_Title> - ([<TICKET>](<TICKET_URL>))
-   ```
-2. **Clickable PR link**, separate from the Slack line:
-   ```
-   [<PR_Title>](<PR_URL>)
-   ```
+```markdown
+[<PR_Title>](<PR_URL>)                                    # usual
+[<PR_Title>](<PR_URL>) ([<TICKET>](<TICKET_URL>))         # a known ticket the title does not carry
+<repo>: [<PR_Title>](<PR_URL>)                            # several PRs in one reply, one line each
+```
 
 ## After `gh stack submit`
 

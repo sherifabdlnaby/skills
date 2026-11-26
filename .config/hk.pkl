@@ -98,7 +98,7 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
     exclusive = true
     check = "mise run tokens"
     fix = "mise run tokens --fix"
-    stage = List("README.md", "skills/**/README.md")
+    stage = List("skills/README.md", "skills/vendor/README.md")
   }
 }
 

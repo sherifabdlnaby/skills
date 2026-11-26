@@ -1,25 +1,6 @@
 # skill-fy
 
-<!-- token-estimates:start -->
-
-<p>
-  <img src="https://img.shields.io/badge/SKILL.md-2%2C901%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,901 tokens" />
-  <img src="https://img.shields.io/badge/Total-6%2C389%20tokens-2ea44f?style=flat-square" alt="Total: 6,389 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
-other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
-than read, so they are left out.
-
-| File                                                           |  Tokens |
-| -------------------------------------------------------------- | ------: |
-| [`SKILL.md`](SKILL.md)                                         | `2,901` |
-| [`assets/SKILL-skeleton.md`](assets/SKILL-skeleton.md)         |   `369` |
-| [`assets/reference-skeleton.md`](assets/reference-skeleton.md) |   `433` |
-| [`references/scaffold.md`](references/scaffold.md)             | `1,440` |
-| [`references/skill-fy.md`](references/skill-fy.md)             | `1,246` |
-
-<!-- token-estimates:end -->
+[All skills](../)
 
 `skill-fy` helps create a skill, or audit and reshape an existing one, so that it is concise, triggers correctly, runs on the fast path, and loads only the guidance a task needs.
 It is useful when a skill has become a tool manual, checks its prerequisites on every run, has unclear activation rules, or has grown reference pages nobody reaches.

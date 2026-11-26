@@ -57,13 +57,6 @@
       "skillPath": "SKILL.md",
       "computedHash": "6da5d71e32eb66770b4c1ebe38b7e5c271bfca6290c9248aeb8449a84dbfe914"
     },
-    "i-have-adhd": {
-      "source": "ayghri/i-have-adhd",
-      "commit": "1ecea1993b7fce257ffbd686c070948b5e07eda6",
-      "sourceType": "github",
-      "skillPath": "skills/i-have-adhd/SKILL.md",
-      "computedHash": "894c54f32643b3ff9f626bbb758f12a704c354dbf8ce6b4939f7971a16827ae1"
-    },
     "improve-codebase-architecture": {
       "source": "mattpocock/skills",
       "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
@@ -77,13 +70,6 @@
       "sourceType": "github",
       "skillPath": "harness/pstack/claude-code/skills/in-your-own-words/SKILL.md",
       "computedHash": "eaacabc9a2c7a1a674334a4e01e5900a6f7a764d405237ce17d4e4200cf528be"
-    },
-    "ketchup": {
-      "source": "cursor/plugins",
-      "commit": "005d8f6e8ec057b738adcd08a08b30db0478402d",
-      "sourceType": "github",
-      "skillPath": "harness/pstack/claude-code/skills/ketchup/SKILL.md",
-      "computedHash": "f2f883bf6e1e1e9de3936d21faa3c64da9f8e9c103499f6dee8c3eb6d455083e"
     },
     "prototype": {
       "source": "mattpocock/skills",
@@ -105,13 +91,6 @@
       "sourceType": "github",
       "skillPath": "skills/productivity/teach/SKILL.md",
       "computedHash": "31bb3eed09dd2787e290e933def99fbf7d65044a29119c224af47c01404ab228"
-    },
-    "wait-what": {
-      "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
-      "sourceType": "github",
-      "skillPath": "skills/productivity/wait-what/SKILL.md",
-      "computedHash": "70c9bf9f5a84b6849760f9492f569d5aa12307a0310323fde5f583144730c26c"
     },
     "why": {
       "source": "cursor/plugins",
