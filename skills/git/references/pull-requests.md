@@ -70,7 +70,7 @@ so keep it. A literal `N` stays literal. A merged stack keeps `[2/N]` forever
 
 ## After `gh pr create`
 
-Give the PR as one link, its title as the text. The URL comes from the create command's output.
+Give the PR as one rendered link in the reply, its title as the text: plain Markdown in the prose, never inside a code block, never a bare URL. The URL comes from the create command's output.
 
 ```markdown
 [<PR_Title>](<PR_URL>)                                    # usual
