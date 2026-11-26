@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C424%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,424 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C098%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,098 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C425%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,425 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-124%2C088%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,088 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -36,7 +36,7 @@ than read, so they are left out.
 | [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,542` | `15,981` |
 | [`coding`](skills/coding/)                                                             |  `2,084` |  `2,084` |
 | [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
-| [`git`](skills/git/)                                                                   |  `1,817` | `13,314` |
+| [`git`](skills/git/)                                                                   |  `1,818` | `13,304` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `664` |    `664` |
 | [`mise-fy`](skills/mise-fy/)                                                           |  `2,525` | `39,790` |
