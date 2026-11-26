@@ -15,8 +15,7 @@ from the thread. That constraint is [`review-responses.md`](./review-responses.m
 
 **The body file decides where it lands.** Write the Markdown reference where you want the media, then
 attach the same path: `gh` swaps the reference for the uploaded URL and keeps the alt text you wrote.
-In a PR body that place is the **Visuals** block, or the changelog bullet or review guide stop that
-the picture supports.
+In a PR body that place is under the summary, or in *More visuals*.
 
 ```bash
 gh pr create --draft --assignee @me --body-file /tmp/pr-body.md \
@@ -26,13 +25,13 @@ gh pr create --draft --assignee @me --body-file /tmp/pr-body.md \
 With `/tmp/pr-body.md` carrying the references, alt text and all:
 
 ```markdown
-**Changes** <!-- pr:changes -->
+<!-- pr:visuals -->
 
-- *Empty results* now explain what to do next.
+*Empty results* now explain what to do next:
 
-  | Before                           | After                                            |
-  | -------------------------------- | ------------------------------------------------ |
-  | ![Bare empty list](./before.png) | ![Empty list with a call to action](./after.png) |
+| Before                           | After                                            |
+| -------------------------------- | ------------------------------------------------ |
+| ![Bare empty list](./before.png) | ![Empty list with a call to action](./after.png) |
 ```
 
 Outside a body file, alt text follows the path after `#`, as in
