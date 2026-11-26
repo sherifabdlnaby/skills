@@ -3,8 +3,8 @@
 <!-- token-estimates:start -->
 
 <p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C805%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,805 tokens" />
-  <img src="https://img.shields.io/badge/Total-13%2C248%20tokens-2ea44f?style=flat-square" alt="Total: 13,248 tokens" />
+  <img src="https://img.shields.io/badge/SKILL.md-1%2C817%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,817 tokens" />
+  <img src="https://img.shields.io/badge/Total-13%2C314%20tokens-2ea44f?style=flat-square" alt="Total: 13,314 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,7 +13,7 @@ than read, so they are left out.
 
 | File                                                               |  Tokens |
 | ------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                             | `1,805` |
+| [`SKILL.md`](SKILL.md)                                             | `1,817` |
 | [`references/attach.md`](references/attach.md)                     |   `546` |
 | [`references/branches.md`](references/branches.md)                 | `1,791` |
 | [`references/commits.md`](references/commits.md)                   |   `873` |
@@ -23,7 +23,7 @@ than read, so they are left out.
 | [`references/review-responses.md`](references/review-responses.md) | `1,416` |
 | [`references/reviewing.md`](references/reviewing.md)               |   `229` |
 | [`references/watch-flags.md`](references/watch-flags.md)           |   `666` |
-| [`references/watch.md`](references/watch.md)                       | `1,793` |
+| [`references/watch.md`](references/watch.md)                       | `1,847` |
 
 <!-- token-estimates:end -->
 
@@ -42,8 +42,8 @@ The skill selects detailed guidance for the operation in progress:
   one screen stays open, and the record of who decided what (a person or the agent) is folded under it.
 - Rebases preserve a recovery point when conflicts occur and use `range-diff` to verify content before a force-push.
 - Reviews trace the whole change, classify feedback by source, answer in the original thread, and separate clear fixes from decisions that need human input.
-- PR watching uses the included standard-library Python script to report only new CI, review, comment, and state events. Saved watcher state and adaptive polling avoid noisy sleep loops.
-  The states of a watch are drawn in the [watch-pr README](../variants/watch-pr/README.md).
+- PR watching uses the harness's own PR-watch tool when it has one (e.g. T3 Code). Otherwise it uses the included standard-library Python script to report only new CI, review, comment, and state
+  events. Saved watcher state and adaptive polling avoid noisy sleep loops. The states of a watch are drawn in the [watch-pr README](../variants/watch-pr/README.md).
 
 GitHub operations use `gh`. Independent reads are batched, while large bodies and GraphQL requests travel through files. Open PR body edits preserve current content unless a fresh generated or cached
 body is known to be safe to replace.

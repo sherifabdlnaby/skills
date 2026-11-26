@@ -48,7 +48,7 @@ Stacked-PR restack live in [`references/branches.md`](references/branches.md); r
 Procedure: gather context, check out locally, trace the change, deliver a summary and review guide.
 
 **Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and quiet / reviews only), the cheap
-sub-agent that runs the loop, the stale nudge. Uses `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
+sub-agent that runs the loop, the stale nudge. Uses the harness's PR-watch tool when it has one, else `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.
 
 **Stuck CI check with no manual retry** -> [`references/commits.md`, Empty commits](references/commits.md#empty-commits)
 The last-resort empty commit: when it beats retrying the check, and the zero-file-change guards that keep approvals alive.

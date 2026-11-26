@@ -10,6 +10,10 @@ Watch a PR's CI, reviews, and comments, and react when something changes. No sle
 
 ## Flow
 
+**The harness has a PR-watch tool** (e.g. T3 Code's `watch_pull_request`)? Use it instead of this
+flow: it wakes you on events and costs no agent turns while it waits. The draft flick below still
+applies.
+
 1. **Pick a mode** (see [Modes](#modes)). Reviews already on the PR do not show up in the watch.
 2. **Draft PR?** In a mode that answers bot reviews, flick it (see [Draft PRs](#draft-prs-and-review-bots)).
 3. **Start a cheap sub-agent** to run the watch (see [Who runs the loop](#who-runs-the-loop)).
