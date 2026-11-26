@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C255%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,255 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-127%2C202%20tokens-2ea44f?style=flat-square" alt="All Markdown: 127,202 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-38%2C803%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 38,803 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-123%2C477%20tokens-2ea44f?style=flat-square" alt="All Markdown: 123,477 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -39,7 +39,6 @@ than read, so they are left out.
 | [`git`](skills/git/)                                                                   |  `1,817` | `13,314` |
 | [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
 | [`grilling`](skills/grilling/)                                                         |    `664` |    `664` |
-| [`kubernetes-debug`](skills/kubernetes-debug/)                                         |    `240` |  `1,513` |
 | [`mise-fy`](skills/mise-fy/)                                                           |  `2,525` | `39,790` |
 | [`review`](skills/review/)                                                             |    `325` |    `325` |
 | [`skill-fy`](skills/skill-fy/)                                                         |  `2,901` |  `6,389` |
@@ -57,16 +56,15 @@ than read, so they are left out.
 | [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,282` |  `8,014` |
 | [`vendor/handoff`](skills/vendor/handoff/)                                             |    `198` |    `198` |
 | [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `7,383` | `10,407` |
-| [`vendor/i-have-adhd`](skills/vendor/i-have-adhd/)                                     |  `1,743` |  `1,743` |
 | [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |  `1,354` |  `2,950` |
 | [`vendor/in-your-own-words`](skills/vendor/in-your-own-words/)                         |     `72` |     `72` |
-| [`vendor/ketchup`](skills/vendor/ketchup/)                                             |  `1,445` |  `1,445` |
 | [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
 | [`vendor/show-me`](skills/vendor/show-me/)                                             |    `783` |    `783` |
 | [`vendor/teach`](skills/vendor/teach/)                                                 |  `1,997` |  `3,855` |
 | [`vendor/wait-what`](skills/vendor/wait-what/)                                         |    `102` |    `102` |
 | [`vendor/why`](skills/vendor/why/)                                                     |    `124` |    `124` |
 | [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |  `2,349` |  `2,916` |
+| [`what-happened`](skills/what-happened/)                                               |    `976` |    `976` |
 
 </details>
 
@@ -81,11 +79,11 @@ than read, so they are left out.
    - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: fix CI and answer reviews, until green and quiet (or `forever`).
    - [watch-pr-ci](skills/variants/watch-pr-ci/) | CI only: fix what goes red, stop at green.
    - [watch-pr-comments](skills/variants/watch-pr-comments/) | Reviews only: answer them as they land.
-5. [kubernetes-debug](skills/kubernetes-debug/) | WIP: Failure mode when debugging k8s
-6. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
+5. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
    - [afk-careful](skills/variants/afk-careful/) | Conservative with its autonomy.
    - [afk-yolo](skills/variants/afk-yolo/) | Max non-destructive autonomy.
    - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
+6. [what-happened](skills/what-happened/) | Catch me up on what changed since my last message, and what waits on me.
 7. [review](skills/review/) | WIP: Review patterns.
 8. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
 9. [grilling](skills/grilling/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool instead of markdown.

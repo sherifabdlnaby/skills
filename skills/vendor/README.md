@@ -5,34 +5,32 @@ Skills other people wrote, copied in by `mise run skills:sync` from the sources 
 skill's own `SKILL.md` is its documentation.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-26%2C072%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 26,072 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-44%2C057%20tokens-2ea44f?style=flat-square" alt="All Markdown: 44,057 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-22%2C884%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 22,884 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-40%2C869%20tokens-2ea44f?style=flat-square" alt="All Markdown: 40,869 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
 other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
 than read, so they are left out.
 
-| Skill                                                             | Upstream                                                    | SKILL.md |    Total |
-| ----------------------------------------------------------------- | ----------------------------------------------------------- | -------: | -------: |
-| [`blast-radius`](blast-radius/)                                   | [cursor/plugins](https://github.com/cursor/plugins)         |    `890` |    `890` |
-| [`codebase-design`](codebase-design/)                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `1,349` |  `2,495` |
-| [`correct`](correct/)                                             | [cursor/plugins](https://github.com/cursor/plugins)         |    `544` |    `544` |
-| [`diagnosing-bugs`](diagnosing-bugs/)                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `2,034` |  `2,034` |
-| [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `781` |  `1,939` |
-| [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)       |  `2,282` |  `8,014` |
-| [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `198` |    `198` |
-| [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)     |  `7,383` | `10,407` |
-| [`i-have-adhd`](i-have-adhd/)                                     | [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) |  `1,743` |  `1,743` |
-| [`improve-codebase-architecture`](improve-codebase-architecture/) | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `1,354` |  `2,950` |
-| [`in-your-own-words`](in-your-own-words/)                         | [cursor/plugins](https://github.com/cursor/plugins)         |     `72` |     `72` |
-| [`ketchup`](ketchup/)                                             | [cursor/plugins](https://github.com/cursor/plugins)         |  `1,445` |  `1,445` |
-| [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `642` |  `3,546` |
-| [`show-me`](show-me/)                                             | [humanlayer/skills](https://github.com/humanlayer/skills)   |    `783` |    `783` |
-| [`teach`](teach/)                                                 | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `1,997` |  `3,855` |
-| [`wait-what`](wait-what/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills)   |    `102` |    `102` |
-| [`why`](why/)                                                     | [cursor/plugins](https://github.com/cursor/plugins)         |    `124` |    `124` |
-| [`writing-for-agents`](writing-for-agents/)                       | [mattpocock/skills](https://github.com/mattpocock/skills)   |  `2,349` |  `2,916` |
+| Skill                                                             | Upstream                                                  | SKILL.md |    Total |
+| ----------------------------------------------------------------- | --------------------------------------------------------- | -------: | -------: |
+| [`blast-radius`](blast-radius/)                                   | [cursor/plugins](https://github.com/cursor/plugins)       |    `890` |    `890` |
+| [`codebase-design`](codebase-design/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,349` |  `2,495` |
+| [`correct`](correct/)                                             | [cursor/plugins](https://github.com/cursor/plugins)       |    `544` |    `544` |
+| [`diagnosing-bugs`](diagnosing-bugs/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |  `2,034` |  `2,034` |
+| [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `781` |  `1,939` |
+| [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)     |  `2,282` |  `8,014` |
+| [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `198` |    `198` |
+| [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)   |  `7,383` | `10,407` |
+| [`improve-codebase-architecture`](improve-codebase-architecture/) | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,354` |  `2,950` |
+| [`in-your-own-words`](in-your-own-words/)                         | [cursor/plugins](https://github.com/cursor/plugins)       |     `72` |     `72` |
+| [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills) |    `642` |  `3,546` |
+| [`show-me`](show-me/)                                             | [humanlayer/skills](https://github.com/humanlayer/skills) |    `783` |    `783` |
+| [`teach`](teach/)                                                 | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,997` |  `3,855` |
+| [`wait-what`](wait-what/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills) |    `102` |    `102` |
+| [`why`](why/)                                                     | [cursor/plugins](https://github.com/cursor/plugins)       |    `124` |    `124` |
+| [`writing-for-agents`](writing-for-agents/)                       | [mattpocock/skills](https://github.com/mattpocock/skills) |  `2,349` |  `2,916` |
 
 ### Files
 
@@ -55,11 +53,9 @@ than read, so they are left out.
 | `humanizer`                     | [`AGENTS.md`](humanizer/AGENTS.md)                                        |   `799` |
 | `humanizer`                     | [`CHANGELOG.md`](humanizer/CHANGELOG.md)                                  | `2,225` |
 | `humanizer`                     | [`SKILL.md`](humanizer/SKILL.md)                                          | `7,383` |
-| `i-have-adhd`                   | [`SKILL.md`](i-have-adhd/SKILL.md)                                        | `1,743` |
 | `improve-codebase-architecture` | [`HTML-REPORT.md`](improve-codebase-architecture/HTML-REPORT.md)          | `1,596` |
 | `improve-codebase-architecture` | [`SKILL.md`](improve-codebase-architecture/SKILL.md)                      | `1,354` |
 | `in-your-own-words`             | [`SKILL.md`](in-your-own-words/SKILL.md)                                  |    `72` |
-| `ketchup`                       | [`SKILL.md`](ketchup/SKILL.md)                                            | `1,445` |
 | `prototype`                     | [`LOGIC.md`](prototype/LOGIC.md)                                          | `1,329` |
 | `prototype`                     | [`SKILL.md`](prototype/SKILL.md)                                          |   `642` |
 | `prototype`                     | [`UI.md`](prototype/UI.md)                                                | `1,575` |
