@@ -60,6 +60,7 @@ To enforce these rules on a diff, use the **no-comments** skill.
 
 **Keep list:**
 
+- **Section banner**: a short banner that groups a long file into sections (`// ===== Retry =====`).
 - **File header**: one or two lines at the top of a file on what it is for, when its name and place do not say it. Not a list of what it contains.
 - **External cause**: a vendor, platform, or protocol behavior we cannot reshape, or the paper, spec, or RFC a formula or algorithm comes from, with a link:
   `// workaround: SDK drops keepalive on h2, see github.com/x/y#456`.
@@ -87,7 +88,7 @@ delete it.
 
 - `C1` change narration: `Added`, `Updated`, `Changed`, `Now`, `previously`, `migrated from`, `moved to`, `for now`. Describe the code as it is, or delete.
 - `C2` only the words of the name below it (`// get user` above `getUser()`).
-- `C3` a divider, banner, or step label (`// ====`, `// Step 1:`, `// Arrange`).
+- `C3` a step label (`// Step 1:`, `// Arrange`).
 - `C4` more than 4 lines, except a license. Keep the constraint, drop the background.
 - `C5` `TODO`, `FIXME`, `HACK`, or `XXX` with no ticket or link.
 - `C6` a bare `#123` for our own PR or issue. Keep the reason; git keeps the number.

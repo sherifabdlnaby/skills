@@ -12,3 +12,5 @@ wider than comment-sicko's (for example, it keeps couplings and concurrency rule
 only in this plugin, for Claude Code and Cursor), the agent does the pass itself.
 
 Needs: `coding`. Other skills can call it, because it is model-invocable.
+
+Inspired by `/no-comments` and the Comment Sicko subagent in [pstack](https://github.com/cursor/plugins/tree/main/pstack) by [poteto](https://github.com/poteto) (Lauren Tan).
