@@ -1,31 +1,6 @@
 # Git
 
-<!-- token-estimates:start -->
-
-<p>
-  <img src="https://img.shields.io/badge/SKILL.md-1%2C818%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 1,818 tokens" />
-  <img src="https://img.shields.io/badge/Total-13%2C325%20tokens-2ea44f?style=flat-square" alt="Total: 13,325 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
-other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
-than read, so they are left out.
-
-| File                                                               |  Tokens |
-| ------------------------------------------------------------------ | ------: |
-| [`SKILL.md`](SKILL.md)                                             | `1,818` |
-| [`references/attach.md`](references/attach.md)                     |   `546` |
-| [`references/branches.md`](references/branches.md)                 | `1,791` |
-| [`references/commits.md`](references/commits.md)                   |   `873` |
-| [`references/pr-body.md`](references/pr-body.md)                   | `1,773` |
-| [`references/pull-requests.md`](references/pull-requests.md)       | `1,531` |
-| [`references/rebase.md`](references/rebase.md)                     |   `835` |
-| [`references/review-responses.md`](references/review-responses.md) | `1,416` |
-| [`references/reviewing.md`](references/reviewing.md)               |   `229` |
-| [`references/watch-flags.md`](references/watch-flags.md)           |   `666` |
-| [`references/watch.md`](references/watch.md)                       | `1,847` |
-
-<!-- token-estimates:end -->
+[All skills](../)
 
 This skill makes Git and GitHub work predictable across branches, commits, pull requests, rebases, reviews, and CI. It combines project-facing writing conventions with safeguards for operations that
 can lose work, rewrite history, or publish unintended content.

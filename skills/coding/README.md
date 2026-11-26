@@ -1,21 +1,6 @@
 # Coding
 
-<!-- token-estimates:start -->
-
-<p>
-  <img src="https://img.shields.io/badge/SKILL.md-2%2C084%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 2,084 tokens" />
-  <img src="https://img.shields.io/badge/Total-2%2C084%20tokens-2ea44f?style=flat-square" alt="Total: 2,084 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
-other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
-than read, so they are left out.
-
-| File                   |  Tokens |
-| ---------------------- | ------: |
-| [`SKILL.md`](SKILL.md) | `2,084` |
-
-<!-- token-estimates:end -->
+[All skills](../)
 
 This skill keeps code and documentation maintainable after the immediate task is forgotten. It prevents chat-specific solutions, premature abstractions, and comments that become misleading as the
 project changes.

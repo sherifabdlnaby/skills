@@ -1,21 +1,6 @@
 # grilling
 
-<!-- token-estimates:start -->
-
-<p>
-  <img src="https://img.shields.io/badge/SKILL.md-664%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 664 tokens" />
-  <img src="https://img.shields.io/badge/Total-664%20tokens-2ea44f?style=flat-square" alt="Total: 664 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
-other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
-than read, so they are left out.
-
-| File                   | Tokens |
-| ---------------------- | -----: |
-| [`SKILL.md`](SKILL.md) |  `664` |
-
-<!-- token-estimates:end -->
+[All skills](../)
 
 `grilling` turns an unclear plan, design, decision, or idea into a shared, explicit understanding through a rigorous interview. See [`SKILL.md`](SKILL.md) for the canonical agent instructions.
 

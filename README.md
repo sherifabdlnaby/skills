@@ -13,95 +13,41 @@
 
 Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 
-<!-- token-estimates:start -->
-
-<details>
-
-<summary><strong>Token estimates</strong></summary>
-
-<p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C669%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,669 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C353%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,353 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
-other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
-than read, so they are left out.
-
-| Skill                                                                                  | SKILL.md |    Total |
-| -------------------------------------------------------------------------------------- | -------: | -------: |
-| [`afk`](skills/afk/)                                                                   |    `228` |    `228` |
-| [`ai-disclosure`](skills/ai-disclosure/)                                               |  `1,141` |  `1,141` |
-| [`ask-me`](skills/ask-me/)                                                             |    `336` |    `336` |
-| [`cicd-fy`](skills/cicd-fy/)                                                           |  `1,542` | `15,981` |
-| [`coding`](skills/coding/)                                                             |  `2,084` |  `2,084` |
-| [`fast-feedback-mode`](skills/fast-feedback-mode/)                                     |    `394` |    `394` |
-| [`git`](skills/git/)                                                                   |  `1,818` | `13,325` |
-| [`grill-me`](skills/grill-me/)                                                         |     `61` |     `61` |
-| [`grilling`](skills/grilling/)                                                         |    `664` |    `664` |
-| [`mise-fy`](skills/mise-fy/)                                                           |  `2,525` | `39,790` |
-| [`review`](skills/review/)                                                             |    `325` |    `325` |
-| [`skill-fy`](skills/skill-fy/)                                                         |  `2,901` |  `6,389` |
-| [`variants/afk-careful`](skills/variants/afk-careful/)                                 |     `89` |     `89` |
-| [`variants/afk-soon`](skills/variants/afk-soon/)                                       |    `166` |    `166` |
-| [`variants/afk-yolo`](skills/variants/afk-yolo/)                                       |    `114` |    `114` |
-| [`variants/watch-pr`](skills/variants/watch-pr/)                                       |    `660` |    `660` |
-| [`variants/watch-pr-ci`](skills/variants/watch-pr-ci/)                                 |    `261` |    `261` |
-| [`variants/watch-pr-comments`](skills/variants/watch-pr-comments/)                     |    `256` |    `256` |
-| [`vendor/blast-radius`](skills/vendor/blast-radius/)                                   |    `890` |    `890` |
-| [`vendor/codebase-design`](skills/vendor/codebase-design/)                             |  `1,349` |  `2,495` |
-| [`vendor/correct`](skills/vendor/correct/)                                             |    `544` |    `544` |
-| [`vendor/diagnosing-bugs`](skills/vendor/diagnosing-bugs/)                             |  `2,034` |  `2,034` |
-| [`vendor/domain-modeling`](skills/vendor/domain-modeling/)                             |    `781` |  `1,939` |
-| [`vendor/gh-stack`](skills/vendor/gh-stack/)                                           |  `2,282` |  `8,014` |
-| [`vendor/handoff`](skills/vendor/handoff/)                                             |    `198` |    `198` |
-| [`vendor/humanizer`](skills/vendor/humanizer/)                                         |  `7,383` | `10,407` |
-| [`vendor/improve-codebase-architecture`](skills/vendor/improve-codebase-architecture/) |  `1,354` |  `2,950` |
-| [`vendor/in-your-own-words`](skills/vendor/in-your-own-words/)                         |     `72` |     `72` |
-| [`vendor/prototype`](skills/vendor/prototype/)                                         |    `642` |  `3,546` |
-| [`vendor/show-me`](skills/vendor/show-me/)                                             |    `783` |    `783` |
-| [`vendor/teach`](skills/vendor/teach/)                                                 |  `1,997` |  `3,855` |
-| [`vendor/why`](skills/vendor/why/)                                                     |    `124` |    `124` |
-| [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |  `2,349` |  `2,916` |
-| [`wait-what`](skills/wait-what/)                                                       |    `232` |    `232` |
-| [`what-happened`](skills/what-happened/)                                               |  `1,090` |  `1,090` |
-
-</details>
-
-<!-- token-estimates:end -->
-
 ## Skills
+
+Each line is a skill, then its variants, then what it does.
 
 1. [coding](skills/coding/) | My coding and docs conventions and taste. Loaded first on anything that touches code or docs.
 2. [mise-fy](skills/mise-fy/) | Encode `mise` best practices. And Transform projects into using mise + hk for a good dev setup!
 3. [cicd-fy](skills/cicd-fy/) | CI/CD patterns: build/test/scan, label-driven releases, changelogs from PRs, and publishing signed + attested artifacts.
-4. [git](skills/git/) | My git conventions and PR workflow.
-   - [watch-pr](skills/variants/watch-pr/) | Babysit a PR: fix CI and answer reviews, until green and quiet (or `forever`).
-   - [watch-pr-ci](skills/variants/watch-pr-ci/) | CI only: fix what goes red, stop at green.
-   - [watch-pr-comments](skills/variants/watch-pr-comments/) | Reviews only: answer them as they land.
-5. [afk](skills/afk/) | Letting the agent know I am no longer gonna be there to answer questions (un-grill-me lol).
-   - [afk-careful](skills/variants/afk-careful/) | Conservative with its autonomy.
-   - [afk-yolo](skills/variants/afk-yolo/) | Max non-destructive autonomy.
-   - [afk-soon](skills/variants/afk-soon/) | I am leaving soon, ask all ur questions now...
-6. [what-happened](skills/what-happened/) | Catch me up on what changed since my last message, and what waits on me.
-   - [wait-what](skills/wait-what/) | That last message did not land: say it again, plainer.
-7. [review](skills/review/) | WIP: Review patterns.
-8. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
-9. [grilling](skills/grilling/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool instead of markdown.
-   - [grill-me](skills/grill-me/) | Start the interview by hand.
-10. [ai-disclosure](skills/ai-disclosure/) | Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking
-    effort. Also its own plugin.
+4. [git](skills/git/) | [watch-pr](skills/variants/watch-pr/) | [watch-pr-ci](skills/variants/watch-pr-ci/) | [watch-pr-comments](skills/variants/watch-pr-comments/) | My git conventions and PR
+   workflow. The variants babysit a PR until green and quiet: CI and reviews, CI only, or reviews only.
+5. [afk](skills/afk/) | [afk-careful](skills/variants/afk-careful/) | [afk-yolo](skills/variants/afk-yolo/) | [afk-soon](skills/variants/afk-soon/) | Letting the agent know I am no longer gonna be
+   there to answer questions (un-grill-me lol). Careful, max non-destructive, or "ask all ur questions now, I am leaving soon".
+6. [grilling](skills/grilling/) | [grill-me](skills/grill-me/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool
+   instead of markdown. `grill-me` starts it by hand.
+7. [ask-me](skills/ask-me/) | How to ask me questions: in rounds, through the harness's question tool, with the context inside the call.
+8. [what-happened](skills/what-happened/) | Catch me up on what changed since my last message, and what waits on me.
+9. [wait-what](skills/wait-what/) | That last message did not land: say it again, plainer.
+10. [fast-feedback-mode](skills/fast-feedback-mode/) | Act fast and keep me in the zone; tests, lints, and commits wait until I say finalize.
+11. [review](skills/review/) | WIP: Review patterns.
+12. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
+13. [ai-disclosure](skills/ai-disclosure/) | Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking
+    effort.
+14. [... other vendored](skills/vendor/README.md) | Skills I didn't write but use daily, e.g. gh-stack, humanizer, and codebase-design. Thanks to their authors.
 
-The skills depend on each other. Every plugin stands alone: it ships everything its skills need, and keeping it that way is on the author.
+[`skills/`](skills/README.md) has what each skill costs in tokens.
 
-### Vendored
+Skills can depend on each other: `watch-pr` runs on top of `git`, for example.
 
-Skills I didn't write but use daily, vendored under [`skills/vendor/`](skills/vendor/README.md) so the plugin ships one set instead of asking you to install them separately. Thanks to
-[mattpocock/skills](https://github.com/mattpocock/skills), [humanlayer/skills](https://github.com/humanlayer/skills), [blader/humanizer](https://github.com/blader/humanizer), and
-[github/gh-stack](https://github.com/github/gh-stack).
+## Plugins
 
-[`skills-lock.json`](skills-lock.json) is the list, and `mise run skills:sync` rebuilds the directory from it. It records where each skill comes from, not which version, so a sync takes whatever
-upstream has now.
+The `skills` plugin is the whole stack: every skill above, vendored ones included, plus the hooks. Other plugins carry one piece of it for when you want only that piece:
+
+- **`skills`**: everything.
+- **`ai-disclosure`**: the AI disclosure skill and its hook.
+
+Each plugin is complete on its own: it ships everything its skills need and depends on no other plugin.
 
 ## Models
 

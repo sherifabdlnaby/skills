@@ -1,21 +1,6 @@
 # Watch PR
 
-<!-- token-estimates:start -->
-
-<p>
-  <img src="https://img.shields.io/badge/SKILL.md-660%20tokens-2f80ed?style=flat-square" alt="SKILL.md: 660 tokens" />
-  <img src="https://img.shields.io/badge/Total-660%20tokens-2ea44f?style=flat-square" alt="Total: 660 tokens" />
-</p>
-
-Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
-other Markdown file an agent can go on to read. Scripts, assets and config ship with a skill but are run rather
-than read, so they are left out.
-
-| File                   | Tokens |
-| ---------------------- | -----: |
-| [`SKILL.md`](SKILL.md) |  `660` |
-
-<!-- token-estimates:end -->
+[All skills](../../)
 
 This manual skill keeps an open pull request moving without repeated status checks. It watches CI, reviews, and comments in the background, fixes clear failures, addresses routine automated feedback,
 and asks for input only when a decision needs human judgment. Two siblings narrow it: `watch-pr-ci` (CI only) and `watch-pr-comments` (reviews only).

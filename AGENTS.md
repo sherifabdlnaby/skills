@@ -79,11 +79,12 @@ when a change comes from reading newer release notes; other edits leave it alone
 ## Skill READMEs
 
 Every skill of ours has a `README.md` beside it, for humans deciding whether and how to use it. Write from the skill and its references, but explain the problem, outcome, operating shape, and
-important tradeoffs instead of copying prompt text or addressing an executing agent. Include a direct link to `SKILL.md`, which remains the canonical agent instructions.
+important tradeoffs instead of copying prompt text or addressing an executing agent. Include a direct link to `SKILL.md`, which remains the canonical agent instructions, and a link up to the `skills/`
+folder. A skill's README carries no token counts; the root `README.md` lists each skill by hand, with its variants on the same line.
 
-Vendored skills get none of that: we don't describe work we didn't write. `skills/vendor/README.md` is generated whole — an index of what is vendored, where it came from, and what it costs — and it
-is the only README under `skills/vendor/` that is ours. Keep generated token-estimate blocks intact and update them only with `mise run tokens --fix`. `mise run tokens:diff` prints what a branch does
-to every skill's size; a workflow runs the same task on each PR and keeps the answer as one sticky comment.
+Vendored skills get none of that: we don't describe work we didn't write. `skills/vendor/README.md` is generated whole — an index of what is vendored, where it came from, and what it costs — and it is
+the only README under `skills/vendor/` that is ours. Token estimates live only in two generated files, `skills/README.md` and `skills/vendor/README.md`; update them only with `mise run tokens --fix`.
+`mise run tokens:diff` prints what a branch does to every skill's size; a workflow runs the same task on each PR and keeps the answer as one sticky comment.
 
 ## CI not visible in the tree
 
