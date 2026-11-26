@@ -75,5 +75,23 @@ class MissingReceipts(unittest.TestCase):
                 self.assertEqual(self.missing(command), [])
 
 
+class SkeletonMatchesBlocks(unittest.TestCase):
+    def test_skeleton_markers_are_the_hook_blocks_in_order(self):
+        page = os.path.join(
+            os.path.dirname(__file__),
+            *("..", "..", "skills", "git", "references", "pr-body.md"),
+        )
+        with open(page, encoding="utf-8") as fh:
+            text = fh.read()
+        skeleton = (
+            text.split("## Skeleton", 1)[1]
+            .split("```markdown", 1)[1]
+            .split("```\n", 1)[0]
+        )
+        self.assertEqual(
+            tuple(pr_structure.MARKER_RE.findall(skeleton)), pr_structure.BLOCKS
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

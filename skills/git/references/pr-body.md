@@ -1,18 +1,17 @@
 # PR body
 
-Covers: voice, blocks in body order, visuals, receipts and the structure hook, skeleton, linking.
+Covers: voice, checks, blocks in body order, visuals, receipts and the structure hook, skeleton, linking.
 
-Apply [SKILL.md](../SKILL.md) voice to every block. The body has two readers. The first decides
-whether to merge, often without reading the diff. The open blocks are theirs: what changed, the
-proof, where to look, what is not proven, what they must decide. The second resumes the work
-later, a person or an agent. The collapsibles are their record; the diff does not carry them.
+Apply [SKILL.md](../SKILL.md) voice to every block. The body has two readers. The **decider**
+chooses whether to merge, often without reading the diff. The open blocks are theirs: what changed,
+the proof, where to look, what is not proven, what they must decide. The **resumer** picks the work
+up later, a person or an agent. The collapsibles are their record; the diff does not carry them.
 
 ## Voice
 
-- **Summary and the top-level Changes bullets are for a product person.** They know the product.
-  They do not read code. Use Simplified Technical English, short sentences, and the product's own
-  terms (`CONTEXT.md` when the repo has one; `CONTEXT-MAP.md` points to the right one). The other
-  blocks are for engineers.
+- **Summary and the top-level Changes bullets read without code.** The decider may know only the
+  product. Use Simplified Technical English, short sentences, and the product's own terms
+  (`CONTEXT.md` when the repo has one; `CONTEXT-MAP.md` points to the right one).
 - **Name the few things that matter. The diff has the rest.** A changelog says what a person
   notices. A review guide says where to look.
 - **A change carries its check.** A check says what was run, then what was seen, in plain words
@@ -21,7 +20,7 @@ later, a person or an agent. The collapsibles are their record; the diff does no
   check is named in Not checked.
 - **Emphasis.** Bold the words a skimmer must catch: one phrase per block at most, never a whole
   sentence. Italic for a label the reader looks for on screen (a button, a menu, a page). A GitHub
-  alert (`> [!NOTE]`, `> [!WARNING]` and the rest) for what the reviewer must not miss. Style
+  alert (`> [!NOTE]`, `> [!WARNING]` and the rest) for what the decider must not miss. Style
   nothing else.
 
 ## Blocks
@@ -41,7 +40,7 @@ and Your call are always written: `None.` is an answer.
   Without a source, write no motive. Say what changed, and leave the how to Why it works. A
   one-change PR is described here and drops Changes; its check goes in Proof.
 - **Proof.** The one picture, recording or pasted output that shows the result, open. A fix shows
-  before and after. The rest collapsed under it. Rules in [Visuals](#visuals).
+  before and after. The rest collapsed under it.
 - **Changes.** The changelog. Each top-level bullet leads with what a person notices, and reads
   complete alone. Sub-bullets, one level deep, carry the mechanism when it helps, and the check.
   Internal work reads `No user-visible change: <what moved>`. Three bullets or fewer stay flat.
@@ -57,7 +56,7 @@ and Your call are always written: `None.` is an answer.
 - **Your call.** What only the reader can decide before the merge: a tradeoff taken for them,
   work beyond the ask, a gap left open (e.g. `Merge without a run on staging?`). Three at most,
   each with the fact behind it. A file to read belongs in the review guide.
-- **Why it works** (collapsible). The mechanism as behavior, with no file paths. A fix: the root
+- **Why it works** (collapsible). The mechanism as behavior. A fix: the root
   cause, then why the change removes it. A feature: how the parts work together. A diagram goes
   here when the order or the shape is the point. Drop it when Changes already says it.
 - **Decisions** (collapsible). One bullet per real choice: `Chose X over Y: Z`. A constraint from
@@ -68,7 +67,7 @@ and Your call are always written: `None.` is an answer.
   an exact input). Written for the reader, not a record of what you did.
 - **Examples** (collapsible). Only when an example makes the diff clearer.
 - **Follow-ups / out of scope** (collapsible). Seen and left for later on purpose, so the
-  reviewer does not ask for it here.
+  decider does not ask for it here.
 - **Relevant Links.** Parent ticket or epic, docs used, related PRs. Forms in [Linking](#linking).
 
 ## Visuals
@@ -79,13 +78,12 @@ and Your call are always written: `None.` is an answer.
 - **A picture earns its place when prose cannot carry the outcome:** UI before and after, an
   error state, rendered output, or a flow where the order is the point. When a code fence or a
   diagram says it better, use that.
-- **Start the app for a picture only when it starts smoothly.** A dev env that already runs and
+- **Start the app once for a picture.** A dev env that already runs and
   a file already on disk (e.g. your own debugging shot, a recording the user gave) are free.
-  Otherwise use the run command the repo documents, once. A failed start ends the attempt: name
+  Otherwise use the run command the repo documents. A failed start ends the attempt: name
   the missing picture under Not checked and move on. Stop what you started.
 - **A Before | After pair goes under a bullet when its words alone do not make the change clear**,
-  and shots are available. A layout change passes; a label change does not. A PR where most
-  bullets pass is a *guided diff*.
+  and shots are available. A layout change passes; a label change does not.
 - **Diagrams.** Mermaid first, for a sequence or a flow. A fenced `diff` of a tree (component,
   file, call) when the point is what changed in the structure. A plain tree or pseudocode for a
   new area. The `show-me` skill carries these forms. An HTML artifact does not render on GitHub.
