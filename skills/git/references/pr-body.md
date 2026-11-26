@@ -65,12 +65,10 @@ four `<!-- pr:x -->` markers survive into the body.
 - <What a person notices>.
   - <The mechanism, when it helps.>
 
----
-
 ### Review guide <!-- optional -->
 
 - **Decide:** <a question that waits on the reader's answer>
-- **Read:** [`<path>`](https://github.com/<OWNER/REPO>/blob/<this branch>/<path>) (<what to look at>). The rest is <tests, renames, generated code>. <!-- only the few files that carry the real change -->
+- **Read:** [`<path>`](https://github.com/<OWNER/REPO>/blob/<this branch>/<path>) (<what to look at>) | [`<path>`](<url>) (<what to look at>). The rest is <tests, renames, generated code>. <!-- only the few files that carry the real change; one line, split by | while it stays short -->
 
 ---
 
@@ -98,8 +96,6 @@ four `<!-- pr:x -->` markers survive into the body.
 - **Try it:** `<command>`, then <the result to expect>. <Setup the reader would not guess.>
 
 </details>
-
----
 
 ### Links <!-- optional -->
 
