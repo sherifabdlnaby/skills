@@ -30,11 +30,12 @@ Each line is a skill, then its variants, then what it does.
 8. [what-happened](skills/what-happened/) | Catch me up on what changed since my last message, and what waits on me.
 9. [wait-what](skills/wait-what/) | Say that again, plainer: I did not follow your last message.
 10. [fast-feedback-mode](skills/fast-feedback-mode/) | Act fast and keep me in the zone; tests, lints, and commits wait until I say finalize.
-11. [review](skills/review/) | WIP: Review patterns.
-12. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
-13. [ai-disclosure](skills/ai-disclosure/) | Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking
+11. [no-comments](skills/no-comments/) | [no-docs](skills/no-docs/) | Enforce `coding`'s comment and docs rules on a diff. The rules stay in `coding`.
+12. [review](skills/review/) | WIP: Review patterns.
+13. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
+14. [ai-disclosure](skills/ai-disclosure/) | Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking
     effort.
-14. [... other vendored](skills/vendor/README.md) | Skills I didn't write but use daily, e.g. gh-stack, humanizer, and codebase-design, plus the [comment-sicko](agents/vendor/comment-sicko.md)
+15. [... other vendored](skills/vendor/README.md) | Skills I didn't write but use daily, e.g. gh-stack, humanizer, and codebase-design, plus the [comment-sicko](agents/vendor/comment-sicko.md)
     subagent, which deletes needless comments from a diff. Thanks to their authors.
 
 [`skills/`](skills/README.md) has what each skill costs in tokens.
