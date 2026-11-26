@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C434%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,434 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-126%2C221%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,221 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C498%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,498 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-126%2C285%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,285 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -26,7 +26,7 @@ than read, so they are left out.
 | [`no-comments`](no-comments/)                               |    `398` |    `398` |
 | [`no-docs`](no-docs/)                                       |    `212` |    `212` |
 | [`review`](review/)                                         |    `325` |    `325` |
-| [`skill-fy`](skill-fy/)                                     |  `2,901` |  `6,389` |
+| [`skill-fy`](skill-fy/)                                     |  `2,965` |  `6,453` |
 | [`variants/afk-careful`](variants/afk-careful/)             |     `85` |     `85` |
 | [`variants/afk-soon`](variants/afk-soon/)                   |    `152` |    `152` |
 | [`variants/afk-yolo`](variants/afk-yolo/)                   |    `110` |    `110` |
@@ -92,7 +92,7 @@ than read, so they are left out.
 | `no-comments`                | [`SKILL.md`](no-comments/SKILL.md)                                                                 |   `398` |
 | `no-docs`                    | [`SKILL.md`](no-docs/SKILL.md)                                                                     |   `212` |
 | `review`                     | [`SKILL.md`](review/SKILL.md)                                                                      |   `325` |
-| `skill-fy`                   | [`SKILL.md`](skill-fy/SKILL.md)                                                                    | `2,901` |
+| `skill-fy`                   | [`SKILL.md`](skill-fy/SKILL.md)                                                                    | `2,965` |
 | `skill-fy`                   | [`assets/SKILL-skeleton.md`](skill-fy/assets/SKILL-skeleton.md)                                    |   `369` |
 | `skill-fy`                   | [`assets/reference-skeleton.md`](skill-fy/assets/reference-skeleton.md)                            |   `433` |
 | `skill-fy`                   | [`references/scaffold.md`](skill-fy/references/scaffold.md)                                        | `1,440` |

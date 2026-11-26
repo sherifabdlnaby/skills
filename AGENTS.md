@@ -29,6 +29,8 @@ A skill is a folder with a `SKILL.md` that the `skills` list of a plugin manifes
   (e.g. `watch-pr` runs on top of `git`). Users can also install one skill on its own, so a skill that needs another names it where the agent reads it, and its README says so too.
 - **Skills reach each other by name, never by file path.** A file the agent reads (`SKILL.md`, `references/`) links only to files inside its own skill folder; a path into another skill
   breaks when that skill is installed alone. To use another skill, name it so the agent loads it, which means the target must be model-invocable. A README is for humans and may link anywhere.
+- **Invocation follows use.** A skill only the user types (a typing-saver like `wait-what` or `afk-soon`) sets `disable-model-invocation: true`; a skill another skill loads (`afk`,
+  `watch-pr`, `no-comments`) stays model-invocable. Both keep a short, neutral description, so the model loads it when told to and not on its own.
 - **`README.md` beside each `SKILL.md`**, for humans who decide whether and how to use the skill: the problem, the outcome, the operating shape, the tradeoffs. Write it from the skill,
   without its prompt text and without token counts. It links to `SKILL.md` (the canonical agent instructions) and up to the nearest folder above it that holds a `README.md`.
 - **The root `README.md`** lists each skill by hand, variants on the same line.
