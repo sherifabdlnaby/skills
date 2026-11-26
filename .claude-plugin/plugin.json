@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "displayName": "Sherif's Skills",
-  "description": "Opinionated skills, plus boilerplate commands, agents, and hooks.",
+  "description": "Opinionated skills, plus agents and hooks.",
   "version": "0.44.0",
   "author": {
     "name": "Sherif Abdel-Naby",
@@ -9,7 +9,7 @@
   },
   "homepage": "https://github.com/sherifabdlnaby/skills",
   "repository": "https://github.com/sherifabdlnaby/skills",
-  "keywords": ["skills", "git", "mise", "commands", "hooks", "agents"],
+  "keywords": ["skills", "git", "mise", "hooks", "agents"],
   "skills": ["./skills/","./skills/variants","./skills/vendor"],
   "agents": ["./agents/vendor/comment-sicko.md"],
   "hooks": "./hooks/claude-hooks.json"

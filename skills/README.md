@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C489%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,489 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-126%2C276%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,276 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C514%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,514 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-126%2C301%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,301 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -27,9 +27,9 @@ than read, so they are left out.
 | [`no-docs`](no-docs/)                                       |    `212` |    `212` |
 | [`review`](review/)                                         |    `325` |    `325` |
 | [`skill-fy`](skill-fy/)                                     |  `2,901` |  `6,389` |
-| [`variants/afk-careful`](variants/afk-careful/)             |     `89` |     `89` |
-| [`variants/afk-soon`](variants/afk-soon/)                   |    `166` |    `166` |
-| [`variants/afk-yolo`](variants/afk-yolo/)                   |    `114` |    `114` |
+| [`variants/afk-careful`](variants/afk-careful/)             |     `97` |     `97` |
+| [`variants/afk-soon`](variants/afk-soon/)                   |    `175` |    `175` |
+| [`variants/afk-yolo`](variants/afk-yolo/)                   |    `122` |    `122` |
 | [`variants/watch-pr`](variants/watch-pr/)                   |    `660` |    `660` |
 | [`variants/watch-pr-ci`](variants/watch-pr-ci/)             |    `261` |    `261` |
 | [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `256` |    `256` |
@@ -97,9 +97,9 @@ than read, so they are left out.
 | `skill-fy`                   | [`assets/reference-skeleton.md`](skill-fy/assets/reference-skeleton.md)                            |   `433` |
 | `skill-fy`                   | [`references/scaffold.md`](skill-fy/references/scaffold.md)                                        | `1,440` |
 | `skill-fy`                   | [`references/skill-fy.md`](skill-fy/references/skill-fy.md)                                        | `1,246` |
-| `variants/afk-careful`       | [`SKILL.md`](variants/afk-careful/SKILL.md)                                                        |    `89` |
-| `variants/afk-soon`          | [`SKILL.md`](variants/afk-soon/SKILL.md)                                                           |   `166` |
-| `variants/afk-yolo`          | [`SKILL.md`](variants/afk-yolo/SKILL.md)                                                           |   `114` |
+| `variants/afk-careful`       | [`SKILL.md`](variants/afk-careful/SKILL.md)                                                        |    `97` |
+| `variants/afk-soon`          | [`SKILL.md`](variants/afk-soon/SKILL.md)                                                           |   `175` |
+| `variants/afk-yolo`          | [`SKILL.md`](variants/afk-yolo/SKILL.md)                                                           |   `122` |
 | `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `660` |
 | `variants/watch-pr-ci`       | [`SKILL.md`](variants/watch-pr-ci/SKILL.md)                                                        |   `261` |
 | `variants/watch-pr-comments` | [`SKILL.md`](variants/watch-pr-comments/SKILL.md)                                                  |   `256` |

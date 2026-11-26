@@ -36,3 +36,5 @@ user.
 The skill is intended to load whenever Git or GitHub work is planned. It can be requested with an
 operation such as `commit`, `branch`, `pr`, `attach`, `rebase`, `review`, or `watch`, plus a PR number or URL
 when relevant.
+
+Works with: [`ai-disclosure`](../ai-disclosure/README.md) for the disclosure line on every post, and the vendored `gh-stack` skill for stacked PRs. Both ship in this plugin.
