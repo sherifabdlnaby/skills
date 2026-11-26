@@ -2,7 +2,7 @@
 
 [All skills](../../)
 
-This manual skill keeps an open pull request moving without repeated status checks. It watches CI, reviews, and comments in the background, fixes clear failures, addresses routine automated feedback,
+This skill keeps an open pull request moving without repeated status checks. It watches CI, reviews, and comments in the background, fixes clear failures, addresses routine automated feedback,
 and asks for input only when a decision needs human judgment. Two siblings narrow it: `watch-pr-ci` (CI only) and `watch-pr-comments` (reviews only).
 
 [Read the canonical skill instructions.](SKILL.md)

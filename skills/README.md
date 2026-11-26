@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C514%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,514 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-126%2C301%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,301 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C434%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,434 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-126%2C221%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,221 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,7 +13,7 @@ than read, so they are left out.
 
 | Skill                                                       | SKILL.md |    Total |
 | ----------------------------------------------------------- | -------: | -------: |
-| [`afk`](afk/)                                               |    `228` |    `228` |
+| [`afk`](afk/)                                               |    `220` |    `220` |
 | [`ai-disclosure`](ai-disclosure/)                           |  `1,141` |  `1,141` |
 | [`ask-me`](ask-me/)                                         |    `437` |    `437` |
 | [`cicd-fy`](cicd-fy/)                                       |  `1,542` | `15,981` |
@@ -27,12 +27,12 @@ than read, so they are left out.
 | [`no-docs`](no-docs/)                                       |    `212` |    `212` |
 | [`review`](review/)                                         |    `325` |    `325` |
 | [`skill-fy`](skill-fy/)                                     |  `2,901` |  `6,389` |
-| [`variants/afk-careful`](variants/afk-careful/)             |     `97` |     `97` |
-| [`variants/afk-soon`](variants/afk-soon/)                   |    `175` |    `175` |
-| [`variants/afk-yolo`](variants/afk-yolo/)                   |    `122` |    `122` |
-| [`variants/watch-pr`](variants/watch-pr/)                   |    `660` |    `660` |
-| [`variants/watch-pr-ci`](variants/watch-pr-ci/)             |    `261` |    `261` |
-| [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `256` |    `256` |
+| [`variants/afk-careful`](variants/afk-careful/)             |     `85` |     `85` |
+| [`variants/afk-soon`](variants/afk-soon/)                   |    `152` |    `152` |
+| [`variants/afk-yolo`](variants/afk-yolo/)                   |    `110` |    `110` |
+| [`variants/watch-pr`](variants/watch-pr/)                   |    `645` |    `645` |
+| [`variants/watch-pr-ci`](variants/watch-pr-ci/)             |    `256` |    `256` |
+| [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `251` |    `251` |
 | [`wait-what`](wait-what/)                                   |    `185` |    `185` |
 | [`what-happened`](what-happened/)                           |  `1,090` |  `1,090` |
 | [`vendor/`](vendor/README.md) (16 skills)                   | `23,370` | `41,355` |
@@ -41,7 +41,7 @@ than read, so they are left out.
 
 | Skill                        | File                                                                                               |  Tokens |
 | ---------------------------- | -------------------------------------------------------------------------------------------------- | ------: |
-| `afk`                        | [`SKILL.md`](afk/SKILL.md)                                                                         |   `228` |
+| `afk`                        | [`SKILL.md`](afk/SKILL.md)                                                                         |   `220` |
 | `ai-disclosure`              | [`SKILL.md`](ai-disclosure/SKILL.md)                                                               | `1,141` |
 | `ask-me`                     | [`SKILL.md`](ask-me/SKILL.md)                                                                      |   `437` |
 | `cicd-fy`                    | [`SKILL.md`](cicd-fy/SKILL.md)                                                                     | `1,542` |
@@ -97,11 +97,11 @@ than read, so they are left out.
 | `skill-fy`                   | [`assets/reference-skeleton.md`](skill-fy/assets/reference-skeleton.md)                            |   `433` |
 | `skill-fy`                   | [`references/scaffold.md`](skill-fy/references/scaffold.md)                                        | `1,440` |
 | `skill-fy`                   | [`references/skill-fy.md`](skill-fy/references/skill-fy.md)                                        | `1,246` |
-| `variants/afk-careful`       | [`SKILL.md`](variants/afk-careful/SKILL.md)                                                        |    `97` |
-| `variants/afk-soon`          | [`SKILL.md`](variants/afk-soon/SKILL.md)                                                           |   `175` |
-| `variants/afk-yolo`          | [`SKILL.md`](variants/afk-yolo/SKILL.md)                                                           |   `122` |
-| `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `660` |
-| `variants/watch-pr-ci`       | [`SKILL.md`](variants/watch-pr-ci/SKILL.md)                                                        |   `261` |
-| `variants/watch-pr-comments` | [`SKILL.md`](variants/watch-pr-comments/SKILL.md)                                                  |   `256` |
+| `variants/afk-careful`       | [`SKILL.md`](variants/afk-careful/SKILL.md)                                                        |    `85` |
+| `variants/afk-soon`          | [`SKILL.md`](variants/afk-soon/SKILL.md)                                                           |   `152` |
+| `variants/afk-yolo`          | [`SKILL.md`](variants/afk-yolo/SKILL.md)                                                           |   `110` |
+| `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `645` |
+| `variants/watch-pr-ci`       | [`SKILL.md`](variants/watch-pr-ci/SKILL.md)                                                        |   `256` |
+| `variants/watch-pr-comments` | [`SKILL.md`](variants/watch-pr-comments/SKILL.md)                                                  |   `251` |
 | `wait-what`                  | [`SKILL.md`](wait-what/SKILL.md)                                                                   |   `185` |
 | `what-happened`              | [`SKILL.md`](what-happened/SKILL.md)                                                               | `1,090` |

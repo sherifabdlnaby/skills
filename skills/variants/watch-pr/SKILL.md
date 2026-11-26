@@ -3,7 +3,6 @@ name: watch-pr
 description: Watch a PR until CI is green and its reviews are answered.
 license: MIT
 argument-hint: "[PR number or URL] [duration|forever] [humans] (defaults to current branch's PR, 30m)"
-disable-model-invocation: true
 metadata:
   author: sherifabdlnaby
   version: "0.2.0"
@@ -34,7 +33,7 @@ gh pr view --json number,url,headRefName,state,isDraft
 1. **Draft PR:** run `flick` once, alongside the watch, not before it. Chase beyond that (hold it
    open, flick again) only if I told you this repo has a review bot; me naming the bot counts.
 2. **Existing review threads:** unresolved threads already on the PR are not news to the watch.
-   Fetch them per review-responses [Batching](../../git/references/review-responses.md#batching)
+   Fetch them per the **git** skill's review-responses Batching rules
    and address them first.
 
 ## The watch
