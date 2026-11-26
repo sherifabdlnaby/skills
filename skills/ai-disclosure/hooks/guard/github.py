@@ -159,7 +159,21 @@ def find_post(command: shell.Command, heredocs: list[str], files: Files) -> Post
 # ── gh pr / gh issue ────────────────────────────────────────────────────────────
 
 
+def _without_repo_flag(args: list[str]) -> list[str]:
+    """`args` with a repo flag between the noun and the verb removed.
+
+    gh takes it there too: `gh pr -R o/r comment` posts like `gh pr comment -R o/r`.
+    """
+    flag = args[1] if len(args) > 1 else ""
+    if flag in ("-R", "--repo"):
+        return args[:1] + args[3:]
+    if flag.startswith(("--repo=", "-R")):
+        return args[:1] + args[2:]
+    return args
+
+
 def _cli_post(args: list[str], heredocs: list[str], files: Files) -> Post | None:
+    args = _without_repo_flag(args)
     action = tuple(args[:2])
     if action not in _POSTING:
         return None

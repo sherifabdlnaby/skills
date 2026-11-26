@@ -105,6 +105,10 @@ class GhCli(Case):
                 (MISSING, "env -i HOME=/tmp gh pr comment 7 --body x"),
                 (MISSING, "timeout 60 gh pr comment 7 --body x"),
                 (MISSING, "command gh pr comment 7 --body x"),
+                (MISSING, "gh pr -R o/r comment 7 --body x"),
+                (MISSING, "gh issue --repo o/r comment 7 --body x"),
+                (MISSING, "gh pr --repo=o/r comment 7 --body x"),
+                (MISSING, "gh pr -Ro/r comment 7 --body x"),
             ]
         )
 
@@ -112,6 +116,7 @@ class GhCli(Case):
         self.assertVerdicts(
             [
                 (ALLOW, "gh pr view 7 --comments"),
+                (ALLOW, "gh pr -R o/r view 7"),
                 (ALLOW, "gh pr edit 7 --add-label bug --title 'New title'"),
                 (ALLOW, "gh pr review 7 --approve"),
                 (ALLOW, "gh issue edit 7 --add-assignee @me"),
