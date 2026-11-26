@@ -18,7 +18,8 @@ PAYLOAD="$(cat)"
 # Must match anything the guard treats as a post. pr/issue verbs mirror `_POSTING` in
 # guard/github.py (keep in step); `gh api` stays coarse and the guard lets reads through.
 # `\\` and `\n` cover a JSON-escaped line continuation; the word boundary skips prose.
-printf '%s' "$PAYLOAD" | grep -Eq '(^|[^[:alnum:]_.-]|\\[nt])gh([[:space:]]|\\[nt\\])+(api|pr([[:space:]]|\\[nt\\])+(create|comment|edit|review)|issue([[:space:]]|\\[nt\\])+(create|comment|edit))([[:space:]]|\\[nt\\]|$)' || exit 0
+# A repo flag may sit between the noun and the verb (`gh pr -R o/r comment`).
+printf '%s' "$PAYLOAD" | grep -Eq '(^|[^[:alnum:]_.-]|\\[nt])gh([[:space:]]|\\[nt\\])+(api|(pr|issue)(([[:space:]]|\\[nt\\])+(-R|--repo)(=|([[:space:]]|\\[nt\\])+)?[^[:space:]\\]+)?([[:space:]]|\\[nt\\])+(create|comment|edit|review))([[:space:]]|\\[nt\\]|$)' || exit 0
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 

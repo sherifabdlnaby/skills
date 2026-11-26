@@ -136,10 +136,11 @@ class EveryHarness(unittest.TestCase):
         import github
 
         for noun, verb in sorted(github._POSTING):
-            command = f"gh {noun} {verb} 7 --body x"
-            for harness in HARNESSES:
-                with self.subTest(harness=harness, command=command):
-                    self.assertIsNotNone(denial(harness, run(harness, command)))
+            for repo in ("", "-R o/r ", "--repo=o/r "):
+                command = f"gh {noun} {repo}{verb} 7 --body x"
+                for harness in HARNESSES:
+                    with self.subTest(harness=harness, command=command):
+                        self.assertIsNotNone(denial(harness, run(harness, command)))
 
 
 class WithoutTheGuard(unittest.TestCase):
