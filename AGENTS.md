@@ -18,6 +18,7 @@ exposes the tasks, and wires the git hooks; `mise.toml` is the source of truth.
   | `skills/README.md`, `skills/vendor/README.md` (the only homes of token estimates) | `mise run tokens --fix`                                       |
   | `skills/vendor/`, `skills-lock.json`                                              | the `skills:*` tasks, see [Vendored skills](#vendored-skills) |
   | `mise.lock`                                                                       | `mise lock`, after any `[tools]` change                       |
+  | `agents/vendor/`                                                                  | `mise run agents:sync`                                        |
 
 ## Skills of ours
 
@@ -46,13 +47,15 @@ A skill is a folder with a `SKILL.md` that the `skills` list of a plugin manifes
 - **A sync replaces `skills/vendor/` wholesale**, so a hand edit does not survive. A skill you want to own moves to `skills/` as ours.
 - **Every sync is an upgrade.** The lock names a source, not a version, so a sync fetches upstream's default branch: read `git diff skills/vendor` before you commit.
 - Linters skip `**/vendor/**`. Vendored skills get no README from us; `skills/vendor/README.md` is a generated index.
+- **Subagents** live in `agents/vendor/`, because the skills CLI fetches skills only. Add a source line to the `agents:sync` task, run `mise run agents:sync`, and list the file under
+  `agents` in `.claude-plugin/plugin.json` (Claude Code takes `.md` paths, not a folder). A sync fetches upstream's default branch too: read `git diff agents/vendor` before you commit.
 
 ## Plugins and releases
 
-| Plugin          | Root      | Ships                                        | Manifests                                                                |
-| --------------- | --------- | -------------------------------------------- | ------------------------------------------------------------------------ |
-| `skills`        | `./`      | every skill, vendored included, and `hooks/` | `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`               |
-| `ai-disclosure` | `skills/` | `skills/ai-disclosure/` only                 | `skills/.claude-plugin/plugin.json`, `skills/.cursor-plugin/plugin.json` |
+| Plugin          | Root      | Ships                                                          | Manifests                                                                |
+| --------------- | --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `skills`        | `./`      | every skill, vendored included, `agents/vendor/`, and `hooks/` | `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`               |
+| `ai-disclosure` | `skills/` | `skills/ai-disclosure/` only                                   | `skills/.claude-plugin/plugin.json`, `skills/.cursor-plugin/plugin.json` |
 
 - **A change to what a plugin ships needs both of its manifests bumped to the same version.** `skills/ai-disclosure/` ships in both plugins, so a change there bumps all four files.
   `mise run version:check --fix` writes the bumps (`--bump minor` or `major` for more than a patch); run it again after a rebase onto a `main` that took the same number. The push gate

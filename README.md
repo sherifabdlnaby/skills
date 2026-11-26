@@ -34,7 +34,8 @@ Each line is a skill, then its variants, then what it does.
 12. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
 13. [ai-disclosure](skills/ai-disclosure/) | Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking
     effort.
-14. [... other vendored](skills/vendor/README.md) | Skills I didn't write but use daily, e.g. gh-stack, humanizer, and codebase-design. Thanks to their authors.
+14. [... other vendored](skills/vendor/README.md) | Skills I didn't write but use daily, e.g. gh-stack, humanizer, and codebase-design, plus the [comment-sicko](agents/vendor/comment-sicko.md)
+    subagent, which deletes needless comments from a diff. Thanks to their authors.
 
 [`skills/`](skills/README.md) has what each skill costs in tokens.
 

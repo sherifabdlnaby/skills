@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C836%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,836 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C623%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,623 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-40%2C424%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 40,424 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-125%2C211%20tokens-2ea44f?style=flat-square" alt="All Markdown: 125,211 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -33,7 +33,7 @@ than read, so they are left out.
 | [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `256` |    `256` |
 | [`wait-what`](wait-what/)                                   |    `185` |    `185` |
 | [`what-happened`](what-happened/)                           |  `1,090` |  `1,090` |
-| [`vendor/`](vendor/README.md) (15 skills)                   | `22,782` | `40,767` |
+| [`vendor/`](vendor/README.md) (16 skills)                   | `23,370` | `41,355` |
 
 ### Files
 

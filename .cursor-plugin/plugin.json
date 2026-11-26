@@ -12,6 +12,7 @@
   "keywords": ["skills", "git", "mise", "commands", "hooks", "agents"],
   "logo": ".github/assets/logo.svg",
   "skills": ["skills", "skills/variants", "skills/vendor"],
+  "agents": "agents/vendor",
   "commands": "commands",
   "hooks": "hooks/cursor-hooks.json"
 }

@@ -82,6 +82,21 @@ run = 'uv run --locked python -c "import tiktoken; tiktoken.get_encoding(\"o200k
 description = "Check our skills' layout: README beside each SKILL.md with its links, root README lists it, name matches folder, no orphan references, marketplaces agree"
 run = "python .config/skill_structure.py"
 
+[tasks."agents:sync"]
+# The skills CLI vendors skills only, so subagents come from this list instead. Like the skills
+# lock, each entry names a source and no version: a sync fetches the default branch, so read
+# `git diff agents/vendor` before committing it.
+description = "Refetch vendored subagents from upstream"
+run = '''
+set -eu
+rm -rf agents/vendor && mkdir -p agents/vendor
+for src in \
+  cursor/plugins/main/pstack/agents/comment-sicko.md \
+; do
+  curl -fsSL "https://raw.githubusercontent.com/$src" -o "agents/vendor/${src##*/}"
+done
+'''
+
 [tasks."skills:update"]
 description = "Refetch vendored skills from upstream"
 usage = '''
