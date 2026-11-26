@@ -36,6 +36,9 @@ How to build or improve mise Tasks.
 16. **Building a standard task** (`setup`/`check`(=lint)/`test`/`build`/`dev`)? Unless project already have a pattern, then refer to
     [`reference-setup-and-patterns.md`](reference-setup-and-patterns.md#standard-tasks). If user ask for a `check`/`lint`, check if **hk** is set up and use it (refer to -> [`hk.md`](hk.md)).
     A `dev` that starts local services (a database, a cache, workers) follows [`dev.md`](dev.md).
+17. **A grouping task lists its important steps in its own `depends`**, transitive ones too, so the reader sees what runs without walking the graph. If `dev:setup` needs `db:migrate`, `jobs:setup`
+    and `db:seed`, list all three, even though the last two already depend on `db:migrate`. A minor transitive step may stay out; one that changes what the others see (migrations under a seed)
+    may not. mise runs a shared dependency once and the rest in parallel. (verified on mise 2026.11.9)
 
 ## Notes & Gotchas:
 

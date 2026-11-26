@@ -68,7 +68,7 @@ mise daemons register | prune [--dry-run] | tui
   pitchfork also sets `PORT`/`PORT0` to that daemon's own port.
 - **Templates:** `run` renders mise's (`{{ env.X }}`, `{{ vars.X }}`). Fields that pitchfork renders (a daemon's `env`, `ready_http`, etc.) know `{{ daemons.<name>.port }}` and similar, not
   `{{ env.* }}`.
-- **Elsewhere:** a task's `daemons = [...]` starts daemons before it runs (rule 10 says why the `dev:*` tasks don't use it), and `[daemon_groups]` names sets of daemons (`default` is what `start` uses
+- **Elsewhere:** a task's `daemons = [...]` starts daemons before it runs (rule 10 says when to use it), and `[daemon_groups]` names sets of daemons (`default` is what `start` uses
   with no names).
 
 ## Rules and Best Practices:
@@ -79,6 +79,8 @@ mise daemons register | prune [--dry-run] | tui
 2. **One port block per project.** Each daemon gets `port = { auto = true, base = <B+k>, stride = 10 }`, with `k` from 0 to 9 and one `B` per project: a free multiple of 100 in 10000–27000, named in a
    comment. The main checkout uses `B+k`; a linked worktree adds 10 × its slot (1–511, derived from its path). `stride` has no project-wide setting, so repeat it on every daemon. (why: the default
    stride of 1 makes two daemons whose bases differ by less than 512 collide in some worktree, and presets on their default ports clash between projects.)
+   A project that already has well-known ports may keep them as per-service bases (`base = 5432`, `6379`, `8081`, etc.), so the main checkout keeps its ports. Give each base its own last digit,
+   or keep two that share one more than 5110 apart, so no worktree shift lands one daemon on another's port. These ports can still clash with another project's.
 3. **Apps read connection settings from env, never hard-coded ports.** Presets export `DATABASE_URL`, `PG*`, `REDIS_URL`, etc.; a daemon with a port exports `<NAME>_PORT` (its name upper-cased,
    punctuation to `_`). They follow the worktree offset and reach the activated shell, tasks, `mise x`, and every daemon.
 4. **Pass a daemon its own port in the command:** `run = "exec node src/server.js --port $API_PORT"`. An app that can't take it there gets it from the daemon's own
@@ -97,12 +99,21 @@ mise daemons register | prune [--dry-run] | tui
      `{{ env.* }}`.
 8. **Never `retry = true`.** A daemon that fails before it is ready is then retried forever, with a doubling delay. `start` (and `mise run dev`) waits with only a spinner, and Ctrl+C leaves the
    supervisor retrying until `mise daemons stop`.
-9. **Setup that several daemons need runs in one oneshot daemon.** Migrations are the usual case (an app and its workers on one schema); queue declares, seed data, a bucket, etc. are the same. Give
-   it `oneshot = true` and `depends` on what it needs, and every daemon that needs its result `depends` on it. It runs on every `mise run dev`, before them, and if it fails they don't start, so the
-   command must skip work already done. It needs no port, ready or health check, `retry`, or `watch`: new work (e.g. a new migration) applies on the next `mise run dev`. Keep `init` for setup that
-   belongs to one process. (why: an `init` on each daemon runs the setup once per daemon, at the same time, and a `watch` runs it the moment a file is saved, before it is finished.)
-10. **Order with daemon `depends`.** `mise daemons start api` starts `api`'s `depends` first and waits until each is ready. A task reaches the stack with `depends = ["dev"]`, not a task-level
-    `daemons = [...]`. (why: `daemons = [...]` starts the daemons before the task's own `depends`, so in a fresh worktree an app daemon starts before `deps` installed its packages.)
+9. **Tasks do the work; daemons run processes.** Setup the stack needs before it starts (migrations, queue declares, seed data, etc.) lives in tasks that one `dev:setup` task lists. The entry
+   tasks (`dev`, etc.) depend on `dev:setup`, then run `mise daemons start`. (why: a task caches, and a test that needs the schema but not the app can depend on it; a daemon can do neither.)
+   - **Start the stack through `dev`.** A bare `mise daemons start api` skips the setup.
+   - **Each step skips work already done**, since an uncached step runs on every `dev`. Cache a step on `sources` only when its result lives in the checkout: a database lives in a daemon's data
+     dir, and `dev:reset` empties it without the cache knowing.
+   - **`init` holds setup that belongs to one process.** (why: an `init` on each daemon runs shared setup once per daemon, at the same time.)
+   - **A oneshot daemon only when no entry task starts the stack:** a daemon that needs the setup starts on `cd` (`auto = ["start"]`), on demand through the proxy, or from another project
+     (`project = "../svc"`); or the setup must run again on every restart of what it needs (e.g. a queue or bucket in a container that loses its data). (why: a oneshot's only gain is ordering
+     inside pitchfork's start graph, and an entry task already gives that order.)
+   - **A oneshot runs the grouping task:** `oneshot = true` with `task = "dev:setup"`, and every daemon that needs the result `depends` on it. (why: the task keeps its cache, so a second start
+     logs `sources up-to-date, skipping`; an inline `run` has no cache.) (verified on mise 2026.11.9)
+10. **Start infra from a task; reach app daemons through `dev`.** A task starts a daemon that needs nothing from `deps` (a preset, a compose file, an image) with `daemons = [...]`, e.g.
+    `db:migrate` with `daemons = ["postgres"]`, instead of a `db:up` task that starts the service and polls it. A daemon that runs project code is ordered with daemon `depends`
+    (`mise daemons start api` starts `api`'s `depends` first and waits until each is ready), and a task reaches it with `depends = ["dev"]`. (why: `daemons = [...]` starts the daemons before the
+    task's own `depends`, so in a fresh worktree an app daemon would start before `deps` installed its packages.)
 11. **Groups only for optional services.** Without `[daemon_groups]`, `dev` starts every daemon. Declare `default = [...]` only when a service shouldn't start every day; `mise run dev <name>` and
     `mise run dev --all` reach the rest.
 
@@ -113,6 +124,7 @@ Every project with daemons exposes the same set. Copy it from [`assets/mise.toml
 | Task                            | Does                                                                                                                                                       |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `dev [names…]` (alias `dev:up`) | Start every daemon (or the named ones and their `depends`) in the background, then show `dev:status`. Safe to run again, so it is also the repair command. |
+| `dev:setup`                     | The setup the stack needs before it starts (migrations, etc.), as `depends` on its steps.                                                                  |
 | `dev:status`                    | The state of the dev environment, without starting anything.                                                                                               |
 | `dev:logs [names…]`             | Follow the logs (history first; `-n 50` skips old lines). Ctrl+C closes the view only.                                                                     |
 | `dev:down [names…]`             | Stop; the data is kept.                                                                                                                                    |
@@ -176,12 +188,17 @@ services:
 ```
 
 - **Every host port comes from the daemon's env.** mise exports `<NAME>_PORT` and `<NAME>_<PORT>_PORT` to the compose process, with the worktree offset. `:?` makes a bare `docker compose up` fail
-  instead of taking another checkout's port. Compose names the project after the checkout's directory, so each worktree gets its own containers and volumes.
+  instead of taking another checkout's port.
+- **Name the compose project after the worktree.** Compose names a project after the compose file's folder, and that name can repeat across worktrees (a subfolder, or worktrees laid out as
+  `<branch>/<repo>`), so two checkouts would share containers and volumes. Set `COMPOSE_PROJECT_NAME = "<app>-{{ config_root | basename }}"` in `[env]`, with `config_root | dirname | basename`
+  when `mise.toml` sits one folder below the worktree root.
 - **Raise the stop timeout.** On stop, compose asks the engine to stop the containers (10s grace each). pitchfork kills the compose client after 5s; the engine still finishes, but `stop` returns
   before the containers are down, and an immediate `dev` races them. A `stop_signal` timeout above the slowest container's stop makes `stop` wait. (verified on mise 2026.11.6, Podman 5.8.2)
 - **One hostname per daemon, on its `port`.** Named ports get no `<NAME>_URL` and no proxy hostname, so the service the browser or other services call goes on `port`. Rule 5 (`proxy = false`)
   holds here too.
 - **It is a daemon like the others:** `depends`, `ready_cmd`, `retry`, `mise daemons logs` (every service's output, prefixed) and the `dev:*` tasks work with no compose-specific branch.
+- **Labelled ports in `dev:status`:** pitchfork's JSON has no names for named ports, so add compose's own view. `{% raw %}` keeps mise's templates off compose's `{{ }}`:
+  `"docker compose ps --format 'table {% raw %}{{.Service}}\t{{.Status}}\t{{.Ports}}{% endraw %}'"`.
 - **Docker is a prerequisite:** declare it as a `[doctor.checks]` probe (see [prerequisite checks](reference-setup-and-patterns.md#prerequisite-checks)).
 
 ## Notes & Gotchas:
@@ -189,6 +206,8 @@ services:
 - **`mise run dev` spins on "waiting for delay (3s)…" and never returns.** A daemon fails before it is ready under `retry = true`; `mise daemons logs <name>` shows it exiting again and again. Fix:
   `retry = 3` (rule 8).
 - **A crashed daemon stays down, and its status is `stopped`, not `errored`.** It exited 0 (a watcher, or a SIGTERM handler that exits 0), and a clean exit is never retried. Fix: rule 6.
+- **A dev server exits 0 right after start, while its port still answers.** It put itself in the background (some do when they detect an agent or a lock file), and pitchfork lost the process. Fix:
+  the tool's foreground flag.
 - **`start` reports started, then the first requests get "connection refused".** No ready check: a `port` alone waits a fixed 3s. Fix: `ready_cmd`.
 - **"Variable `env` is not defined", and the daemon never starts.** `{{ env.X }}` in a field pitchfork renders (a daemon's `env`, `ready_http`). Fix: `{{ daemons.<name>.port }}` there, or `$VAR` in
   `run`/`ready_cmd`/`health_cmd`. `{{config_root}}` in `run` fails the same way; paths in `run` resolve from the project root.
@@ -214,7 +233,7 @@ services:
 - [ ] One port block: `base = B+k` and `stride = 10` on every daemon, the block named in a comment
 - [ ] Custom daemons: the plain process with `exec` and its port in the command, `watch`, `proxy = false`, `ready_cmd` and `health_cmd` with a timeout, `depends`
 - [ ] `retry = 3` on every daemon but oneshots, never `true`
-- [ ] Shared setup (migrations, etc.) in a oneshot daemon, safe to repeat, that every daemon needing it `depends` on
+- [ ] Shared setup in tasks that `dev:setup` lists and the entry tasks depend on, safe to repeat; a oneshot daemon only for the rule 9 cases
 - [ ] The `dev:*` tasks from the asset; tests that need services use `depends = ["dev"]`
 - [ ] App code reads connection env, not hard-coded ports
 - [ ] `mise run dev` works from a fresh clone and in a second worktree at the same time, and a second run changes nothing
