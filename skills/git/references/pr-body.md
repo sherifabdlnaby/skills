@@ -12,9 +12,11 @@ agent. Both arrive cold, and neither is an expert on the project.
   screen: about 300 words.
 - **Every PR has the four marked parts**, a chore too. An optional part goes when it has nothing
   to say. Fill the [skeleton](#skeleton) and keep its titles.
-- **Plain sentences.** Simplified Technical English, no "I".
-- **Orient once.** The summary introduces each project term the reader needs, one time: a few
-  plain words and a link (its code or doc on trunk, or its ticket). The link carries the detail.
+- **Each part opens with its point**, in plain sentences with no "I".
+- **Orient once.** The summary gives the context the reader skipped (what this part of the
+  project does, where the change fits) and introduces each project term the reader needs, one
+  time: a few plain words and a link (its code or doc on trunk, or its ticket). The link carries
+  the detail.
 - **Claim only what has a source.** The prior behavior is a fact: read it from the diff. A motive
   or a human decision needs a source (the session, the ticket, a bug report, a failing test).
   Without one, write no motive, and the decision is the agent's. Report only runs that happened.
@@ -118,10 +120,13 @@ four `<!-- pr:x -->` markers survive into the body.
 
 ## Visuals
 
-- **Every body shows the result, or says why it cannot.** A screenshot, a recording, a diagram,
-  pasted output, a small table or a fenced `diff` all count. Behavior shown is behavior that ran.
-  When no visual says more than the summary, the marker becomes
-  `<!-- pr:no-visuals: <reason> -->` (e.g. `text-only change`) and the part is dropped.
+- **A visual that is not needed does not help.** Add one only when it makes a point clearer
+  than prose. Behavior shown is behavior that ran. A small text-only change gets none: the marker
+  becomes `<!-- pr:no-visuals: <reason> -->` (e.g. `text-only change`) and the part is dropped.
+- **The smallest view that makes the point**, under the one line it supports: a screenshot or
+  recording for UI, pasted output, a small table, pseudocode for logic, a call tree, a component
+  tree, a shallow file tree, Mermaid for flow between parts, or a fenced `diff` shaped to the
+  topic (the call tree, file tree or state that changed). Keep only the parts the point needs.
 - **Wide, not tall.** Two visuals at most on the landing; a `Before | After` pair counts as one.
   More than about 10 lines of code, diff or table, a top-to-bottom diagram, or a full-page
   screenshot is too tall. Make a shorter one for the landing: cropped shots side by side, a
