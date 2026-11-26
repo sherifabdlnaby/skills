@@ -20,8 +20,8 @@ Hand-rolled Skills, and other AI bits I build from my own day-to-day experience.
 <summary><strong>Token estimates</strong></summary>
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C425%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,425 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C109%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,109 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C539%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,539 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-124%2C223%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,223 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -64,7 +64,7 @@ than read, so they are left out.
 | [`vendor/wait-what`](skills/vendor/wait-what/)                                         |    `102` |    `102` |
 | [`vendor/why`](skills/vendor/why/)                                                     |    `124` |    `124` |
 | [`vendor/writing-for-agents`](skills/vendor/writing-for-agents/)                       |  `2,349` |  `2,916` |
-| [`what-happened`](skills/what-happened/)                                               |    `976` |    `976` |
+| [`what-happened`](skills/what-happened/)                                               |  `1,090` |  `1,090` |
 
 </details>
 

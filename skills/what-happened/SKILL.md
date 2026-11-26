@@ -26,7 +26,8 @@ make it from this reply alone. Notifications and subagent results are not their 
 - **Collect** your own work since that message, subagent reports, and messages from anyone else in the chat. Check the current state of each PR, CI run, or agent the chat touched.
 - **Check each number** you will show against its source; say so when you correct one.
 - **An action item is a call only the user can take**: a product choice, an approval, an irreversible action, access you lack. Include ones raised before their last message that still wait. Work you
-  can do yourself is not one, and never invent one to fill the reply.
+  can do yourself is not one, and never invent one to fill the reply. A step the user did not ask for and the work does not need is not one either, unless it is irreversible and waiting on the
+  user: then it gets one line and no visual.
 - **Per item**, collect its link, what it changes for users, the evidence for your pick, its risk, and your pick. Write "unknown" for a needed fact you lack.
 
 ## Write
@@ -36,13 +37,16 @@ Spend words on the calls, not the story.
 1. **One opening sentence** naming what waits on the user, or that nothing does. Nothing happened and nothing waits: say so and stop.
 2. **What happened, pictures first.** Screenshots and videos the work produced, inline; then any diagram that explains a change. Then one bullet per thing the user asked for: what came of it, and
    whether it is done, running, failed, or not checked. Write it as you would say it ("Search was slow from a missing index"), each line true when read alone. Name bugs found and fixed on the way.
-   Keep this part under 100 words, not counting pictures. At most three lines that change what the user knows or must do, then one line on work left that you can do yourself.
+   Never mark something done that still waits on the user, and leave out work that changed nothing for them and anything the action items say. Keep this part under 100 words, not counting pictures. At
+   most three lines that change what the user knows or must do, then one line on work left that you can do yourself.
 3. **Action items.** Ask the call the user owns (merge, approve, pick) and give your pick, including any step you would take first, anything that must happen first, and anything irreversible. Name
    each PR, issue, or agent by number or link.
    - **One item**: one bullet with the call, pick, user impact, evidence, and risk.
    - **Items sharing a call**: the call and pick once, then one bullet per item, riskiest first. Give each item's risk even when low ("Low risk: only the colors change").
-   - **A call between options**: each option with what it gets the user and what it costs; those costs are its risk.
-   - **About 30 words per item.** Never cut or merge items to fit a word count: no count in place of a list, no link in place of an item.
+   - **A call between options**: each option with what it gets the user and what it costs; those costs are its risk. When the screenshots above show the options, put each option's gain and cost under
+     its screenshot.
+   - **About 30 words per item**, so the reply grows with the item count: two items fit well under 150 words, thirty need far more. Never cut or merge items to fit a word count: no count in place of a
+     list, no link in place of an item.
    - **Cost of waiting** only when it is more than a delay: a deadline, lost data.
 
 ## Visuals
