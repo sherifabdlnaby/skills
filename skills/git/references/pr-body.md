@@ -1,109 +1,28 @@
 # PR body
 
-Covers: voice, blocks in body order, visuals, receipts and the structure hook, skeleton, linking.
+Covers: readers and size, skeleton, parts, visuals, markers and the structure hook, repo template, linking.
 
-Apply [SKILL.md](../SKILL.md) voice to every block. The body has two readers: the reviewer today,
-and whoever resumes the work later, a person or an agent. Decisions, Not covered and Follow-ups are
-for the second one; the diff does not carry them.
+Apply [SKILL.md](../SKILL.md) voice. The body is a handoff: the session, compacted for two readers
+who were not in it. One decides the merge. The other picks the work up later, a person or their
+agent. Both arrive cold, and neither is an expert on the project.
 
-## Voice
-
-- **Summary and Changes are for a product person.** They know the product. They do not read code.
-  Use Simplified Technical English, short sentences, and the product's own terms
-  (`CONTEXT.md` when the repo has one; `CONTEXT-MAP.md` points to the right one). The other
-  blocks are for engineers.
-- **Name the few things that matter. The diff has the rest.** A changelog says what a person
-  notices. A review guide says where to look.
-- **Emphasis.** Bold the words a skimmer must catch: one phrase per block at most, never a whole
-  sentence. Italic for a label the reader looks for on screen (a button, a menu, a page). A GitHub
-  alert (`> [!NOTE]`, `> [!WARNING]` and the rest) for what the reviewer must not miss. Style
-  nothing else.
-
-## Blocks
-
-In body order. Write each block, or drop it with a reason ([Receipts](#receipts)).
-
-- **AI disclosure.** What it says and where it goes: [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
-- **Human Note.** The user's own words, verbatim, in the `[!NOTE]` callout at the top of the body. Wait
-  for the user to open it: they hand you a note, or they ask for one. Offer it as one more option
-  only in a question you already ask. No paraphrase, no typo fixes, no punctuation changes.
-- **Summary.** One paragraph, two to four sentences, in this order: the ticket link, one sentence
-  that places the reader when the title does not (the feature or flow, in product terms), what
-  used to happen, what changed. The prior behavior is a fact: read it from the diff. A motive
-  needs a source (the ticket, a bug report, a failing test, the user). Without a source, write no
-  motive. Say what changed, and leave the how to the review guide. A one-change PR is described
-  here and drops Changes.
-- **Visuals.** The one picture or diagram that carries the whole change, open. The rest collapsed
-  under it. Rules in [Visuals](#visuals).
-- **Changes.** The changelog, for the product reader. Each bullet leads with what a person
-  notices. The mechanism follows in parentheses when it helps. Internal work reads
-  `No user-visible change: <what moved>`. Flat up to about six bullets. Past that, group under
-  bold product-area names (e.g. Search, Billing), never code layers.
-- **Breaking.** A `> [!WARNING]` that names what breaks and what the reader must do about it.
-- **Review guide.** Numbered, one line per stop: a file or area, then what to look at there.
-  Order: the core change, then what changes because of it, then mechanical work (renames,
-  generated code, CI) marked safe to skim. A diagram goes under its stop only when prose cannot
-  carry the shape.
-- **Decisions.** Top level. One bullet per real choice: `Chose X over Y: Z`. A constraint from
-  the user is a Z. Write it as a fact about the system, never as who asked. A dead end appears
-  only as the Y that lost. Drop the block when no alternative was weighed.
-- **How to test locally** (collapsible). Setup the reader would not guess (e.g. a flag, seed data,
-  an exact input). Written for the reader, not a record of what you did.
-- **Verification** (collapsible). Three lines; each may say `none`. `Automated:` what the tests
-  prove, never a count. `Manual:` the scenario, then what you observed; write `per How to test`
-  when the steps are above. `Not covered:` what the reviewer must not assume was checked. Report
-  only runs that happened.
-- **Examples** (collapsible). Only when an example makes the diff clearer.
-- **Follow-ups / out of scope** (collapsible). Seen and left for later on purpose, so the
-  reviewer does not ask for it here.
-- **Relevant Links.** Parent ticket or epic, docs used, related PRs. Forms in [Linking](#linking).
-
-## Visuals
-
-- **A visual sits next to the shortest text it supports.** The whole change: the Visuals block.
-  One changelog bullet: under that bullet. One review guide stop: under that stop. Two or more in
-  one slot: the first open, the rest in a collapsible.
-- **A picture earns its place when prose cannot carry the outcome:** UI before and after, an
-  error state, rendered output, or a flow where the order is the point. When a code fence or a
-  diagram says it better, use that.
-- **Take shots from a dev env that already runs, or after the user asks.** An ask holds for the
-  rest of the session: start what you need. Never start a server, an app or a browser on your own
-  for a picture. A file already on disk is free (e.g. your own debugging shot, a recording the
-  user gave).
-- **A Before | After pair goes under a bullet when its words alone do not make the change clear**,
-  and shots are available. A layout change passes; a label change does not. A PR where most
-  bullets pass is a *guided diff*.
-- **Diagrams.** Mermaid first, for a sequence or a flow. A fenced `diff` of a tree (component,
-  file, call) when the point is what changed in the structure. A plain tree or pseudocode for a
-  new area. The `show-me` skill carries these forms. An HTML artifact does not render on GitHub.
-- **Upload, alt text and framing:** [`attach.md`](./attach.md).
-
-## Receipts
-
-- **Every block leaves a receipt.** A written block keeps its hidden `<!-- pr:x -->` marker where
-  the skeleton puts it. A dropped block is named, with its reason, in one hidden line:
-  `<!-- pr:dropped visuals: no UI | decisions: none weighed -->`. Both are invisible on GitHub.
-  Human Note has none; it is the user's to open. (why: without a reason, a dropped block and a
-  forgotten one look the same.)
-- **The structure hook denies a post that misses a receipt**, where it is installed beside this
-  skill. The message names the blocks.
-  Add the marker or the dropped entry, then retry.
-- **Repo template** (`<!-- pr:skeleton-off: <reason> -->`): when the repo ships a
-  `PULL_REQUEST_TEMPLATE`, or its own instructions say how a body reads, theirs is the shape and
-  ours is the content. Keep every heading and checkbox of theirs, in their order. Fold our blocks
-  into the sections they fit: summary into their description, changes and review guide under the
-  nearest heading, our collapsibles and links after their last section.
-  `gh pr create --body-file` does not apply the template for you: read the file and merge by hand.
-  The AI disclosure still opens the body, before their template; the template governs
-  everything after that. This marker, with its reason, replaces the receipts and
-  silences the hook. Use the same marker for a body you did not shape (another author's PR).
-- **Markdown inside `<details>` needs a blank line after `</summary>`**, as in the skeleton. Without
-  it a fenced code block renders as literal backticks.
+- **Open what needs the reader. Fold what informs the reader.** Work nobody asked for, a gap in
+  the checks or a thing left out is a *Decide* line when it waits on the reader's answer, and
+  stays in its fold when it does not. The open part, everything outside a collapsible, fits one
+  screen: about 300 words.
+- **Every PR has the four marked parts**, a chore too. An optional part goes when it has nothing
+  to say. Fill the [skeleton](#skeleton) and keep its titles.
+- **Plain sentences.** Simplified Technical English, no "I".
+- **Orient once.** The summary introduces each project term the reader needs, one time: a few
+  plain words and a link (its code or doc on trunk, or its ticket). The link carries the detail.
+- **Claim only what has a source.** The prior behavior is a fact: read it from the diff. A motive
+  or a human decision needs a source (the session, the ticket, a bug report, a failing test).
+  Without one, write no motive, and the decision is the agent's. Report only runs that happened.
 
 ## Skeleton
 
-Replace every `<...>` placeholder and instruction comment, or remove it with its block. Only the
-`<!-- pr:x -->` markers and the `pr:dropped` line survive into the body.
+Replace every `<...>` placeholder and instruction comment, or remove it with its part. Only the
+four `<!-- pr:x -->` markers survive into the body.
 
 ```markdown
 <!-- AI disclosure: the ai-disclosure skill places it; without that skill, the fallback line from SKILL.md goes at the end -->
@@ -118,78 +37,117 @@ Replace every `<...>` placeholder and instruction comment, or remove it with its
 
 <!-- pr:summary -->
 
-[TICKET-123](link) | <one sentence placing the reader, when the title does not>. <What used to happen.> <What changed.> <!-- no ticket, no prefix -->
+<What this part of the project does, each term linked, the ticket too.> <What used to happen.> <What changed>, so **<the result>**.
 
-**Visuals** <!-- pr:visuals -->
-
-<the one picture or diagram that carries the change>
-
-<details><summary>More</summary>
-
-<the rest>
-
-</details>
-
-**Changes** <!-- pr:changes -->
-
-- <What a person notices> (<mechanism, when it helps>).
-- No user-visible change: <what moved>.
-
-<!-- pr:breaking -->
 > [!WARNING]
-> **Breaking:** <what breaks, and what the reader must do about it>.
+> **Breaking:** <what breaks, and what the reader must do about it>. <!-- only when something breaks -->
 
-**Review guide** <!-- pr:review-guide -->
+<!-- pr:visuals -->
 
-1. `<core file or area>`: <the real change>.
-2. `<what changes because of it>`: <what to look at>.
-3. Everything else is <renames, generated code, CI>, safe to skim.
+<One line that says what the visual shows:>
 
-**Decisions** <!-- pr:decisions -->
+<one or two visuals, wide, not tall>
 
-- Chose <X> over <Y>: <Z>.
+<details><summary>More visuals</summary>
 
----
-
-<details><summary>How to test locally</summary> <!-- pr:how-to-test -->
-
-<setup the reader would not guess>
+<the rest, and anything tall>
 
 </details>
 
-<details><summary>Verification</summary> <!-- pr:verification -->
+### Changes
 
-**Automated:** <what the tests prove>.
-**Manual:** <the scenario, then what you observed>.
-**Not covered:** <what the reviewer must not assume was checked>.
+<!-- pr:changes -->
+
+**<Product area, never a code layer>**
+
+- <What a person notices>.
+  - <The mechanism, when it helps.>
+
+### For you <!-- optional -->
+
+- **Decide:** <a question that waits on the reader's answer>
+- **Read:** [`<path>`](https://github.com/<OWNER/REPO>/blob/<this branch>/<path>) (<what to look at>). The rest is <tests, renames, generated code>. <!-- only the few files that carry the real change -->
+
+<details><summary>Decisions</summary> <!-- pr:decisions -->
+
+**Decided by a human**
+
+- **Asked for:** <the request, or "not on record">.
+- <A choice a person said or picked>: <reason>.
+
+**Decided by the agent**
+
+- <X>, not <Y>: <reason>.
+
+**Left out**
+
+- <Not done, or left for later>: <reason> (<human or agent>).
 
 </details>
 
-<details><summary>Examples</summary> <!-- pr:examples -->
+<details><summary>Verification</summary> <!-- optional -->
 
-<an example that makes the diff clearer>
-
-</details>
-
-<details><summary>Follow-ups / out of scope</summary> <!-- pr:follow-ups -->
-
-<seen and left for later on purpose>
+- **Verified:** <the scenario, then what was observed>.
+- **Not verified:** <what the reader must not assume was checked>.
+- **Try it:** `<command>`, then <the result to expect>. <Setup the reader would not guess.>
 
 </details>
 
-### Relevant Links
+### Links <!-- optional -->
 
-<!-- pr:links -->
-
-<parent ticket or epic, docs, related PRs, prev/next PR (manual stacks only; gh-stack renders the stack)>
-
-<!-- pr:dropped <block>: <reason> | <block>: <reason> -->
+- [<ticket, epic, doc or related PR>](<url>): <what it is, in a few words>
 ```
+
+## Parts
+
+- **Human Note.** The user's own words, verbatim. Wait for the user to open it: they hand you a
+  note, or they ask for one. Offer it as one more option only in a question you already ask. No
+  paraphrase, no typo fixes, no punctuation changes.
+- **Decisions.** What is there on purpose, and who chose it.
+  - **A human decision is one a person said, or picked from options.** A plain "ok" or "go"
+    leaves the choice with the agent.
+  - **Only what a reviewer could question or undo**, with its reason. About five lines per group.
+    An empty group reads `None.`
+  - **Each line is a fact about the work.** No names, no quotes, no instruction to the reader's
+    agent, no link to the session.
+- **Verification.** *Verified* says what a run proves, never a test count.
+
+## Visuals
+
+- **Every body shows the result, or says why it cannot.** A screenshot, a recording, a diagram,
+  pasted output, a small table or a fenced `diff` all count. Behavior shown is behavior that ran.
+  When no visual says more than the summary, the marker becomes
+  `<!-- pr:no-visuals: <reason> -->` (e.g. `text-only change`) and the part is dropped.
+- **Wide, not tall.** Two visuals at most on the landing; a `Before | After` pair counts as one.
+  More than about 10 lines of code, diff or table, a top-to-bottom diagram, or a full-page
+  screenshot is too tall. Make a shorter one for the landing: cropped shots side by side, a
+  left-to-right diagram, the two or three lines that show the result, one row per state. The tall
+  one goes in *More visuals*, or is not made.
+- **Start the app for a picture only when it starts smoothly.** When it does not, bail early and
+  show the result another way.
+- **Mermaid renders on GitHub.** An HTML artifact does not.
+- **Upload, alt text and framing:** [`attach.md`](./attach.md).
+
+## Markers
+
+- **Four hidden markers stay where the skeleton puts them:** summary, visuals (or its opt-out),
+  changes, decisions. The structure hook, where it is installed beside this skill, denies a body
+  that misses one and names it. Write the part, then retry.
+- **Repo template** (`<!-- pr:skeleton-off: <reason> -->`): when the repo ships a
+  `PULL_REQUEST_TEMPLATE`, or its own instructions say how a body reads, theirs is the shape and
+  ours is the content. Keep every heading and checkbox of theirs, in their order, and fold our
+  parts into the sections they fit. `gh pr create --body-file` does not apply the template for
+  you: read the file and merge by hand. The AI disclosure keeps its place. This marker, with
+  its reason, replaces the four markers. Use it also for a body you did not shape (another
+  author's PR).
+- **Markdown inside `<details>` needs a blank line after `</summary>`**, as in the skeleton. Without
+  it a fenced code block renders as literal backticks.
 
 ## Linking
 
-- The ticket prefixes the summary; parent ticket or epic go in `### Relevant Links`.
-- Ticket URL: from the user, a repo config, or an earlier PR in the repo. None known means plain `TICKET-123` with no link, never a guessed base URL.
-- Related PR, same repo: `#<num>` (GitHub auto-links). Another repo: `org/repo#<num>`.
-- Docs (Notion, Confluence, RFC, README): clickable Markdown links, never raw URLs.
-- Stacked PRs, manual path only: previous and next PR in `### Relevant Links`; return to edit once the next PR's URL exists. Under gh-stack, GitHub renders the stack itself.
+- **Ticket URL** from the user, a repo config, or an earlier PR in the repo. None known means
+  plain `TICKET-123` with no link, never a guessed base URL.
+- **Related PRs** as `#<num>`, or `org/repo#<num>` in another repo. Docs as Markdown links, never
+  raw URLs.
+- **Manual stacks only:** previous and next PR in Links; return to edit once the next PR's URL
+  exists. Under gh-stack, GitHub renders the stack itself.

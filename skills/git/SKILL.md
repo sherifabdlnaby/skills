@@ -30,8 +30,8 @@ Pre-staging walk, file confirmation, message style, hook-failure handling, scopi
 **Pull Requests** (open, update) -> [`references/pull-requests.md`](references/pull-requests.md) Pre-flight survey, title format (including the stacked `[n/N]` marker), `gh pr create` flags,
 post-create lines, finishing PRs after `gh stack submit`, updating a body without clobbering it.
 
-**PR body** (write or rewrite a description) -> [`references/pr-body.md`](references/pr-body.md) Voice for the product and engineer blocks, each block's rule in body order, where a visual
-sits and when to take a screenshot, receipts and the structure hook, the skeleton, linking.
+**PR body** (write or rewrite a description) -> [`references/pr-body.md`](references/pr-body.md) The cold reader and the one-screen limit, the skeleton, what stays open and what folds, human and
+agent decisions, visuals on the landing, markers and the structure hook, repo templates, linking.
 
 **Attach a screenshot or video** -> [`references/attach.md`](references/attach.md)
 `--attach` on create/edit/comment, body-file placement, screenshot framing guidance.

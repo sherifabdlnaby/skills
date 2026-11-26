@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """PR-structure guard.
 
-Companion to the PR-body skeleton in skills/git/references/pr-body.md: every block
-there leaves a receipt. A written block keeps its hidden `<!-- pr:x -->` marker; a
-dropped one is named, with a reason, in a single `<!-- pr:dropped x: why | y: why -->`
-line. Wired to the pre-shell hook (PreToolUse:Bash / beforeShellExecution): a
-`gh pr create` or `gh pr edit` whose body lacks a receipt for any block is denied,
-and the denial names the blocks.
+Companion to the PR-body skeleton in skills/git/references/pr-body.md: every body
+carries the same required parts, and each one keeps its hidden `<!-- pr:x -->`
+marker. A body with no visual says so, with a reason, in
+`<!-- pr:no-visuals: <reason> -->`. Wired to the pre-shell hook (PreToolUse:Bash /
+beforeShellExecution): a `gh pr create` or `gh pr edit` whose body misses a marker
+is denied, and the denial names the parts.
 
 Escape hatch: a body carrying a `<!-- pr:skeleton-off: <reason> -->` marker passes
 untouched. For a body merged into a repo PULL_REQUEST_TEMPLATE or any imposed
-shape, where the receipts may not survive. The reason keeps it a conscious choice.
+shape, where the markers may not survive. The reason keeps it a conscious choice.
 
 Command parsing and body extraction come from the ai-disclosure guard
 (skills/ai-disclosure/hooks/guard), so both read the same body out of
@@ -34,52 +34,35 @@ sys.path.insert(
 )
 import github  # noqa: E402
 
-# The skeleton's blocks, in body order. Human Note is absent on purpose: it is the
-# user's to open, so its absence is never the agent's call.
-BLOCKS = (
-    "summary",
-    "visuals",
-    "changes",
-    "breaking",
-    "review-guide",
-    "decisions",
-    "how-to-test",
-    "verification",
-    "examples",
-    "follow-ups",
-    "links",
-)
+# The parts every body carries, in body order.
+REQUIRED = ("summary", "visuals", "changes", "decisions")
 
 # Only bodies of the PR itself carry the skeleton; comments and reviews don't.
 BODY_POSTS = {"gh pr create", "gh pr edit"}
 
-# Sentinel from missing_receipts: a PR body was posted, but its text never reached us.
+# Sentinel from missing_parts: a PR body was posted, but its text never reached us.
 UNREADABLE = object()
 
 # Whitespace-tolerant so a reformatted marker still counts.
 MARKER_RE = re.compile(r"<!--\s*pr:([a-z-]+)\s*-->")
-DROPPED_RE = re.compile(r"<!--\s*pr:dropped\b(.*?)-->", re.DOTALL)
+NO_VISUALS_RE = re.compile(r"<!--\s*pr:no-visuals\s*:(.*?)-->", re.DOTALL)
 BYPASS_RE = re.compile(r"<!--\s*pr:skeleton-off\b.*?-->", re.DOTALL)
 
 
-def receipts(body):
-    """Return `(written, dropped)`: block names by receipt kind.
+def marked(body):
+    """Return the names of the parts `body` carries a marker for.
 
-    A dropped entry with no reason is left out of `dropped`, so it counts as
-    missing: the reason is what makes the drop a decision.
+    The visuals opt-out counts as `visuals` only with a reason: the reason is what
+    makes a body without a visual a decision.
     """
-    written = set(MARKER_RE.findall(body))
-    dropped = set()
-    for match in DROPPED_RE.finditer(body):
-        for entry in match.group(1).split("|"):
-            name, _, reason = entry.partition(":")
-            if name.strip() and reason.strip():
-                dropped.add(name.strip())
-    return written, dropped
+    found = set(MARKER_RE.findall(body))
+    if any(match.group(1).strip() for match in NO_VISUALS_RE.finditer(body)):
+        found.add("visuals")
+    return found
 
 
-def missing_receipts(command, cwd):
-    """Blocks with no receipt in the PR body posted by `command`, in body order.
+def missing_parts(command, cwd):
+    """Required parts with no marker in the PR body posted by `command`, in body order.
 
     Returns [] when the command isn't a PR-body post or the body opted out, and
     UNREADABLE when gh would post a body we never see (editor mode, an unreadable
@@ -91,15 +74,15 @@ def missing_receipts(command, cwd):
         (body,) = post.bodies  # gh posts one PR body
         if BYPASS_RE.search(body.text):
             return []
-        written, dropped = receipts(body.text)
-        missing = [name for name in BLOCKS if name not in written | dropped]
+        found = marked(body.text)
+        missing = [name for name in REQUIRED if name not in found]
         return UNREADABLE if missing and not body.complete else missing
     return []
 
 
 UNREADABLE_REASON = (
     "PR-structure guard: this command posts a PR body the guard cannot read, so it "
-    "cannot check the body for its receipts. Pass the body as a file "
+    "cannot check the body for its markers. Pass the body as a file "
     "(`--body-file <path>`), inline (`--body '<text>'`), or as an inline heredoc into "
     "`--body-file -`, then retry."
 )
@@ -107,14 +90,13 @@ UNREADABLE_REASON = (
 
 def format_reason(missing):
     return (
-        "PR-structure guard: the PR body has no receipt for these blocks: "
-        f"{', '.join(missing)}. Every block of the skeleton is either written, "
-        "keeping its `<!-- pr:<block> -->` marker, or dropped with a reason in one "
-        "hidden line, `<!-- pr:dropped <block>: <reason> | <block>: <reason> -->`. A "
-        "dropped entry without a reason does not count. Rules and skeleton: the git "
-        "skill, skills/git/references/pr-body.md. A body shaped by a repo PR template, "
-        "or one you did not write, carries `<!-- pr:skeleton-off: <reason> -->` "
-        "instead. Fix the body, then retry."
+        "PR-structure guard: the PR body misses these required parts: "
+        f"{', '.join(missing)}. Each one keeps its hidden `<!-- pr:<part> -->` marker "
+        "from the skeleton. A body with no visual carries "
+        "`<!-- pr:no-visuals: <reason> -->` in place of the visuals marker. Rules and "
+        "skeleton: the git skill, skills/git/references/pr-body.md. A body shaped by a "
+        "repo PR template, or one you did not write, carries "
+        "`<!-- pr:skeleton-off: <reason> -->` instead. Write the part, then retry."
     )
 
 
@@ -127,7 +109,7 @@ def main():
     if "gh" not in command:  # runs on every shell command; skip the parse for most
         return 0
 
-    missing = missing_receipts(command, hooklib.cwd(data))
+    missing = missing_parts(command, hooklib.cwd(data))
     if missing is UNREADABLE:
         hooklib.deny(
             data, UNREADABLE_REASON, "Blocked a PR body this hook could not read."
@@ -136,7 +118,7 @@ def main():
         hooklib.deny(
             data,
             format_reason(missing),
-            "Blocked a PR body missing structure receipts.",
+            "Blocked a PR body missing required parts.",
         )
     return 0
 
