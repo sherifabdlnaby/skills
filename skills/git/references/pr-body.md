@@ -54,6 +54,8 @@ four `<!-- pr:x -->` markers survive into the body.
 
 </details>
 
+---
+
 ### Changes
 
 <!-- pr:changes -->
@@ -63,10 +65,14 @@ four `<!-- pr:x -->` markers survive into the body.
 - <What a person notices>.
   - <The mechanism, when it helps.>
 
-### For you <!-- optional -->
+---
+
+### Review guide <!-- optional -->
 
 - **Decide:** <a question that waits on the reader's answer>
 - **Read:** [`<path>`](https://github.com/<OWNER/REPO>/blob/<this branch>/<path>) (<what to look at>). The rest is <tests, renames, generated code>. <!-- only the few files that carry the real change -->
+
+---
 
 <details><summary>Decisions</summary> <!-- pr:decisions -->
 
@@ -92,6 +98,8 @@ four `<!-- pr:x -->` markers survive into the body.
 - **Try it:** `<command>`, then <the result to expect>. <Setup the reader would not guess.>
 
 </details>
+
+---
 
 ### Links <!-- optional -->
 
@@ -142,6 +150,8 @@ four `<!-- pr:x -->` markers survive into the body.
   author's PR).
 - **Markdown inside `<details>` needs a blank line after `</summary>`**, as in the skeleton. Without
   it a fenced code block renders as literal backticks.
+- **A `---` separator needs a blank line above it.** Under a line of text it turns that line into
+  a heading.
 
 ## Linking
 
