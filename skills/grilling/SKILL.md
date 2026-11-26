@@ -20,6 +20,9 @@ question cap goes out as back-to-back calls, still one round.
 **Every question stays answerable off-list.** Claude Code and opencode already offer free text beside the options, and Claude Code rejects an explicit "Other", so add nothing there. Cursor accepts
 only the options it is handed, so give it one that invites a custom answer.
 
+**Put everything inside the call.** The user reliably sees only the call. Text you write between tool calls can land in your thinking, which the user sees only as a summary, if at all. So the question
+text carries the context and what the last round changed; the option descriptions carry the tradeoffs. When the context is too long for the call, end your turn on it and ask in the next turn.
+
 **Without such a tool, ask in the reply itself.** Number the questions and put your recommended answer under each one. This is what a missing tool falls back to, not a style to pick when you have one.
 
 Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question
