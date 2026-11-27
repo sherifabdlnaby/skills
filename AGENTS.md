@@ -65,12 +65,12 @@ A skill is a folder with a `SKILL.md` that the `skills` list of a plugin manifes
 
 Edit the config, then run `mise run check`.
 
-| What                                                    | Where                                                                        |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| tools, tasks, env, settings, hooks                      | `mise.toml`; file tasks in `.config/mise/tasks/`                             |
-| lint and format steps (commit, push, `check` pipelines) | `.config/hk.pkl`                                                             |
-| a linter's own config                                   | `.config/`, wired from `.config/hk.pkl` when the tool does not find it there |
-| evals for this file and the tasks                       | `evals/`: after a change here, `mise run eval` must hold its pass rate       |
+| What                                                    | Where                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| tools, tasks, env, settings, hooks                      | `mise.toml`; file tasks in `.config/mise/tasks/`                                 |
+| lint and format steps (commit, push, `check` pipelines) | `.config/hk.pkl`                                                                 |
+| a linter's own config                                   | `.config/`, wired from `.config/hk.pkl` when the tool does not find it there     |
+| evals for this file, the tasks, and the skills          | `evals/`: after a change to one of them, `mise run eval` must hold its pass rate |
 
 Configured in the repo settings, outside the tree, so scaffold no replacement: CodeQL default setup, Dependabot alerts and security updates, secret scanning with push protection, and a
 `main` ruleset that requires the `check` job.

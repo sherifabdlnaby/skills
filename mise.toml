@@ -147,7 +147,7 @@ usage = '''
     flag "--trials <n>"    help="runs per case"
     flag "--jobs <n>"      help="runs in parallel"
     flag "--case <id>"     var=#true help="only these case(s)"
-    flag "--kind <kind>"   help="only nav or task cases" { choices "nav" "task" }
+    flag "--kind <kind>"   help="only cases of this kind" { choices "nav" "task" "skill" }
     flag "--cases <path>"  help="cases file"
     flag "--label <name>"  help="results file prefix"
     flag "--timeout <s>"   help="seconds per run and per check"

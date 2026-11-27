@@ -4,20 +4,25 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import os
 import re
 import shutil
+import signal
 import statistics
 import subprocess
 import tempfile
+import threading
 import time
 import tomllib
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+SANDBOX = Path(__file__).with_name("sandbox")
 INSTRUCTION_FILES = ("AGENTS.md", "CLAUDE.md")
 
 KINDS = {
@@ -77,6 +82,23 @@ KINDS = {
             "Bash(gh:*)",
         ],
     },
+    # The sandbox is a throwaway project whose `origin` is a local folder and whose `gh` is a
+    # stand-in, so the agent may commit, push, and post.
+    "skill": {
+        "max_turns": 30,
+        "args": [
+            "--permission-mode",
+            "acceptEdits",
+            "--allowedTools",
+            "Skill",
+            "Read",
+            "Edit",
+            "Write",
+            "Glob",
+            "Grep",
+            *(f"Bash({cmd}:*)" for cmd in ("git", "gh", "ls", "cat", "jq", "mkdir")),
+        ],
+    },
 }
 
 # Clean room: only project settings (no user CLAUDE.md, plugins, or skills), and no auto-memory,
@@ -87,6 +109,9 @@ CLEAN_ROOM = [
     "--settings",
     '{"autoMemoryEnabled": false}',
 ]
+
+# A skill loads through the Skill tool, or when the agent reads its SKILL.md.
+SKILL_LOAD = r"^Skill (?:[\w-]+:)?{0}$|^Read \S*/{0}/SKILL\.md$"
 
 # Counts with the tokenizer the skill READMEs use.
 TOKENS_PY = (
@@ -119,7 +144,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--regrade",
         type=Path,
-        help="grade the nav answers stored in a results file again with the current cases; runs no model",
+        help="grade a results file again with the current cases (nav answers, skill tool calls); runs no model",
     )
     return parser.parse_args()
 
@@ -169,12 +194,13 @@ def instruction_tokens(tree: Path) -> int:
     return int(out.stdout)
 
 
-def shell(cmd: str, cwd: Path, timeout: int) -> dict:
+def shell(cmd: str, cwd: Path, timeout: int, env: dict[str, str] | None = None) -> dict:
     try:
         proc = subprocess.run(
             cmd,
             shell=True,
             cwd=cwd,
+            env=env,
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -187,47 +213,170 @@ def shell(cmd: str, cwd: Path, timeout: int) -> dict:
     }
 
 
-def ask_claude(case: dict, cwd: Path, args: argparse.Namespace) -> dict:
+def sandbox_env(box: Path) -> dict[str, str]:
+    """The environment of a `skill` run: nothing of the owner's GitHub or git setup reaches it."""
+    return {
+        **os.environ,
+        "PATH": f"{SANDBOX / 'bin'}{os.pathsep}{os.environ['PATH']}",  # the stand-in gh
+        "GH_TOKEN": "eval-invalid",  # if a run reaches the real gh, it cannot post
+        "GIT_CONFIG_GLOBAL": os.devnull,  # no signing, aliases, or hooks from the owner
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "MISE_TRUSTED_CONFIG_PATHS": str(box),
+    }
+
+
+def describe(tool: dict) -> str:
+    """`<Tool> <its main argument>`: the line that the regexes of a `skill` case match."""
+    given = tool["input"]
+    main = next(
+        (given[k] for k in ("command", "file_path", "skill", "pattern") if k in given),
+        json.dumps(given),
+    )
+    return f"{tool['name']} {main}"[:2000]
+
+
+def ask_claude(
+    case: dict,
+    cwd: Path,
+    args: argparse.Namespace,
+    extra: tuple[str, ...] = (),
+    env: dict[str, str] | None = None,
+    decided=None,
+) -> dict:
+    """Run one headless session: the prompts in the case's `before`, then its `prompt`, each as a
+    turn. Returns the last answer, the cost, and the tool calls in the order they finished.
+    `decided` sees the calls after each one; when it returns true the session stops there,
+    because nothing later can change the grade."""
     kind = KINDS[case["kind"]]
+    session = str(uuid.uuid4())
     cmd = [
         "claude",
         "-p",
-        case["prompt"],
         "--model",
         args.model,
+        "--input-format",
+        "stream-json",
         "--output-format",
-        "json",
+        "stream-json",
+        "--verbose",
+        "--session-id",
+        session,
         "--max-turns",
         str(case.get("max_turns", kind["max_turns"])),
         *CLEAN_ROOM,
         *kind["args"],
+        *extra,
     ]
-    env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+    env = {k: v for k, v in (env or os.environ).items() if k != "CLAUDECODE"}
     started = time.monotonic()
+    proc = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        env=env,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    timed_out = threading.Event()
+    timer = threading.Timer(args.timeout, lambda: (timed_out.set(), proc.kill()))
+    timer.start()
+
+    prompts = [*case.get("before", []), case["prompt"]]
+
+    def say_next() -> None:
+        if prompts and not stopped:
+            turn = {"role": "user", "content": prompts.pop(0)}
+            proc.stdin.write(json.dumps({"type": "user", "message": turn}) + "\n")
+            proc.stdin.flush()
+        elif not proc.stdin.closed:
+            proc.stdin.close()
+
+    calls: list[dict] = []
+    pending: dict[
+        str, str
+    ] = {}  # tool call id -> its description, until its result arrives
+    refused: set[str] = set()  # ids the permission rules denied
+    noise: list[str] = []
+    result = None
+    stopped = False
     try:
-        proc = subprocess.run(
-            cmd, cwd=cwd, env=env, capture_output=True, text=True, timeout=args.timeout
-        )
-    except subprocess.TimeoutExpired:
-        return {"error": f"timeout after {args.timeout}s", "seconds": args.timeout}
-    seconds = round(time.monotonic() - started, 1)
-    try:
-        out = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        return {
-            "error": f"exit {proc.returncode}: {(proc.stderr or proc.stdout)[-2000:]}",
-            "seconds": seconds,
-        }
-    return {
-        "error": out.get("subtype") if out.get("is_error") else None,
-        "answer": out.get("result", ""),
-        "is_error": out.get("is_error"),
-        "num_turns": out.get("num_turns"),
-        "total_cost_usd": out.get("total_cost_usd"),
-        "duration_ms": out.get("duration_ms"),
-        "usage": out.get("usage"),
-        "seconds": seconds,
+        say_next()
+        for line in proc.stdout:
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                noise.append(line)
+                continue
+            kind_of = event.get("type")
+            if kind_of == "result":
+                result = event
+                say_next()
+            elif event.get("subtype") == "permission_denied":
+                refused.add(event.get("tool_use_id"))
+            if kind_of not in ("assistant", "user"):
+                continue
+            content = event["message"]["content"]
+            blocks = content if isinstance(content, list) else []
+            if kind_of == "assistant":
+                for block in blocks:
+                    if block.get("type") == "tool_use":
+                        pending[block["id"]] = describe(block)
+            elif not stopped:
+                for block in blocks:
+                    call = pending.pop(block.get("tool_use_id"), None)
+                    if block.get("type") != "tool_result" or call is None:
+                        continue
+                    outcome = (
+                        "refused"
+                        if block["tool_use_id"] in refused
+                        else "error"
+                        if block.get("is_error")
+                        else "ok"
+                    )
+                    calls.append({"call": call, "outcome": outcome})
+                if decided and decided(calls):
+                    stopped = True
+                    proc.send_signal(signal.SIGINT)
+                    threading.Timer(
+                        15, proc.kill
+                    ).start()  # if it does not stop by itself
+        proc.wait()
+    finally:
+        timer.cancel()
+        forget_session(session)
+
+    record = {"calls": calls, "seconds": round(time.monotonic() - started, 1)}
+    if timed_out.is_set():
+        return record | {"error": f"timeout after {args.timeout}s"}
+    if result is None:
+        if stopped:
+            return record | {"error": None, "answer": ""}
+        return record | {"error": f"exit {proc.returncode}: {''.join(noise)[-2000:]}"}
+    return record | {
+        "error": result.get("subtype")
+        if result.get("is_error") and not stopped
+        else None,
+        "answer": result.get("result", ""),
+        "num_turns": result.get("num_turns"),
+        "total_cost_usd": result.get("total_cost_usd"),
+        "usage": result.get("usage"),
     }
+
+
+def forget_session(session: str) -> None:
+    """Delete the transcript Claude Code saved for a run, so eval sessions do not pile up in the
+    owner's history. The transcript has to exist during the run: hooks read it."""
+    projects = (
+        Path(os.environ.get("CLAUDE_CONFIG_DIR", "~/.claude")).expanduser() / "projects"
+    )
+    for transcript in projects.glob(f"*/{session}.jsonl"):
+        transcript.unlink()
+        shutil.rmtree(transcript.with_suffix(""), ignore_errors=True)  # its side files
+        try:
+            transcript.parent.rmdir()  # the project folder, when this was its only session
+        except OSError:
+            pass
 
 
 def grade_nav(case: dict, answer: str) -> dict:
@@ -253,41 +402,111 @@ def grade_task(case: dict, cwd: Path, timeout: int) -> dict:
     }
 
 
-def run_case(
-    case: dict, trial: int, commit: str, nav_tree: Path | None, tmp: Path, args
-) -> dict:
+def grade_skill(case: dict, calls: list[dict]) -> dict:
+    """Pass when every skill in `load` was loaded and every page in `read` was opened before the
+    agent acted, and no skill in `not_load` was loaded at all. The agent acts at the first call
+    that matches `act` and ran, or that the permission rules refused. A call that failed, for
+    example one a hook blocked, is not the act: the agent can still load the skill and try again."""
+
+    def matches(pattern: str, call: str) -> bool:
+        return bool(re.search(pattern, call, re.I | re.S))
+
+    def loaded(skill: str, done: list[str]) -> bool:
+        return any(matches(SKILL_LOAD.format(re.escape(skill)), call) for call in done)
+
+    act = case.get("act")
+    acted = next(
+        (
+            i
+            for i, c in enumerate(calls)
+            if act and c["outcome"] != "error" and matches(act, c["call"])
+        ),
+        None,
+    )
+    before = [c["call"] for c in calls[:acted] if c["outcome"] == "ok"]
+    whole = [c["call"] for c in calls if c["outcome"] == "ok"]
+    checks = {
+        "load": {skill: loaded(skill, before) for skill in case.get("load", [])},
+        "read": {
+            page: any(matches(page, call) for call in before)
+            for page in case.get("read", [])
+        },
+        "not_load": {
+            skill: not loaded(skill, whole) for skill in case.get("not_load", [])
+        },
+    }
+    flat = [ok for group in checks.values() for ok in group.values()]
+    return {
+        "checks": checks,
+        "acted": acted is not None,
+        "score": sum(flat) / len(flat),
+        "passed": all(flat),
+    }
+
+
+def skill_decided(case: dict):
+    """When a `skill` run can stop: at the act, or once every check passed. A case with `not_load`
+    runs to its end, because only the whole run shows that a skill never loaded."""
+    if "not_load" in case:
+        return None
+
+    def decided(calls: list[dict]) -> bool:
+        grade = grade_skill(case, calls)
+        return grade["acted"] or grade["passed"]
+
+    return decided
+
+
+def run_case(case: dict, trial: int, commit: str, tree: Path, tmp: Path, args) -> dict:
     record = {"case": case["id"], "kind": case["kind"], "trial": trial}
     try:
-        record |= attempt(case, trial, commit, nav_tree, tmp, args)
+        record |= attempt(case, trial, commit, tree, tmp, args)
     except Exception as e:  # one broken run must not drop the others' records
         record |= {"error": repr(e), "score": 0.0, "passed": False}
     record["passed"] = record["passed"] and not record.get("error")
     return record
 
 
-def attempt(
-    case: dict, trial: int, commit: str, nav_tree: Path | None, tmp: Path, args
-) -> dict:
-    record: dict = {}
+def attempt(case: dict, trial: int, commit: str, tree: Path, tmp: Path, args) -> dict:
+    """One run of a case. `tree` is the clean checkout of the ref: `nav` runs read it, and `skill`
+    runs load it as the plugin."""
     if case["kind"] == "nav":
-        record |= ask_claude(case, nav_tree, args)
-        record |= grade_nav(case, record.get("answer", ""))
-    else:
-        tree = tmp / f"{case['id']}-{trial}"
+        record = ask_claude(case, tree, args)
+        return record | grade_nav(case, record.get("answer", ""))
+
+    setup_failed = {"error": "setup failed", "score": 0.0, "passed": False}
+    own = tmp / f"{case['id']}-{trial}"  # this run's folder
+    if case["kind"] == "skill":
+        env = sandbox_env(own)
         try:
-            add_worktree(tree, commit)
-            setup = (
-                shell(case["setup"], tree, args.timeout) if "setup" in case else None
+            subprocess.run(
+                [SANDBOX / "init.sh", own], env=env, check=True, capture_output=True
             )
-            record["setup"] = setup
-            if setup and not setup["passed"]:
-                record |= {"error": "setup failed", "score": 0.0, "passed": False}
-                return record
-            record |= ask_claude(case, tree, args)
-            record |= grade_task(case, tree, args.timeout)
+            work = own / "work"
+            setup = shell(case.get("setup", "true"), work, args.timeout, env)
+            if not setup["passed"]:
+                return {"setup": setup} | setup_failed
+            record = ask_claude(
+                case,
+                work,
+                args,
+                extra=("--plugin-dir", str(tree)),
+                env=env,
+                decided=skill_decided(case),
+            )
+            return record | grade_skill(case, record["calls"])
         finally:
-            remove_worktree(tree)
-    return record
+            shutil.rmtree(own, ignore_errors=True)
+
+    try:
+        add_worktree(own, commit)
+        setup = shell(case.get("setup", "true"), own, args.timeout)
+        if not setup["passed"]:
+            return {"setup": setup} | setup_failed
+        record = ask_claude(case, own, args)
+        return record | grade_task(case, own, args.timeout)
+    finally:
+        remove_worktree(own)
 
 
 def summary(records: list[dict]) -> list[str]:
@@ -313,15 +532,30 @@ def summary(records: list[dict]) -> list[str]:
             f", cost ${sum(r.get('total_cost_usd') or 0 for r in rs):.2f}"
             f", n={len(rs)}"
         )
+        if kind == "skill":  # one rate per check, across cases: `load git 7/9`
+            rates = collections.defaultdict(list)
+            for r in rs:
+                for group, checks in r.get("checks", {}).items():
+                    for name, ok in checks.items():
+                        rates[f"{group} {name}"].append(ok)
+            lines += [
+                f"  {name:<44} {sum(oks)}/{len(oks)}"
+                for name, oks in sorted(rates.items())
+            ]
     return lines
 
 
 def regrade(path: Path, cases: list[dict]) -> None:
-    by_id = {c["id"]: c for c in cases if c["kind"] == "nav"}
+    by_id = {c["id"]: c for c in cases}
     data = json.loads(path.read_text())
     for r in data["records"]:
-        if r["case"] in by_id and not r.get("error"):
-            r |= grade_nav(by_id[r["case"]], r.get("answer", ""))
+        case = by_id.get(r["case"])
+        if not case or r.get("error"):
+            continue
+        if case["kind"] == "nav":
+            r |= grade_nav(case, r.get("answer", ""))
+        elif case["kind"] == "skill":
+            r |= grade_skill(case, r.get("calls", []))
     path.write_text(json.dumps(data, indent=2) + "\n")
     print("\n".join(summary(data["records"])))
 
@@ -342,26 +576,26 @@ def main() -> None:
 
     # Outside $HOME, so Claude Code does not load CLAUDE.md files from the owner's parent dirs.
     tmp = Path(tempfile.mkdtemp(prefix="skills-eval-"))
-    nav_tree = None
+    tree = None
     try:
         commit = (
             git("rev-parse", "--verify", f"{args.ref}^{{commit}}")
             if args.ref
             else snapshot_working_tree(tmp)
         )
-        nav_tree = add_worktree(tmp / "nav", commit)
-        tokens = instruction_tokens(nav_tree)
+        tree = add_worktree(tmp / "tree", commit)
+        tokens = instruction_tokens(tree)
         print(f"ref {args.ref or 'working tree'} ({commit[:12]}), model {args.model}")
         print(f"instruction tokens every session loads: {tokens}")
 
         runs = [(c, t) for t in range(args.trials) for c in cases]
         with ThreadPoolExecutor(args.jobs) as pool:
             records = list(
-                pool.map(lambda ct: run_case(*ct, commit, nav_tree, tmp, args), runs)
+                pool.map(lambda ct: run_case(*ct, commit, tree, tmp, args), runs)
             )
     finally:
-        if nav_tree:
-            remove_worktree(nav_tree)
+        if tree:
+            remove_worktree(tree)
         shutil.rmtree(tmp, ignore_errors=True)
         subprocess.run(["git", "-C", str(REPO), "worktree", "prune"])
 

@@ -98,7 +98,7 @@ kind = "nav"
 prompt = "What must the README.md beside one of my own skills contain, and what must it not contain?"
 must = [
   'SKILL\.md',
-  '\.\./|\bup\b[^\n]{0,40}skills/?|skills/?`?\s+(folder|directory|index)',
+  '\.\./|\bup\b[^\n]{0,80}(skills/?|README|folder|director|index)|skills/?`?\s+(folder|directory|index)',
   '\b(no|not|never|without|omit)\b.{0,300}?token count|token[^\n]{0,80}\b(not|never|forbidden|omit)',
 ]
 
@@ -164,3 +164,217 @@ readme-links-skill = "grep -qE '\\]\\((\\./)?SKILL\\.md\\)' skills/say-again/REA
 tokens-current = "mise run tokens"
 root-manifests-bumped = '''v=$(jq -r .version .claude-plugin/plugin.json); [ "$v" = "$(jq -r .version .cursor-plugin/plugin.json)" ] && [ "$v" != "$(git show HEAD:.claude-plugin/plugin.json | jq -r .version)" ]'''
 check-passes = "mise run check"
+
+# ── skill: the agent works in a throwaway project with this plugin loaded; its tool calls are graded ──
+#
+# `act` marks where the work starts. A case passes when the skills in `load` were loaded and the
+# pages in `read` were opened before that point. `before` holds earlier turns of the same session.
+
+[[case]]
+id = "git-commit"
+kind = "skill"
+setup = '''printf 'def greet(name, punctuation="!"):\n    return f"Hello, {name}{punctuation}"\n' > src/greet.py'''
+prompt = "commit this"
+load = ["git"]
+act = '\bgit\s+(-C\s+\S+\s+)?commit\b'
+read = ['git/references/commits\.md']
+
+[[case]]
+id = "git-commit-push"
+kind = "skill"
+setup = '''printf 'def greet(name, punctuation="!"):\n    return f"Hello, {name}{punctuation}"\n' > src/greet.py'''
+prompt = "commit and push"
+load = ["git"]
+act = '\bgit\s+(-C\s+\S+\s+)?commit\b'
+read = ['git/references/commits\.md']
+
+[[case]]
+id = "git-code-then-commit"
+kind = "skill"
+prompt = "Add a shout option to greet() that upper-cases the greeting, with a test. Then commit."
+load = ["git"]
+act = '\bgit\s+(-C\s+\S+\s+)?commit\b'
+read = ['git/references/commits\.md']
+
+[[case]]
+id = "git-side-effect"
+kind = "skill"
+setup = '''
+printf '# Notes\n\nPersonal notes. Each topic has a file in notes/.\n\n- Commit every change you make, with a short message.\n' > AGENTS.md
+mkdir -p notes
+printf '# Car\n\n- 2026-10-02: oil change.\n' > notes/car.md
+git add --all
+git commit --quiet --message "docs: add notes"
+'''
+prompt = "The front left tire was replaced today, 2026-11-20. Log it."
+load = ["git"]
+act = '\bgit\s+(-C\s+\S+\s+)?commit\b'
+
+[[case]]
+id = "git-commit-then-pr"
+kind = "skill"
+setup = '''
+git switch --quiet --create greet-punctuation
+printf 'def greet(name, punctuation="!"):\n    return f"Hello, {name}{punctuation}"\n' > src/greet.py
+'''
+before = ["commit this"]
+prompt = "push it and open a PR"
+load = ["git", "ai-disclosure"]
+act = '\bgh\s+pr\s+create\b'
+read = ['git/references/pull-requests\.md', 'git/references/pr-body\.md']
+
+[[case]]
+id = "git-commit-then-rebase"
+kind = "skill"
+setup = '''
+git switch --quiet --create greet-punctuation
+git switch --quiet main
+printf '\n## License\n\nMIT\n' >> README.md
+git commit --quiet --all --message "docs: add the license"
+git push --quiet
+git switch --quiet greet-punctuation
+printf 'def greet(name, punctuation="!"):\n    return f"Hello, {name}{punctuation}"\n' > src/greet.py
+'''
+before = ["commit this"]
+prompt = "main moved. rebase on it"
+load = ["git"]
+act = '\bgit\s[^\n;&|]*\brebase\b'
+read = ['git/references/rebase\.md']
+
+[[case]]
+id = "git-branch"
+kind = "skill"
+prompt = "Start a branch for a new farewell() function."
+load = ["git"]
+act = '\bgit\s+(switch\s+(-c|--create)|checkout\s+-b|branch\s+[^-\s])'
+read = ['git/references/branches\.md']
+
+[[case]]
+id = "git-rebase"
+kind = "skill"
+setup = '''
+git switch --quiet --create greet-punctuation
+printf 'def greet(name, punctuation="!"):\n    return f"Hello, {name}{punctuation}"\n' > src/greet.py
+git commit --quiet --all --message "feat: add a punctuation option to greet"
+git switch --quiet main
+printf '\n## License\n\nMIT\n' >> README.md
+git commit --quiet --all --message "docs: add the license"
+git push --quiet
+git switch --quiet greet-punctuation
+'''
+prompt = "rebase this branch on main"
+load = ["git"]
+act = '\bgit\s[^\n;&|]*\brebase\b'
+read = ['git/references/rebase\.md']
+
+[[case]]
+id = "git-open-pr"
+kind = "skill"
+setup = '''
+git switch --quiet --create greet-punctuation
+printf 'def greet(name, punctuation="!"):\n    return f"Hello, {name}{punctuation}"\n' > src/greet.py
+git commit --quiet --all --message "feat: add a punctuation option to greet"
+git push --quiet --set-upstream origin greet-punctuation
+'''
+prompt = "open a PR"
+load = ["git", "ai-disclosure"]
+act = '\bgh\s+pr\s+create\b'
+read = ['git/references/pull-requests\.md', 'git/references/pr-body\.md']
+
+[[case]]
+id = "github-comment"
+kind = "skill"
+prompt = "Comment on PR 7 that the fix is ready for another look."
+load = ["ai-disclosure"]
+act = '\bgh\s+(pr|issue)\s+comment\b|\bgh\s+api\b[^\n]*comments'
+
+[[case]]
+id = "git-history-question"
+kind = "skill"
+prompt = "What did the last commit change?"
+not_load = ["git"]
+
+[[case]]
+id = "mise-pin-tool"
+kind = "skill"
+setup = '''
+printf '[env]\nGREETING = "Hello"\n\n[tasks.test]\ndescription = "Run the tests"\nrun = "python3 -m pytest"\n' > mise.toml
+git add mise.toml
+git commit --quiet --message "chore: add mise"
+'''
+prompt = "pin node to version 22 for this project"
+load = ["mise-fy"]
+act = '^(Edit|Write) \S*mise\S*\.toml$|^Bash .*\bmise\s+use\b'
+read = ['mise-fy/references/tools\.md']
+
+[[case]]
+id = "mise-add-task"
+kind = "skill"
+setup = '''
+printf '[env]\nGREETING = "Hello"\n\n[tasks.test]\ndescription = "Run the tests"\nrun = "python3 -m pytest"\n' > mise.toml
+git add mise.toml
+git commit --quiet --message "chore: add mise"
+'''
+prompt = "add a lint task that runs ruff"
+load = ["mise-fy"]
+act = '^(Edit|Write) \S*(mise\S*\.toml|hk\.pkl|\.config/mise/tasks/\S+)$|^Bash .*\bmise\s+(tasks\s+add|use)\b'
+read = ['mise-fy/references/(tasks|hk)\.md']
+
+[[case]]
+id = "mise-pre-commit"
+kind = "skill"
+setup = '''
+printf '[env]\nGREETING = "Hello"\n\n[tasks.test]\ndescription = "Run the tests"\nrun = "python3 -m pytest"\n' > mise.toml
+git add mise.toml
+git commit --quiet --message "chore: add mise"
+'''
+prompt = "set up a pre-commit hook that runs the tests"
+load = ["mise-fy"]
+act = '^(Edit|Write) \S*(mise\S*\.toml|hk\.pkl|pre-commit\S*)$|^Bash .*\b(hk|pre-commit)\s+install\b'
+read = ['mise-fy/references/hk\.md']
+
+[[case]]
+id = "mise-side-effect"
+kind = "skill"
+setup = '''
+printf '[env]\nGREETING = "Hello"\n\n[tasks.test]\ndescription = "Run the tests"\nrun = "python3 -m pytest"\n' > mise.toml
+git add mise.toml
+git commit --quiet --message "chore: add mise"
+'''
+prompt = "The test output is too noisy. Make the tests run quietly by default."
+load = ["mise-fy"]
+act = '^(Edit|Write) \S*mise\S*\.toml$'
+
+[[case]]
+id = "mise-run-tests"
+kind = "skill"
+setup = '''
+printf '[env]\nGREETING = "Hello"\n\n[tasks.test]\ndescription = "Run the tests"\nrun = "python3 -m pytest"\n' > mise.toml
+git add mise.toml
+git commit --quiet --message "chore: add mise"
+'''
+prompt = "run the tests"
+not_load = ["mise-fy"]
+
+[[case]]
+id = "skill-create"
+kind = "skill"
+prompt = "Create an agent skill in this repo that writes a three-line standup update: yesterday, today, blockers."
+load = ["skill-fy"]
+act = '^Write \S*SKILL\.md$'
+read = ['skill-fy/references/scaffold\.md']
+
+[[case]]
+id = "ci-add-checks"
+kind = "skill"
+prompt = "add a CI workflow that runs the tests on every pull request"
+load = ["cicd-fy"]
+act = '^(Write|Edit) \S*\.github/workflows/\S+$'
+read = ['cicd-fy/references/checks\.md']
+
+[[case]]
+id = "coding-change"
+kind = "skill"
+prompt = "Add a shout option to greet() that upper-cases the greeting."
+load = ["coding"]
+act = '^(Edit|Write) \S*\.py$'
