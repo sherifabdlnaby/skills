@@ -78,6 +78,10 @@ description = "Cache tokenizer data used by token estimates"
 hide = true
 run = 'uv run --locked python -c "import tiktoken; tiktoken.get_encoding(\"o200k_base\")"'
 
+[tasks."skills:check"]
+description = "Check our skills' layout: README beside each SKILL.md with its links, root README lists it, name matches folder, no orphan references, marketplaces agree"
+run = "python .config/skill_structure.py"
+
 [tasks."version:check"]
 # Guard against a stale marketplace cache: Claude/Cursor key an installed plugin on the `version`
 # string in its manifests, so shipped changes with an unchanged version never re-vendor. A pushGates

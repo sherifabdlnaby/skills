@@ -93,6 +93,12 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
   ["check-symlinks"] = Builtins.check_symlinks // catch broken symlinks
 
+  // Skill layout invariants from AGENTS.md; logic lives in the mise task. Unglobbed: hk passes no
+  // deleted files, so a glob would skip the commit that deletes a README, the case this must catch.
+  ["skill-structure"] {
+    check = "mise run skills:check"
+  }
+
   // Generated reports read the final output of every formatter above.
   ["token-estimates"] {
     exclusive = true
