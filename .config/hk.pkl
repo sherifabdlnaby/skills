@@ -126,7 +126,7 @@ exclude = commonIgnores
 // Test gates: tests are not lint, so they stay out of `check`; pre-push and CI run them.
 local testGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["test"] {
-    glob = List("hooks/**", "skills/ai-disclosure/**")
+    glob = List("hooks/**", "skills/ai-disclosure/**", ".config/**")
     check = "mise run test"
   }
 }

@@ -129,11 +129,14 @@ run = [
 ]
 
 [tasks.test]
-description = "Run the hook tests"
+description = "Run the tests: the hooks, and the repo's own tooling in .config/"
 wait_for = [
   "lint",
 ] # in `mise run lint test`, test after lint; alone, test runs only the tests
-run = ["python -m unittest discover -s hooks/tests"]
+run = [
+  "python -m unittest discover -s hooks/tests",
+  "python -m unittest discover -s .config/tests",
+]
 tools.python = "3.9" # the oldest python the hooks support
 
 [tasks.eval]
