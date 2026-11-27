@@ -10,7 +10,10 @@ import sys
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
+import layout
+
 DEFAULT_ROOT = Path(__file__).resolve().parents[1]
+# Claude Code, Cursor and Codex each read their marketplace from a fixed path.
 MARKETPLACES = (
     ".claude-plugin/marketplace.json",
     ".cursor-plugin/marketplace.json",
@@ -23,13 +26,15 @@ Violation = tuple[Path, str, str]  # path, what is wrong, fix
 
 
 def own_skills(root: Path) -> list[Path]:
-    """Folders directly under skills/ or skills/variants/ that hold a SKILL.md."""
-    skills = root / "skills"
-    return sorted(
-        path.parent
-        for parent in (skills, skills / "variants")
-        for path in parent.glob("*/SKILL.md")
-    )
+    return [s for s in layout.skills(root) if not layout.is_vendored(root, s)]
+
+
+def index_folder(root: Path, skill: Path) -> Path:
+    """The nearest folder above the skill that holds a README.md: the one its README links up to."""
+    for folder in skill.parents:
+        if folder == root or (folder / "README.md").is_file():
+            return folder
+    raise ValueError(f"{skill} is outside {root}")
 
 
 def links(markdown: Path) -> Iterator[Path]:
@@ -43,15 +48,15 @@ def links(markdown: Path) -> Iterator[Path]:
 def readme_present(root: Path) -> Iterator[Violation]:
     for skill in own_skills(root):
         if not (skill / "README.md").is_file():
+            up = index_folder(root, skill).relative_to(root).as_posix()
             yield (
                 skill / "README.md",
                 "missing",
-                "add a README.md for humans that links to SKILL.md and up to skills/",
+                f"add a README.md for humans that links to SKILL.md and up to {up}/",
             )
 
 
 def readme_links(root: Path) -> Iterator[Violation]:
-    skills_dir = (root / "skills").resolve()
     for skill in own_skills(root):
         readme = skill / "README.md"
         if not readme.is_file():
@@ -59,11 +64,12 @@ def readme_links(root: Path) -> Iterator[Violation]:
         targets = set(links(readme))
         if (skill / "SKILL.md").resolve() not in targets:
             yield readme, "no link to SKILL.md", "add a link to [`SKILL.md`](SKILL.md)"
-        if not targets & {skills_dir, skills_dir / "README.md"}:
-            up = Path(*[".."] * len(skill.relative_to(root / "skills").parts))
+        index = index_folder(root, skill)
+        if not targets & {index, index / "README.md"}:
+            up = Path(*[".."] * len(skill.relative_to(index).parts))
             yield (
                 readme,
-                "no link up to skills/",
+                f"no link up to {index.relative_to(root).as_posix()}/",
                 f"add a link to [All skills]({up.as_posix()}/)",
             )
 

@@ -25,8 +25,10 @@ def skill(root: Path, rel: str, up: str) -> None:
     )
 
 
-def marketplace(names: list[str]) -> str:
-    return json.dumps({"plugins": [{"name": n, "source": "./"} for n in names]})
+def marketplace(plugins: dict[str, str]) -> str:
+    return json.dumps(
+        {"plugins": [{"name": n, "source": s} for n, s in plugins.items()]}
+    )
 
 
 class SkillStructureTest(unittest.TestCase):
@@ -34,17 +36,27 @@ class SkillStructureTest(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name)
+        write(self.root / "skills/README.md", "# Skills\n")
         skill(self.root, "skills/alpha", "../")
         skill(self.root, "skills/variants/beta", "../../README.md")
         write(
             self.root / "README.md",
             "[alpha](skills/alpha/) | [beta](skills/variants/beta/)\n",
         )
-        for path in (".claude-plugin", ".cursor-plugin", ".agents/plugins"):
-            write(self.root / path / "marketplace.json", marketplace(["skills"]))
-        write(
-            self.root / ".cursor-plugin/plugin.json", json.dumps({"skills": ["skills"]})
+        self.plugins: dict[str, str] = {}
+        self.add_plugin(
+            "skills", "./", ["./skills/", "./skills/variants", "./skills/vendor"]
         )
+
+    def add_plugin(self, name: str, source: str, skills: object) -> None:
+        self.plugins[name] = source
+        for path in (".claude-plugin", ".cursor-plugin", ".agents/plugins"):
+            write(self.root / path / "marketplace.json", marketplace(self.plugins))
+        for path in (".claude-plugin", ".cursor-plugin"):
+            write(
+                self.root / source / path / "plugin.json",
+                json.dumps({"skills": skills}),
+            )
 
     def run_check(self) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -62,6 +74,33 @@ class SkillStructureTest(unittest.TestCase):
     def test_well_formed_tree_passes(self) -> None:
         result = self.run_check()
         self.assertEqual((result.returncode, result.stdout), (0, ""))
+
+    def test_skills_folder_listed_in_a_manifest_is_checked(self) -> None:
+        write(self.root / "packs/extra/README.md", "# Extra\n")
+        write(self.root / "packs/extra/delta/SKILL.md", "---\nname: delta\n---\n")
+        write(self.root / "packs/extra/delta/README.md", "[`SKILL.md`](SKILL.md)\n")
+        self.assertEqual(self.run_check().returncode, 0)
+
+        self.add_plugin(
+            "skills",
+            "./",
+            ["./skills/", "./skills/variants", "./skills/vendor", "./packs/extra"],
+        )
+        self.assert_fails(
+            "packs/extra/delta/README.md", "add a link to [All skills](../)"
+        )
+        self.assert_fails("README.md", "add [delta](packs/extra/delta/)")
+
+    def test_manifest_path_to_a_single_skill_is_checked(self) -> None:
+        write(self.root / "solo/gamma/SKILL.md", "---\nname: gamma\n---\n")
+        self.add_plugin("solo", "./solo", "./gamma")
+        self.assert_fails("solo/gamma/README.md", "add a README.md")
+
+    def test_skill_shipped_by_two_plugins_is_reported_once(self) -> None:
+        self.add_plugin("alpha", "./skills", ["./alpha"])
+        (self.root / "skills/alpha/README.md").unlink()
+        result = self.run_check()
+        self.assertEqual(result.stdout.count("skills/alpha/README.md: missing"), 1)
 
     def test_vendored_skill_is_ignored(self) -> None:
         write(self.root / "skills/vendor/gamma/SKILL.md", "---\nname: other\n---\n")
@@ -107,7 +146,7 @@ class SkillStructureTest(unittest.TestCase):
     def test_marketplaces_that_disagree_fail(self) -> None:
         write(
             self.root / ".agents/plugins/marketplace.json",
-            marketplace(["skills", "extra"]),
+            marketplace({"skills": "./", "extra": "./"}),
         )
         self.assert_fails(".agents/plugins/marketplace.json", "list the same plugins")
 

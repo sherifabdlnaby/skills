@@ -21,13 +21,13 @@ exposes the tasks, and wires the git hooks; `mise.toml` is the source of truth.
 
 ## Skills of ours
 
-A skill is a folder under `skills/` or `skills/variants/` that holds a `SKILL.md`. `mise run skills:check` enforces the folder shape, so it names what is missing when you add, remove, or
-rename one.
+A skill is a folder with a `SKILL.md` that the `skills` list of a plugin manifest ships; one under a `vendor/` folder is not ours. Add a new skills folder in the manifests only:
+`mise run skills:check` and `mise run tokens` follow them, and the check names what is missing when you add, remove, or rename a skill.
 
 - **Stand alone.** Users install one skill at a time: write each as if no other skill and no hook is present. A reference to another skill or a hook is an optional extra. Raise a hard
   dependency with the user.
 - **`README.md` beside each `SKILL.md`**, for humans who decide whether and how to use the skill: the problem, the outcome, the operating shape, the tradeoffs. Write it from the skill,
-  without its prompt text and without token counts. It links to `SKILL.md` (the canonical agent instructions) and up to `skills/`.
+  without its prompt text and without token counts. It links to `SKILL.md` (the canonical agent instructions) and up to the nearest folder above it that holds a `README.md`.
 - **The root `README.md`** lists each skill by hand, variants on the same line.
 - **Versions line.** A skill that teaches third-party tools (e.g. mise-fy) says in `SKILL.md` which release of each tool it was checked against, and when. Update the line only when a
   change comes from reading newer release notes.
