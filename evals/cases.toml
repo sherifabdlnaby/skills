@@ -1,0 +1,166 @@
+# Eval cases for evals/run.py; evals/README.md describes the fields.
+#
+# Path regexes use the lookbehind (?<![\w-]/) so `.claude-plugin/...` matches the repo-root path
+# and not `skills/.claude-plugin/...` or any other folder's copy.
+
+# ── nav: the agent answers; regexes grade the answer ─────────────────────────────────────────────
+
+[[case]]
+id = "bump-after-skill-edit"
+kind = "nav"
+prompt = "I edited skills/git/SKILL.md. Before I push, what else in this repo must change, and which commands do I run? Name files and commands."
+must = [
+  '(?<![\w-]/)\.claude-plugin/plugin\.json',
+  '(?<![\w-]/)\.cursor-plugin/plugin\.json',
+  'version',
+  'mise run check',
+]
+
+[[case]]
+id = "two-plugins-bump"
+kind = "nav"
+prompt = "I changed skills/ai-disclosure/SKILL.md. Which manifest files need a version bump? List every file path."
+must = [
+  '(?<![\w-]/)\.claude-plugin/plugin\.json',
+  '(?<![\w-]/)\.cursor-plugin/plugin\.json',
+  '(?<![\w-]/)skills/\.claude-plugin/plugin\.json',
+  '(?<![\w-]/)skills/\.cursor-plugin/plugin\.json',
+]
+
+[[case]]
+id = "remove-vendored"
+kind = "nav"
+prompt = "Remove the vendored skill humanizer from this repo. Give the exact command."
+must = ['mise run skills:remove\s+humanizer']
+
+[[case]]
+id = "add-vendored"
+kind = "nav"
+prompt = "Vendor the skill named tdd from the GitHub repo mattpocock/skills into this repo. Exact commands, in order."
+must = [
+  'npx[^\n]*\bskills(@\S+)?\s+add\s+mattpocock/skills',
+  '(-s|--skill)\s+tdd',
+  'add\s+mattpocock/skills.*mise run skills:sync',
+]
+
+[[case]]
+id = "new-linter"
+kind = "nav"
+prompt = "I want to add a new linter to this repo's checks. It is a standalone binary with its own config file. Which files do I edit, and where does its config file go?"
+must = [
+  'mise\.toml',
+  '\.config/hk\.pkl',
+  'mise lock|mise\.lock',
+  '\.config(?!/hk\.pkl)',
+]
+
+[[case]]
+id = "release"
+kind = "nav"
+prompt = "How do I publish a new release of the skills plugin from this repo?"
+must = [
+  'version',
+  '\.claude-plugin/plugin\.json',
+  '\.cursor-plugin/plugin\.json',
+  'merg\w*[^\n]{0,80}\bmain\b|\bmain\b[^\n]{0,80}merg',
+  "automatic|on its own|by itself|cuts itself|no (separate |manual )?(publish |release )?(step|command)|(don't|do not|never) run a (publish|release)|nothing (else )?to run",
+]
+
+[[case]]
+id = "hooks-installed"
+kind = "nav"
+prompt = ".git/hooks/ is empty in my clone. Are the git hooks installed? How do I check and fix it?"
+must = [
+  'hook\.\S*command|get-regexp[^\n]*hook',
+  'mise run setup|hk install',
+]
+
+[[case]]
+id = "stale-tokens"
+kind = "nav"
+prompt = "CI says the token estimates in skills/README.md are stale. How do I fix it?"
+must = ['mise run tokens --fix']
+
+[[case]]
+id = "vendor-edit"
+kind = "nav"
+prompt = "I fixed a typo in skills/vendor/humanizer/SKILL.md. Will my fix stay? What should I do instead?"
+must = [
+  "\\bno\\b|won'?t|will not|overwrit|lost|wiped",
+  'sync',
+  'wholesale|replac|overwrit|rebuild|rebuilt|delete|wipe',
+  'upstream|fork|\bown\b',
+]
+
+[[case]]
+id = "skill-readme-rules"
+kind = "nav"
+prompt = "What must the README.md beside one of my own skills contain, and what must it not contain?"
+must = [
+  'SKILL\.md',
+  '\.\./|\bup\b[^\n]{0,40}skills/?|skills/?`?\s+(folder|directory|index)',
+  '\b(no|not|never|without|omit)\b.{0,300}?token count|token[^\n]{0,80}\b(not|never|forbidden|omit)',
+]
+
+[[case]]
+id = "generated-conflict"
+kind = "nav"
+prompt = "During a rebase I got a merge conflict in the token table of skills/README.md. How do I resolve it?"
+must = ['mise run tokens --fix']
+
+[[case]]
+id = "worktree-setup"
+kind = "nav"
+prompt = "I created a new git worktree of this repo and mise says the config is not trusted. What do I run before I start work?"
+must = ['mise trust', 'mise run setup']
+
+# ── task: the agent edits a throwaway worktree; shell checks grade the result ───────────────────
+
+[[case]]
+id = "add-skill"
+kind = "task"
+prompt = "Add a new skill of mine named standup to this repo. It tells the agent to write a three-line standup update: yesterday, today, blockers. Do everything this repo requires so the change is ready to commit and push. Do not commit."
+
+[case.checks]
+skill-md = '''head -1 skills/standup/SKILL.md | grep -qx -- --- && grep -qE '^name: *"?standup"? *$' skills/standup/SKILL.md'''
+readme-links-skill = "grep -qE '\\]\\((\\./)?SKILL\\.md\\)' skills/standup/README.md"
+root-readme-lists = "grep -q 'skills/standup' README.md"
+tokens-current = "mise run tokens"
+root-manifests-bumped = '''v=$(jq -r .version .claude-plugin/plugin.json); [ "$v" = "$(jq -r .version .cursor-plugin/plugin.json)" ] && [ "$v" != "$(git show HEAD:.claude-plugin/plugin.json | jq -r .version)" ]'''
+check-passes = "mise run check"
+
+[[case]]
+id = "bump-two-plugins"
+kind = "task"
+setup = "printf '\\n<!-- eval: harmless edit -->\\n' >> skills/ai-disclosure/SKILL.md"
+prompt = "I just edited skills/ai-disclosure/SKILL.md. Bump every version this repo requires for that change. Do not commit."
+
+[case.checks]
+root-manifests-bumped = '''v=$(jq -r .version .claude-plugin/plugin.json); [ "$v" = "$(jq -r .version .cursor-plugin/plugin.json)" ] && [ "$v" != "$(git show HEAD:.claude-plugin/plugin.json | jq -r .version)" ]'''
+skills-manifests-bumped = '''v=$(jq -r .version skills/.claude-plugin/plugin.json); [ "$v" = "$(jq -r .version skills/.cursor-plugin/plugin.json)" ] && [ "$v" != "$(git show HEAD:skills/.claude-plugin/plugin.json | jq -r .version)" ]'''
+
+[[case]]
+id = "remove-skill"
+kind = "task"
+prompt = "Remove my skill fast-feedback-mode from this repo. Do everything this repo requires so the change is ready to commit and push. Do not commit."
+
+[case.checks]
+skill-gone = "test ! -e skills/fast-feedback-mode"
+root-readme-clean = "! grep -q 'skills/fast-feedback-mode' README.md"
+tokens-current = "mise run tokens"
+root-manifests-bumped = '''v=$(jq -r .version .claude-plugin/plugin.json); [ "$v" = "$(jq -r .version .cursor-plugin/plugin.json)" ] && [ "$v" != "$(git show HEAD:.claude-plugin/plugin.json | jq -r .version)" ]'''
+check-passes = "mise run check"
+
+[[case]]
+id = "rename-skill"
+kind = "task"
+prompt = "Rename my skill wait-what to say-again. Do everything this repo requires so the change is ready to commit and push. Do not commit."
+
+[case.checks]
+new-skill-md = '''grep -qE '^name: *"?say-again"? *$' skills/say-again/SKILL.md'''
+old-gone = "test ! -e skills/wait-what"
+root-readme-updated = "grep -q 'skills/say-again' README.md && ! grep -q 'skills/wait-what' README.md"
+readme-links-skill = "grep -qE '\\]\\((\\./)?SKILL\\.md\\)' skills/say-again/README.md"
+tokens-current = "mise run tokens"
+root-manifests-bumped = '''v=$(jq -r .version .claude-plugin/plugin.json); [ "$v" = "$(jq -r .version .cursor-plugin/plugin.json)" ] && [ "$v" != "$(git show HEAD:.claude-plugin/plugin.json | jq -r .version)" ]'''
+check-passes = "mise run check"
