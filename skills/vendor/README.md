@@ -6,8 +6,8 @@ skill's own `SKILL.md` is its documentation. A skill marked *(overrides)* has fr
 [`skills-overrides.json`](../../skills-overrides.json); its text is upstream's.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-18%2C387%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 18,387 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-34%2C562%20tokens-2ea44f?style=flat-square" alt="All Markdown: 34,562 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-18%2C324%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 18,324 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-34%2C499%20tokens-2ea44f?style=flat-square" alt="All Markdown: 34,499 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -17,13 +17,13 @@ than read, so they are left out.
 | Skill                                                             | Upstream                                                  | SKILL.md |    Total |
 | ----------------------------------------------------------------- | --------------------------------------------------------- | -------: | -------: |
 | [`codebase-design`](codebase-design/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,349` |  `2,495` |
-| [`correct`](correct/)                                             | [cursor/plugins](https://github.com/cursor/plugins)       |    `544` |    `544` |
+| [`correct`](correct/) *(overrides)*                               | [cursor/plugins](https://github.com/cursor/plugins)       |    `499` |    `499` |
 | [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `781` |  `1,987` |
 | [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)     |  `2,282` |  `8,014` |
 | [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `198` |    `198` |
 | [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)   |  `7,383` | `10,407` |
 | [`improve-codebase-architecture`](improve-codebase-architecture/) | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,354` |  `2,950` |
-| [`in-your-own-words`](in-your-own-words/)                         | [cursor/plugins](https://github.com/cursor/plugins)       |     `72` |     `72` |
+| [`in-your-own-words`](in-your-own-words/) *(overrides)*           | [cursor/plugins](https://github.com/cursor/plugins)       |     `54` |     `54` |
 | [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills) |    `642` |  `3,546` |
 | [`show-me`](show-me/) *(overrides)*                               | [humanlayer/skills](https://github.com/humanlayer/skills) |    `764` |    `764` |
 | [`unslop`](unslop/) *(overrides)*                                 | [cursor/plugins](https://github.com/cursor/plugins)       |    `580` |    `580` |
@@ -37,7 +37,7 @@ than read, so they are left out.
 | `codebase-design`               | [`DEEPENING.md`](codebase-design/DEEPENING.md)                            |   `537` |
 | `codebase-design`               | [`DESIGN-IT-TWICE.md`](codebase-design/DESIGN-IT-TWICE.md)                |   `609` |
 | `codebase-design`               | [`SKILL.md`](codebase-design/SKILL.md)                                    | `1,349` |
-| `correct`                       | [`SKILL.md`](correct/SKILL.md)                                            |   `544` |
+| `correct`                       | [`SKILL.md`](correct/SKILL.md)                                            |   `499` |
 | `domain-modeling`               | [`ADR-FORMAT.md`](domain-modeling/ADR-FORMAT.md)                          |   `618` |
 | `domain-modeling`               | [`GLOSSARY-FORMAT.md`](domain-modeling/GLOSSARY-FORMAT.md)                |   `588` |
 | `domain-modeling`               | [`SKILL.md`](domain-modeling/SKILL.md)                                    |   `781` |
@@ -51,7 +51,7 @@ than read, so they are left out.
 | `humanizer`                     | [`SKILL.md`](humanizer/SKILL.md)                                          | `7,383` |
 | `improve-codebase-architecture` | [`HTML-REPORT.md`](improve-codebase-architecture/HTML-REPORT.md)          | `1,596` |
 | `improve-codebase-architecture` | [`SKILL.md`](improve-codebase-architecture/SKILL.md)                      | `1,354` |
-| `in-your-own-words`             | [`SKILL.md`](in-your-own-words/SKILL.md)                                  |    `72` |
+| `in-your-own-words`             | [`SKILL.md`](in-your-own-words/SKILL.md)                                  |    `54` |
 | `prototype`                     | [`LOGIC.md`](prototype/LOGIC.md)                                          | `1,329` |
 | `prototype`                     | [`SKILL.md`](prototype/SKILL.md)                                          |   `642` |
 | `prototype`                     | [`UI.md`](prototype/UI.md)                                                | `1,575` |

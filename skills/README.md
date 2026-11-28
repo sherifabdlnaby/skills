@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-36%2C681%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 36,681 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-119%2C659%20tokens-2ea44f?style=flat-square" alt="All Markdown: 119,659 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-36%2C597%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 36,597 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-119%2C575%20tokens-2ea44f?style=flat-square" alt="All Markdown: 119,575 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -21,7 +21,7 @@ than read, so they are left out.
 | [`fast-feedback-mode`](fast-feedback-mode/)                 |    `410` |    `410` |
 | [`git`](git/)                                               |  `1,858` | `13,469` |
 | [`grill-me`](grill-me/)                                     |     `61` |     `61` |
-| [`grilling`](grilling/)                                     |    `663` |    `663` |
+| [`grilling`](grilling/)                                     |    `642` |    `642` |
 | [`mise-fy`](mise-fy/)                                       |  `2,525` | `39,790` |
 | [`no-comments`](no-comments/)                               |    `370` |    `370` |
 | [`no-docs`](no-docs/)                                       |    `258` |    `258` |
@@ -35,7 +35,7 @@ than read, so they are left out.
 | [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `251` |    `251` |
 | [`wait-what`](wait-what/)                                   |    `185` |    `185` |
 | [`what-happened`](what-happened/)                           |  `1,090` |  `1,090` |
-| [`vendor/`](vendor/README.md) (13 skills)                   | `18,387` | `34,562` |
+| [`vendor/`](vendor/README.md) (13 skills)                   | `18,324` | `34,499` |
 
 ### Files
 
@@ -72,7 +72,7 @@ than read, so they are left out.
 | `git`                        | [`references/watch-flags.md`](git/references/watch-flags.md)                                       |   `666` |
 | `git`                        | [`references/watch.md`](git/references/watch.md)                                                   | `1,847` |
 | `grill-me`                   | [`SKILL.md`](grill-me/SKILL.md)                                                                    |    `61` |
-| `grilling`                   | [`SKILL.md`](grilling/SKILL.md)                                                                    |   `663` |
+| `grilling`                   | [`SKILL.md`](grilling/SKILL.md)                                                                    |   `642` |
 | `mise-fy`                    | [`SKILL.md`](mise-fy/SKILL.md)                                                                     | `2,525` |
 | `mise-fy`                    | [`assets/AGENTS.md`](mise-fy/assets/AGENTS.md)                                                     |   `859` |
 | `mise-fy`                    | [`assets/README.md`](mise-fy/assets/README.md)                                                     | `1,185` |

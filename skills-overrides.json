@@ -1,4 +1,10 @@
 {
+  "correct": {
+    "description": "Make a mistake agents keep repeating impossible: architecture, then types, then a lint, then a test."
+  },
+  "in-your-own-words": {
+    "description": "Restate the user's goals and problem in your own words."
+  },
   "show-me": {
     "disable-model-invocation": null,
     "description": "Show the current topic as the smallest useful visual."
