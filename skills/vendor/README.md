@@ -6,7 +6,7 @@ skill's own `SKILL.md` is its documentation.
 
 <p>
   <img src="https://img.shields.io/badge/All%20SKILL.md-23%2C370%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 23,370 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-41%2C355%20tokens-2ea44f?style=flat-square" alt="All Markdown: 41,355 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-41%2C403%20tokens-2ea44f?style=flat-square" alt="All Markdown: 41,403 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -19,7 +19,7 @@ than read, so they are left out.
 | [`codebase-design`](codebase-design/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,349` |  `2,495` |
 | [`correct`](correct/)                                             | [cursor/plugins](https://github.com/cursor/plugins)       |    `544` |    `544` |
 | [`diagnosing-bugs`](diagnosing-bugs/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |  `2,034` |  `2,034` |
-| [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `781` |  `1,939` |
+| [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `781` |  `1,987` |
 | [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)     |  `2,282` |  `8,014` |
 | [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `198` |    `198` |
 | [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)   |  `7,383` | `10,407` |
@@ -43,7 +43,7 @@ than read, so they are left out.
 | `correct`                       | [`SKILL.md`](correct/SKILL.md)                                            |   `544` |
 | `diagnosing-bugs`               | [`SKILL.md`](diagnosing-bugs/SKILL.md)                                    | `2,034` |
 | `domain-modeling`               | [`ADR-FORMAT.md`](domain-modeling/ADR-FORMAT.md)                          |   `618` |
-| `domain-modeling`               | [`GLOSSARY-FORMAT.md`](domain-modeling/GLOSSARY-FORMAT.md)                |   `540` |
+| `domain-modeling`               | [`GLOSSARY-FORMAT.md`](domain-modeling/GLOSSARY-FORMAT.md)                |   `588` |
 | `domain-modeling`               | [`SKILL.md`](domain-modeling/SKILL.md)                                    |   `781` |
 | `gh-stack`                      | [`SKILL.md`](gh-stack/SKILL.md)                                           | `2,282` |
 | `gh-stack`                      | [`references/commands.md`](gh-stack/references/commands.md)               | `2,699` |

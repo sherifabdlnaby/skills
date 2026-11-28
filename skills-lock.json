@@ -3,38 +3,38 @@
   "skills": {
     "blast-radius": {
       "source": "cursor/plugins",
-      "commit": "005d8f6e8ec057b738adcd08a08b30db0478402d",
+      "commit": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
       "sourceType": "github",
       "skillPath": "harness/pstack/claude-code/skills/blast-radius/SKILL.md",
       "computedHash": "f9ec7353939c4449f2edb1cd195049f477b9ba6c0a869de75c7b440e27295f01"
     },
     "codebase-design": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/engineering/codebase-design/SKILL.md",
       "computedHash": "d40f025dc1b0f2020663260f38f2bcb8d6ed3523afb11e5fda624b01238677e8"
     },
     "correct": {
       "source": "cursor/plugins",
-      "commit": "005d8f6e8ec057b738adcd08a08b30db0478402d",
+      "commit": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
       "sourceType": "github",
       "skillPath": "harness/pstack/claude-code/skills/correct/SKILL.md",
       "computedHash": "63f55b279f1298d3cabe91999063920cdc2a2f16a671cb8fbd87ddecc7fde216"
     },
     "diagnosing-bugs": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
       "computedHash": "87c78ae966e591f9ceb177789cc5cc9de69277cd26679ffd36ca5300f430d513"
     },
     "domain-modeling": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/engineering/domain-modeling/SKILL.md",
-      "computedHash": "b78689833404148c769077355e12dbe5ad996a158a1e21e58ddf169e439d9d8c"
+      "computedHash": "7d4453f798d7785c945972abe0871493caf884fa3ee82725cc71e783de6176ea"
     },
     "gh-stack": {
       "source": "github/gh-stack",
@@ -45,7 +45,7 @@
     },
     "handoff": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/productivity/handoff/SKILL.md",
       "computedHash": "f60a2c3688379b7a306b3a7b8dd4120eab39da44c74fa2cb62d6424935f04aa7"
@@ -59,21 +59,21 @@
     },
     "improve-codebase-architecture": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
       "computedHash": "f0820b18426a7d9a6c823a890988ba0ac70bf0fd596d30d7ef07c88558728c23"
     },
     "in-your-own-words": {
       "source": "cursor/plugins",
-      "commit": "005d8f6e8ec057b738adcd08a08b30db0478402d",
+      "commit": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
       "sourceType": "github",
       "skillPath": "harness/pstack/claude-code/skills/in-your-own-words/SKILL.md",
       "computedHash": "eaacabc9a2c7a1a674334a4e01e5900a6f7a764d405237ce17d4e4200cf528be"
     },
     "prototype": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/engineering/prototype/SKILL.md",
       "computedHash": "1e3ba2202a5b77b8aa50bc4447432331d6e42590e53ec0935689662cfed199ca"
@@ -87,7 +87,7 @@
     },
     "teach": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/productivity/teach/SKILL.md",
       "computedHash": "31bb3eed09dd2787e290e933def99fbf7d65044a29119c224af47c01404ab228"
@@ -101,14 +101,14 @@
     },
     "why": {
       "source": "cursor/plugins",
-      "commit": "005d8f6e8ec057b738adcd08a08b30db0478402d",
+      "commit": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
       "sourceType": "github",
       "skillPath": "harness/pstack/claude-code/skills/why/SKILL.md",
       "computedHash": "2050d10fff1d0fa6e19c0a96552a641af6a24f012614955a6dcf3763bf54ac3c"
     },
     "writing-for-agents": {
       "source": "mattpocock/skills",
-      "commit": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
       "sourceType": "github",
       "skillPath": "skills/productivity/writing-for-agents/SKILL.md",
       "computedHash": "e79a2476b2417b228922453478d9505a6b9af19f3a412e560728ce62ed3555ca"
