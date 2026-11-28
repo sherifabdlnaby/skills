@@ -10,6 +10,8 @@ from urllib.parse import quote
 
 import tiktoken
 
+import layout
+
 DEFAULT_ROOT = Path(__file__).resolve().parents[1]
 DIFF_MARKER = "<!-- token-estimates:diff -->"
 ENCODING_NAME = "o200k_base"
@@ -78,8 +80,7 @@ def token_count(path: Path, encoding: tiktoken.Encoding) -> int:
 def collect_estimates(root: Path) -> tuple[SkillEstimate, ...]:
     encoding = tiktoken.get_encoding(ENCODING_NAME)
     skills_dir = root / "skills"
-    vendor_dir = skills_dir / "vendor"
-    skill_directories = {path.parent for path in skills_dir.rglob("SKILL.md")}
+    skill_directories = set(layout.skills(root))
     estimates: list[SkillEstimate] = []
 
     for directory in sorted(skill_directories):
@@ -102,7 +103,7 @@ def collect_estimates(root: Path) -> tuple[SkillEstimate, ...]:
             SkillEstimate(
                 directory,
                 directory.relative_to(skills_dir).as_posix(),
-                directory.is_relative_to(vendor_dir),
+                layout.is_vendored(root, directory),
                 tuple(files),
             )
         )

@@ -1,107 +1,75 @@
 # AGENTS.md
 
-## Toolchain (mise)
+Agent skills written by hand (`skills/`), other people's skills (`skills/vendor/`), hooks (`hooks/`), and the plugin manifests that ship them. [**mise**](https://mise.jdx.dev) pins the tools,
+exposes the tasks, and wires the git hooks; `mise.toml` is the source of truth.
 
-This project uses [**mise**](https://mise.jdx.dev) to pin tools, expose tasks, and wire git hooks. `mise.toml` is the source of truth. Don't install tools by hand or add ad-hoc scripts; add a mise
-tool or task instead.
+## Every change
 
-**Setup** (once, and per new worktree): `mise trust && mise run setup`.
+- **Set up** once, and again in each new worktree: `mise trust && mise run setup`.
+- **Work through mise.** `mise tasks` lists every task, `mise run <task> --help` its flags. A missing tool or script becomes a mise tool or task, so local runs, hooks, and CI stay in sync.
+- **Finish** with `mise run check --fix`, `mise run version:check --fix`, then `mise run check`. The first formats and regenerates the token tables, the second bumps the plugin versions
+  the change needs. A failure names its fix. `mise run test` runs the tests.
+- **Hooks** ([hk](https://hk.jdx.dev)): a commit runs the commit gates on staged files, a push runs the push gates and the tests, CI runs all of them. Fix a failing step;
+  `git commit --no-verify` is for a WIP commit. The hooks live in git config (`hook.<name>.command`), so an empty `.git/hooks/` is normal.
+- **Machine-owned files** change through their command, also when they conflict in a rebase:
 
-**Run via mise.** Run `mise run check` before you call work done. A few examples, not the full list:
+  | Files                                                                             | Command                                                       |
+  | --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+  | `skills/README.md`, `skills/vendor/README.md` (the only homes of token estimates) | `mise run tokens --fix`                                       |
+  | `skills/vendor/`, `skills-lock.json`                                              | the `skills:*` tasks, see [Vendored skills](#vendored-skills) |
+  | `mise.lock`                                                                       | `mise lock`, after any `[tools]` change                       |
 
-```sh
-mise run check          # all linters/formatters/validators (alias: lint); add --fix to auto-fix
-mise run test           # the hook tests
-mise tasks              # discover every task
-mise run <task> --help  # a task's flags
-```
+## Skills of ours
 
-Prefer `mise run <task>` over calling the tool directly, so local, hooks, and CI stay in sync.
+A skill is a folder with a `SKILL.md` that the `skills` list of a plugin manifest ships; one under a `vendor/` folder is not ours. Add a new skills folder in the manifests only:
+`mise run skills:check` and `mise run tokens` follow them, and the check names what is missing when you add, remove, or rename a skill.
 
-## Git hooks (hk)
-
-Commits run [hk](https://hk.jdx.dev) commit gates on staged files, and a push runs the push gates; CI runs both as `mise run check`. Fix failures with `mise run check --fix`. Don't disable steps to
-push a commit through; `git commit --no-verify` skips hooks for a WIP commit. `mise run setup` installs the hooks into git *config* (`hook.<name>.command`) — `.git/hooks/` stays empty, that doesn't
-mean they're absent.
-
-## Extending the setup
-
-Changing tools, tasks, env, or hooks? Edit the config, don't bolt on scripts, then run `mise run check`. Where things live:
-
-- **`mise.toml`**: the source of truth for `[tools]`, `[tasks]`, `[env]`/`[vars]`, `[settings]`, and `[hooks]`.
-- **`mise.lock`**: resolved versions plus checksums. Commit it; regenerate with `mise lock` after a `[tools]` change (the commit hook fails until you do).
-- **`.config/`**: everything that would otherwise clutter the root — `hk.pkl` plus each linter's config (`typos.toml`, `lychee.toml`, `rumdl.toml`, `yamllint.yml`, `betterleaks.toml`). Tools that
-  can't find a config there are pointed at it from `.config/hk.pkl`.
-- **`.config/hk.pkl`**: the pre-commit and `check` pipeline (linters and formatters, in Pkl). Add or edit a lint step here.
-- **`.config/mise/`**: project-local mise state (the setup stamp is gitignored). File tasks can live in `.config/mise/tasks/`.
+- **Stand alone.** Users install one skill at a time: write each as if no other skill and no hook is present. A reference to another skill or a hook is an optional extra. Raise a hard
+  dependency with the user.
+- **`README.md` beside each `SKILL.md`**, for humans who decide whether and how to use the skill: the problem, the outcome, the operating shape, the tradeoffs. Write it from the skill,
+  without its prompt text and without token counts. It links to `SKILL.md` (the canonical agent instructions) and up to the nearest folder above it that holds a `README.md`.
+- **The root `README.md`** lists each skill by hand, variants on the same line.
+- **Versions line.** A skill that teaches third-party tools (e.g. mise-fy) says in `SKILL.md` which release of each tool it was checked against, and when. Update the line only when a
+  change comes from reading newer release notes.
 
 ## Vendored skills
 
-`skills/vendor/` holds other people's skills; `skills-lock.json` says which. Both are machine-owned. Adding names a repo outside this one, so it stays a plain CLI call followed by a sync:
+| Intent                  | Command                                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| see what a repo carries | `npx skills add <owner>/<repo> -l`                                                              |
+| add                     | `npx skills add <owner>/<repo> -s <skill> -y` (one `-s` per skill), then `mise run skills:sync` |
+| update one, or all      | `mise run skills:update [skill…]`                                                               |
+| remove                  | `mise run skills:remove <skill>…`                                                               |
+| rebuild from the lock   | `mise run skills:sync`                                                                          |
 
-```sh
-npx skills add <owner>/<repo> -l              # what does it carry?
-npx skills add <owner>/<repo> -s <skill> -y   # one -s per skill; it does not split on commas
-mise run skills:sync
-```
+- **Remove through the task only.** A bare `npx skills remove` also deletes a skill of ours that has the same name.
+- **A sync replaces `skills/vendor/` wholesale**, so a hand edit does not survive. A skill you want to own moves to `skills/` as ours.
+- **Every sync is an upgrade.** The lock names a source, not a version, so a sync fetches upstream's default branch: read `git diff skills/vendor` before you commit.
+- Linters skip `**/vendor/**`. Vendored skills get no README from us; `skills/vendor/README.md` is a generated index.
 
-The rest are tasks, and each re-syncs itself:
+## Plugins and releases
 
-| Intent                | Command                           |
-| --------------------- | --------------------------------- |
-| update one, or all    | `mise run skills:update [skill…]` |
-| remove                | `mise run skills:remove <skill>…` |
-| rebuild from the lock | `mise run skills:sync`            |
+| Plugin          | Root      | Ships                                        | Manifests                                                                |
+| --------------- | --------- | -------------------------------------------- | ------------------------------------------------------------------------ |
+| `skills`        | `./`      | every skill, vendored included, and `hooks/` | `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`               |
+| `ai-disclosure` | `skills/` | `skills/ai-disclosure/` only                 | `skills/.claude-plugin/plugin.json`, `skills/.cursor-plugin/plugin.json` |
 
-Afterwards bump both manifest versions, since the plugin's content moved.
+- **A change to what a plugin ships needs both of its manifests bumped to the same version.** `skills/ai-disclosure/` ships in both plugins, so a change there bumps all four files.
+  `mise run version:check --fix` writes the bumps (`--bump minor` or `major` for more than a patch); run it again after a rebase onto a `main` that took the same number. The push gate
+  and CI fail without the bump.
+- **A release cuts itself.** Merging a version bump to `main` tags and publishes; there is no release step to run.
+- **Marketplaces** (`.claude-plugin/`, `.cursor-plugin/`, Codex's `.agents/plugins/`) list every plugin. A plugin carries only what sits inside its own folder, and Cursor needs a plugin's
+  `skills` as a list.
 
-The sync replaces `skills/vendor/` wholesale, which is why editing the lock or the directory by hand does not survive one. A skill you want to own belongs in `skills/` as yours.
+## Tooling
 
-Run the removal through the task, never as a bare `npx skills remove`. Unpinned, the CLI deletes the named skill from every agent layout it knows, and one of those layouts puts project skills in
-`skills/` — the directory our own skills live in. The task pins the agent so only `.agents/skills` is in reach; a bare call silently deletes `skills/<name>` when a vendored name matches one of ours.
+Edit the config, then run `mise run check`.
 
-The lock names a source, not a version: no entry carries a ref, and `computedHash` is recorded but never checked. Every sync therefore fetches the upstream default branch, so treat one as an
-upgrade and read `git diff skills/vendor` before committing it.
+| What                                                    | Where                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| tools, tasks, env, settings, hooks                      | `mise.toml`; file tasks in `.config/mise/tasks/`                                 |
+| lint and format steps (commit, push, `check` pipelines) | `.config/hk.pkl`                                                                 |
+| a linter's own config                                   | `.config/`, wired from `.config/hk.pkl` when the tool does not find it there     |
 
-Linters skip the directory (`**/vendor/**` in `.config/hk.pkl`), which is what lets upstream formatting survive a sync. The CLI installs into agent dirs and takes no flag to aim elsewhere, so the
-sync moves its output out of `.agents/skills/` and `.claude/skills/` and deletes both; they stay gitignored because in the tree they load every vendored skill a second time, as project skills.
-
-## Skills stand alone
-
-Users install each skill on its own, not as a plugin. Write every skill as if no other skill and no hook is present. A reference to another skill or a hook is an optional extra, never a step the
-skill needs to finish its job. Raise to the user when hard dependency make sense.
-
-## Skill freshness
-
-A skill that teaches third-party tools (e.g. mise-fy) says in its `SKILL.md` which release of each tool it was checked against, and when, in a **Versions** line the agent reads. Update that line only
-when a change comes from reading newer release notes; other edits leave it alone.
-
-## Skill READMEs
-
-Every skill of ours has a `README.md` beside it, for humans deciding whether and how to use it. Write from the skill and its references, but explain the problem, outcome, operating shape, and
-important tradeoffs instead of copying prompt text or addressing an executing agent. Include a direct link to `SKILL.md`, which remains the canonical agent instructions, and a link up to the `skills/`
-folder. A skill's README carries no token counts; the root `README.md` lists each skill by hand, with its variants on the same line.
-
-Vendored skills get none of that: we don't describe work we didn't write. `skills/vendor/README.md` is generated whole — an index of what is vendored, where it came from, and what it costs — and it is
-the only README under `skills/vendor/` that is ours. Token estimates live only in two generated files, `skills/README.md` and `skills/vendor/README.md`; update them only with `mise run tokens --fix`.
-`mise run tokens:diff` prints what a branch does to every skill's size; a workflow runs the same task on each PR and keeps the answer as one sticky comment.
-
-## CI not visible in the tree
-
-Beyond `.github/workflows/`: CodeQL default setup, Dependabot alerts + security updates, secret
-scanning with push protection, and a `main` ruleset requiring the `check` job are configured in
-repo settings. Don't scaffold replacements for them.
-
-## Plugins
-
-The marketplaces (`.claude-plugin/`, `.cursor-plugin/`, Codex's `.agents/plugins/`) list every plugin.
-The repo root is the `skills` plugin. `skills/` is also the `ai-disclosure` plugin: its manifests pick
-`./ai-disclosure` only. A plugin carries only what sits inside its own folder (Codex and Cursor load
-nothing outside it), and Cursor needs a plugin's `skills` as a list.
-
-## Releases
-
-Each plugin versions on its own. Shipping a change to what a plugin's manifest points at needs both
-of its manifest versions bumped to the same value (`.claude-plugin/plugin.json`,
-`.cursor-plugin/plugin.json`) — `mise run version:check` enforces this pre-push and in CI. A release cuts itself: merging a version bump to `main` tags and
-publishes automatically; there's no separate release step to run by hand.
+Configured in the repo settings, outside the tree, so scaffold no replacement: CodeQL default setup, Dependabot alerts and security updates, secret scanning with push protection, and a
+`main` ruleset that requires the `check` job.

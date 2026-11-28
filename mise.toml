@@ -78,46 +78,9 @@ description = "Cache tokenizer data used by token estimates"
 hide = true
 run = 'uv run --locked python -c "import tiktoken; tiktoken.get_encoding(\"o200k_base\")"'
 
-[tasks."version:check"]
-# Guard against a stale marketplace cache: Claude/Cursor key an installed plugin on the `version`
-# string in its manifests, so shipped changes with an unchanged version never re-vendor. A pushGates
-# step in .config/hk.pkl routes here (pre-push + the `check` hook CI runs); also callable standalone.
-description = "Fail if a plugin's shipped content changed vs the base without a manifest version bump"
-usage = 'flag "--base <ref>" help="ref to compare against (default: $BASE_REF or origin/main)"'
-run = '''
-set -eu
-base="${usage_base:-${BASE_REF:-origin/main}}"            # default matches default_branch in .config/hk.pkl
-git rev-parse --verify --quiet "$base" >/dev/null || { echo "⚠️  base ref '$base' not found, skipping the bump check"; base=""; }
-
-# Every plugin the marketplace lists, by root. Its content is what its manifest ships: the skill
-# paths and the hook config's folder. Manifest folders are left out; changing one is the bump.
-roots="$(jq -r '.plugins[].source | ltrimstr("./") | rtrimstr("/") | if . == "" then "." else . end' .claude-plugin/marketplace.json)"
-excludes=""
-for r in $roots; do excludes="$excludes :(exclude)$r/.claude-plugin :(exclude)$r/.cursor-plugin"; done
-
-fail=0
-for r in $roots; do
-  m="$r/.claude-plugin/plugin.json"
-  v="$(jq -r .version "$m")"
-  for other in "$r/.cursor-plugin/plugin.json"; do   # version-parity: a split version is a broken contract
-    [ "$(jq -r .version "$other")" = "$v" ] || { echo "❌ $r: $other is $(jq -r .version "$other"), $m is $v (every manifest must match)" >&2; fail=1; continue 2; }
-  done
-  [ -n "$base" ] || continue
-
-  content="$(jq -r --arg r "$r" '([.skills] | flatten) + [.hooks | select(type == "string") | sub("/[^/]*$"; "")]
-    | .[] | $r + "/" + ltrimstr("./") | sub("^\\./"; "")' "$m")"
-  if git diff --quiet "$base"...HEAD -- $content $excludes; then
-    echo "✅ $r: no shipped content changed vs $base"; continue
-  fi
-  was="$(git show "$base:${m#./}" 2>/dev/null | jq -r .version 2>/dev/null || echo "")"  # empty ⇒ new manifest, counts as bumped
-  if [ -n "$was" ] && [ "$v" = "$was" ]; then
-    echo "❌ $r: still $v but its content changed vs $base, bump the version" >&2; fail=1
-  else
-    echo "✅ $r: manifests bumped past $base"
-  fi
-done
-exit "$fail"
-'''
+[tasks."skills:check"]
+description = "Check our skills' layout: README beside each SKILL.md with its links, root README lists it, name matches folder, no orphan references, marketplaces agree"
+run = "python .config/skill_structure.py"
 
 [tasks."skills:update"]
 description = "Refetch vendored skills from upstream"
@@ -166,11 +129,14 @@ run = [
 ]
 
 [tasks.test]
-description = "Run the hook tests"
+description = "Run the tests: the hooks, and the repo's own tooling in .config/"
 wait_for = [
   "lint",
 ] # in `mise run lint test`, test after lint; alone, test runs only the tests
-run = ["python -m unittest discover -s hooks/tests"]
+run = [
+  "python -m unittest discover -s hooks/tests",
+  "python -m unittest discover -s .config/tests",
+]
 tools.python = "3.9" # the oldest python the hooks support
 
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale

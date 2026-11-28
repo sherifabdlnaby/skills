@@ -5,7 +5,7 @@ amends "package://github.com/jdx/hk/releases/download/v2.8.1/hk@2.8.1#/Config.pk
 import "package://github.com/jdx/hk/releases/download/v2.8.1/hk@2.8.1#/Builtins.pkl"
 
 // Anchor for branch-scoped checks (--pr and the pushGates' base). Keep in sync with
-// the base default in mise.toml's version:check task.
+// the base default in .config/mise/tasks/version/check.
 default_branch = "origin/main"
 
 // Repo-wide ignores — committed paths only (.gitignore is already honored). Per-step `exclude` stacks on top.
@@ -93,6 +93,12 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["check-executables-have-shebangs"] = Builtins.check_executables_have_shebangs
   ["check-symlinks"] = Builtins.check_symlinks // catch broken symlinks
 
+  // Skill layout invariants from AGENTS.md; logic lives in the mise task. Unglobbed: hk passes no
+  // deleted files, so a glob would skip the commit that deletes a README, the case this must catch.
+  ["skill-structure"] {
+    check = "mise run skills:check"
+  }
+
   // Generated reports read the final output of every formatter above.
   ["token-estimates"] {
     exclusive = true
@@ -108,6 +114,8 @@ local pushGates: Mapping<String, Step> = new Mapping<String, Step> {
   // Stale-marketplace guard: shipped plugin content must ride a manifest version bump.
   // Deliberately unglobbed: commonIgnores would subtract skills/vendor from any file list, and
   // vendored skills ship like the rest. The task diffs vs default_branch and exits early anyway.
+  // No `fix` on purpose: CI's auto-fix job runs `check --fix`, and a version bump decides a release.
+  // The check's failure message names the command that writes the bump.
   ["version-bump"] {
     check = "mise run version:check"
   }
@@ -118,7 +126,7 @@ exclude = commonIgnores
 // Test gates: tests are not lint, so they stay out of `check`; pre-push and CI run them.
 local testGates: Mapping<String, Step> = new Mapping<String, Step> {
   ["test"] {
-    glob = List("hooks/**", "skills/ai-disclosure/**")
+    glob = List("hooks/**", "skills/ai-disclosure/**", ".config/**")
     check = "mise run test"
   }
 }

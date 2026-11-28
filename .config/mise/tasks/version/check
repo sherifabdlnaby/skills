@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+#MISE description="Fail if a plugin's shipped content changed vs the base without a manifest version bump; --fix bumps it"
+#USAGE flag "--base <ref>" help="ref to compare against (default: $BASE_REF or origin/main)"
+#USAGE flag "--fix" help="bump the manifests of every plugin whose content changed, counting uncommitted and untracked files"
+#USAGE flag "--bump <part>" default="patch" help="version part --fix raises above the base version" {
+#USAGE   choices "patch" "minor" "major"
+#USAGE }
+
+# Guard against a stale marketplace cache: Claude/Cursor key an installed plugin on the `version`
+# string in its manifests, so shipped changes with an unchanged version never re-vendor. A pushGates
+# step in .config/hk.pkl routes here (pre-push + the `check` hook CI runs); also callable standalone.
+set -eu
+base="${usage_base:-${BASE_REF:-origin/main}}" # default matches default_branch in .config/hk.pkl
+fix="${usage_fix:-}"
+part="${usage_bump:-patch}"
+git rev-parse --verify --quiet "$base" >/dev/null || {
+  echo "⚠️  base ref '$base' not found, skipping the bump check"
+  base=""
+}
+
+bump() { awk -v v="$1" -v p="$2" 'BEGIN { split(v, x, ".")
+  if (p == "major") print x[1] + 1 ".0.0"; else if (p == "minor") print x[1] "." x[2] + 1 ".0"; else print x[1] "." x[2] "." x[3] + 1 }'; }
+# Prints the higher of two x.y.z versions.
+max() { awk -v a="$1" -v b="$2" 'BEGIN { split(a, x, "."); split(b, y, ".")
+  for (i = 1; i <= 3; i++) if (x[i] + 0 != y[i] + 0) { print (x[i] + 0 > y[i] + 0 ? a : b); exit } print a }'; }
+# Rewrites only the version string, so the manifest keeps its formatting.
+set_version() {
+  sed -E "s/(\"version\"[[:space:]]*:[[:space:]]*\")[^\"]*\"/\1$2\"/" "$1" >"$1.tmp"
+  mv "$1.tmp" "$1"
+}
+
+# Every plugin the marketplace lists, by root. Its content is what its manifest ships: the skill
+# paths and the hook config's folder. Manifest folders are left out; changing one is the bump.
+roots="$(jq -r '.plugins[].source | ltrimstr("./") | rtrimstr("/") | if . == "" then "." else . end' .claude-plugin/marketplace.json)"
+excludes=""
+for r in $roots; do excludes="$excludes :(exclude)$r/.claude-plugin :(exclude)$r/.cursor-plugin"; done
+[ -z "$base" ] || since="$(git merge-base "$base" HEAD)"
+
+fail=0
+for r in $roots; do
+  dir=""
+  [ "$r" = . ] || dir="$r/"
+  m="${dir}.claude-plugin/plugin.json"
+  c="${dir}.cursor-plugin/plugin.json"
+  label="$(jq -r .name "$m") ($m, $c)"
+  v="$(jq -r .version "$m")"
+  vc="$(jq -r .version "$c")"
+  [ -n "$base" ] || {
+    [ "$v" = "$vc" ] || { echo "❌ $label: versions differ ($v vs $vc), every manifest must match" >&2; fail=1; }
+    continue
+  }
+
+  content="$(jq -r --arg r "$r" '([.skills] | flatten) + [.hooks | select(type == "string") | sub("/[^/]*$"; "")]
+    | .[] | $r + "/" + ltrimstr("./") | sub("^\\./"; "")' "$m")"
+  if [ -n "$fix" ]; then
+    # shellcheck disable=SC2086 # word-split pathspecs on purpose
+    git diff --quiet "$since" -- $content $excludes && [ -z "$(git ls-files --others --exclude-standard -- $content $excludes)" ]
+  else
+    # shellcheck disable=SC2086
+    git diff --quiet "$base"...HEAD -- $content $excludes
+  fi && changed="" || changed=1
+  was="$(git show "$base:$m" 2>/dev/null | jq -r .version 2>/dev/null || echo "")" # empty ⇒ new manifest, counts as bumped
+
+  if [ -n "$fix" ] && [ -n "$changed" ] && [ -n "$was" ]; then
+    new="$(max "$(max "$v" "$vc")" "$(bump "$was" "$part")")"
+    if [ "$new" != "$v" ] || [ "$new" != "$vc" ]; then
+      set_version "$m" "$new"
+      set_version "$c" "$new"
+      echo "⬆️  $label: $v → $new"
+    else
+      echo "✅ $label: already at $new"
+    fi
+    continue
+  fi
+
+  if [ "$v" != "$vc" ]; then
+    echo "❌ $label: versions differ ($v vs $vc), every manifest must match. Fix: mise run version:check --fix" >&2
+    fail=1
+  elif [ -z "$changed" ]; then
+    echo "✅ $label: no shipped content changed vs $base"
+  elif [ -n "$was" ] && [ "$v" = "$was" ]; then
+    echo "❌ $label: still $v, but its content changed vs $base. Fix: mise run version:check --fix" >&2
+    fail=1
+  else
+    echo "✅ $label: manifests bumped past $base"
+  fi
+done
+exit "$fail"

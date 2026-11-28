@@ -134,8 +134,9 @@ Claude/Cursor marketplaces install straight from git and key each plugin on the 
 its `.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` — there's no published artifact.
 Each plugin versions on its own: `skills` tags `vX.Y.Z`, any other `<name>-vX.Y.Z`. Cutting a release:
 
-1. Bump both of the plugin's manifests to the same `version` in your PR. `mise run version:check`
-   (also an `hk` pre-push gate) fails if a plugin's shipped content changed without the bump.
+1. Bump both of the plugin's manifests to the same `version` in your PR: `mise run version:check --fix`
+   writes the bump. `mise run version:check` (also an `hk` pre-push gate) fails if a plugin's shipped
+   content changed without it.
 2. Merge to `main`. CI notices the version moved past the plugin's latest tag and cuts the tag plus
    a GitHub release, with notes generated from merged PRs and grouped by label: `skill`, `hooks`,
    `fix`, `docs`, `ci`, `deps`.
