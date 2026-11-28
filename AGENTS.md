@@ -10,7 +10,7 @@ exposes the tasks, and wires the git hooks; `mise.toml` is the source of truth.
 - **Finish** with `mise run check --fix`, `mise run version:check --fix`, then `mise run check`. The first formats and regenerates the token tables, the second bumps the plugin versions
   the change needs. A failure names its fix. `mise run test` runs the tests.
 - **Hooks** ([hk](https://hk.jdx.dev)): a commit runs the commit gates on staged files, a push runs the push gates and the tests, CI runs all of them. Fix a failing step;
-  `git commit --no-verify` is for a WIP commit. The hooks live in git config (`hook.<name>.command`), so an empty `.git/hooks/` is normal.
+  `git commit --no-verify` is for a WIP commit the user asked for. The hooks live in git config (`hook.<name>.command`), so an empty `.git/hooks/` is normal.
 - **Machine-owned files** change through their command, also when they conflict in a rebase:
 
   | Files                                                                             | Command                                                       |

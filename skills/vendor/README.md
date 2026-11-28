@@ -5,8 +5,8 @@ Skills other people wrote, copied in by `mise run skills:sync` from the sources 
 skill's own `SKILL.md` is its documentation.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-23%2C370%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 23,370 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-41%2C403%20tokens-2ea44f?style=flat-square" alt="All Markdown: 41,403 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-21%2C373%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 21,373 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-37%2C548%20tokens-2ea44f?style=flat-square" alt="All Markdown: 37,548 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -27,7 +27,6 @@ than read, so they are left out.
 | [`in-your-own-words`](in-your-own-words/)                         | [cursor/plugins](https://github.com/cursor/plugins)       |     `72` |     `72` |
 | [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills) |    `642` |  `3,546` |
 | [`show-me`](show-me/)                                             | [humanlayer/skills](https://github.com/humanlayer/skills) |    `783` |    `783` |
-| [`teach`](teach/)                                                 | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,997` |  `3,855` |
 | [`unslop`](unslop/)                                               | [cursor/plugins](https://github.com/cursor/plugins)       |    `588` |    `588` |
 | [`why`](why/)                                                     | [cursor/plugins](https://github.com/cursor/plugins)       |    `124` |    `124` |
 | [`writing-for-agents`](writing-for-agents/)                       | [mattpocock/skills](https://github.com/mattpocock/skills) |  `2,349` |  `2,916` |
@@ -60,11 +59,6 @@ than read, so they are left out.
 | `prototype`                     | [`SKILL.md`](prototype/SKILL.md)                                          |   `642` |
 | `prototype`                     | [`UI.md`](prototype/UI.md)                                                | `1,575` |
 | `show-me`                       | [`SKILL.md`](show-me/SKILL.md)                                            |   `783` |
-| `teach`                         | [`GLOSSARY-FORMAT.md`](teach/GLOSSARY-FORMAT.md)                          |   `484` |
-| `teach`                         | [`LEARNING-RECORD-FORMAT.md`](teach/LEARNING-RECORD-FORMAT.md)            |   `588` |
-| `teach`                         | [`MISSION-FORMAT.md`](teach/MISSION-FORMAT.md)                            |   `349` |
-| `teach`                         | [`RESOURCES-FORMAT.md`](teach/RESOURCES-FORMAT.md)                        |   `437` |
-| `teach`                         | [`SKILL.md`](teach/SKILL.md)                                              | `1,997` |
 | `unslop`                        | [`SKILL.md`](unslop/SKILL.md)                                             |   `588` |
 | `why`                           | [`SKILL.md`](why/SKILL.md)                                                |   `124` |
 | `writing-for-agents`            | [`SKILL-MECHANICS.md`](writing-for-agents/SKILL-MECHANICS.md)             |   `567` |

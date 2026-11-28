@@ -161,6 +161,7 @@ A manual-only skill (`disable-model-invocation: true`) costs nothing, the user i
 (why: some harnesses ignore the invocation-off flag, and a trigger-rich description auto-fires the skill anyway.)
 A skill that another skill loads stays model-invocable, with the same short neutral description: Claude Code's Skill tool refuses a manual-only skill even when another skill names it.
 Skills reach each other by name, never by a file path into another skill's folder; that path breaks when the skill is installed alone.
+Where the **writing-for-agents** skill says otherwise (trigger branches for every model-invoked skill, shared reference in a plain file outside the skills), these two rules win.
 
 For model-invoked:
 

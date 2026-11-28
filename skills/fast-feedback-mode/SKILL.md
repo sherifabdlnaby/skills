@@ -28,7 +28,7 @@ Unless you have a question, want to explain a gotcha, or took a tricky decision.
 State that the mode is on. Tell the user to say "finalize" or similar word to end a turn, then wait for the first request from them.
 
 - Change only the code to satisfy the user's requests and only their request.
-- Skip writing tests, running tests, linters, formatters, and other checks, or update docs.
+- Skip writing tests, running tests, linters, formatters, and other checks, or update docs. The **coding** skill's diff clean before handoff also waits for finalize.
 - After each change: say what changed minimally, then wait for another request, finalize, or turning off the mode.
 - If user switched to a completely unrelated different feature, consider reminding them to finalize the previous work.
 - Do not commit changes unless you finalize.

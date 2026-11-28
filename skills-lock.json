@@ -85,13 +85,6 @@
       "skillPath": "plugins/show-me/skills/show-me/SKILL.md",
       "computedHash": "0904362ca0f13fc69d88822bb1e7a72f27fd80b992b57ef89ef8a12c3fecce35"
     },
-    "teach": {
-      "source": "mattpocock/skills",
-      "commit": "bbadaa631c37af594e5a05c9cefacd9956136b18",
-      "sourceType": "github",
-      "skillPath": "skills/productivity/teach/SKILL.md",
-      "computedHash": "31bb3eed09dd2787e290e933def99fbf7d65044a29119c224af47c01404ab228"
-    },
     "unslop": {
       "source": "cursor/plugins",
       "commit": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
