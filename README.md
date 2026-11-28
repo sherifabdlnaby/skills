@@ -26,7 +26,7 @@ Each line is a skill, then its variants, then what it does.
    there to answer questions (un-grill-me lol). Careful, max non-destructive, or "ask all ur questions now, I am leaving soon".
 6. [grilling](skills/grilling/) | [grill-me](skills/grill-me/) | [Matt Pocock](https://github.com/mattpocock/skills)'s relentless interview, forked to ask through the `AskUserQuestion` tool
    instead of markdown. `grill-me` starts it by hand.
-7. [ask-me](skills/ask-me/) | How to ask me questions: in rounds, through the harness's question tool, with the context inside the call.
+7. [ask-me](skills/ask-me/) | How to ask me questions: in rounds, through the harness's question tool, with explanations where I can see them.
 8. [what-happened](skills/what-happened/) | Catch me up on what changed since my last message, and what waits on me.
 9. [wait-what](skills/wait-what/) | That last message did not land: say it again, plainer.
 10. [fast-feedback-mode](skills/fast-feedback-mode/) | Act fast and keep me in the zone; tests, lints, and commits wait until I say finalize.

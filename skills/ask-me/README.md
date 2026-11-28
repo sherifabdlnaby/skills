@@ -9,8 +9,9 @@
 The agent asks in rounds: every question it can ask now goes out together, and a question that depends on an open answer waits for the next round. Each question goes through the harness's question
 tool, with a recommended answer first, and you can always answer in your own words. The agent looks up facts itself and asks you only for decisions.
 
-Everything you need to answer sits inside the question call. Newer models sometimes write their reply to your last answer into their thinking instead of the chat, and you then see only a summary of
-it, or nothing. The question text and option descriptions always reach you, so the context and the reaction to your last answer go there.
+Newer models sometimes write text that sits between two tool calls into their thinking instead of the chat, and you then see only a summary of it, or nothing. The question call and the last text of
+a turn always reach you. So short context goes in the question text and option descriptions, and a longer explanation ends the turn, with the question in the next turn. The agent does not pack a
+whole plan into the question. Where the harness has a tool that shows text mid-turn, the agent explains and asks in one turn.
 
 ## Use
 

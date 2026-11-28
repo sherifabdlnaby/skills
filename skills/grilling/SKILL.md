@@ -20,8 +20,8 @@ question cap goes out as back-to-back calls, still one round.
 **Every question stays answerable off-list.** Claude Code and opencode already offer free text beside the options, and Claude Code rejects an explicit "Other", so add nothing there. Cursor accepts
 only the options it is handed, so give it one that invites a custom answer.
 
-**Put everything inside the call.** The user reliably sees only the call. Text you write between tool calls can land in your thinking, which the user sees only as a summary, if at all. So the question
-text carries the context and what the last round changed; the option descriptions carry the tradeoffs. When the context is too long for the call, end your turn on it and ask in the next turn.
+**Write no text between tool calls.** It can come back as thinking, and the user sees a summary or nothing. Short context goes in the call: the question text carries what the last round changed, the
+option descriptions carry the tradeoffs. A long explanation is the turn's last text, and the round goes out in the next turn. The `ask-me` skill, when installed, has the details.
 
 **Without such a tool, ask in the reply itself.** Number the questions and put your recommended answer under each one. This is what a missing tool falls back to, not a style to pick when you have one.
 

@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C697%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,697 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C484%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,484 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C797%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,797 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-124%2C584%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,584 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -15,13 +15,13 @@ than read, so they are left out.
 | ----------------------------------------------------------- | -------: | -------: |
 | [`afk`](afk/)                                               |    `228` |    `228` |
 | [`ai-disclosure`](ai-disclosure/)                           |  `1,141` |  `1,141` |
-| [`ask-me`](ask-me/)                                         |    `336` |    `336` |
+| [`ask-me`](ask-me/)                                         |    `437` |    `437` |
 | [`cicd-fy`](cicd-fy/)                                       |  `1,542` | `15,981` |
 | [`coding`](coding/)                                         |  `2,084` |  `2,084` |
 | [`fast-feedback-mode`](fast-feedback-mode/)                 |    `394` |    `394` |
 | [`git`](git/)                                               |  `1,846` | `13,456` |
 | [`grill-me`](grill-me/)                                     |     `61` |     `61` |
-| [`grilling`](grilling/)                                     |    `664` |    `664` |
+| [`grilling`](grilling/)                                     |    `663` |    `663` |
 | [`mise-fy`](mise-fy/)                                       |  `2,525` | `39,790` |
 | [`review`](review/)                                         |    `325` |    `325` |
 | [`skill-fy`](skill-fy/)                                     |  `2,901` |  `6,389` |
@@ -41,7 +41,7 @@ than read, so they are left out.
 | ---------------------------- | -------------------------------------------------------------------------------------------------- | ------: |
 | `afk`                        | [`SKILL.md`](afk/SKILL.md)                                                                         |   `228` |
 | `ai-disclosure`              | [`SKILL.md`](ai-disclosure/SKILL.md)                                                               | `1,141` |
-| `ask-me`                     | [`SKILL.md`](ask-me/SKILL.md)                                                                      |   `336` |
+| `ask-me`                     | [`SKILL.md`](ask-me/SKILL.md)                                                                      |   `437` |
 | `cicd-fy`                    | [`SKILL.md`](cicd-fy/SKILL.md)                                                                     | `1,542` |
 | `cicd-fy`                    | [`assets/CONTRIBUTING.md`](cicd-fy/assets/CONTRIBUTING.md)                                         |   `454` |
 | `cicd-fy`                    | [`references/artifacts/docker.md`](cicd-fy/references/artifacts/docker.md)                         | `1,118` |
@@ -70,7 +70,7 @@ than read, so they are left out.
 | `git`                        | [`references/watch-flags.md`](git/references/watch-flags.md)                                       |   `666` |
 | `git`                        | [`references/watch.md`](git/references/watch.md)                                                   | `1,847` |
 | `grill-me`                   | [`SKILL.md`](grill-me/SKILL.md)                                                                    |    `61` |
-| `grilling`                   | [`SKILL.md`](grilling/SKILL.md)                                                                    |   `664` |
+| `grilling`                   | [`SKILL.md`](grilling/SKILL.md)                                                                    |   `663` |
 | `mise-fy`                    | [`SKILL.md`](mise-fy/SKILL.md)                                                                     | `2,525` |
 | `mise-fy`                    | [`assets/AGENTS.md`](mise-fy/assets/AGENTS.md)                                                     |   `859` |
 | `mise-fy`                    | [`assets/README.md`](mise-fy/assets/README.md)                                                     | `1,185` |
