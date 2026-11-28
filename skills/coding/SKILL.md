@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: sherifabdlnaby
-  version: "0.4.0"
+  version: "0.6.0"
 ---
 
 # Coding
@@ -14,13 +14,15 @@ metadata:
 
 **Note:** These rules are defaults; deviate only when you can state what following the rule would cost here.
 
-- **Simple and idiomatic**: fit the existing system and take the idiomatic way first. Keep sane system defaults; override one only when the gain is worth the extra code.
+- **Simple and idiomatic**: fit the existing system and take the idiomatic way first. Keep sane system defaults; override one only when the gain is worth the extra code. Before writing a helper,
+  search the shared modules and the files next to the change, and use the one that exists.
 - **Subtract before you add** (extending an existing feature): the smallest diff that solves the problem, where possible. Remove what the change makes dead before you build. No guards,
   validators, or parsers beyond what the spec demands.
 - **Do not overfit** (adding a new system or functionality): design for the problem, not only the cases in this chat.
 - **Speculative edge cases need buy-in**: before adding code for an unlikely race or security case, tell the user the concrete failure, how likely it is, and what the code costs. Widen scope only on
   their go-ahead.
-- **Minimize reader load**: inline wrappers with one caller and layers that only forward. Returns over mutation, locals over fields over globals; derive state instead of syncing it.
+- **Minimize reader load**: inline wrappers with one caller and layers that only forward. Returns over mutation, locals over fields over globals; derive state instead of syncing it. Early returns over
+  nesting.
 - **DRY**: a string, a threshold, a supported-values list has one authoritative home, easy to change/update/extend.
 - **Separation of concerns**: split code where its parts change for different reasons. Add an extension point only when the axis is promised (below).
 - **Duplication over the wrong abstraction governs structure**: tolerate two similar blocks until the shared concept is obvious (rule of three); a helper/component that needs a `mode` flag to serve
@@ -29,6 +31,7 @@ metadata:
 - **Don't name a general structure after its first occupant**: once something is a shared slot or grouping, name it for the axis it opens — not for today's only member. Specificity belongs on the
   leaves.
 - **Tidy/Refactor separate from feature work**: an opportunistic refactor is in its own commit. Each stays reviewable.
+- **Fix the type, don't silence it**: no cast or ignore (`as any`, `# type: ignore`) only to make the checker pass.
 - **Guard at the boundary, trust inside**: validate and parse raw data into domain types where it enters (CLI args, config, network, external APIs); inside, no re-validation and no redundant nil
   checks.
 - **Migrate callers, then delete the old API**: in the same change, when no external user depends on it. No compatibility shim kept "just in case".
@@ -40,19 +43,22 @@ metadata:
 ## Debugging and Verifying
 
 - **Fix the root cause**: the first place the system did something wrong. Ask whether the triggering state is legitimate: if yes, handle it where it broke; if not, a guard there hides the bug, so fix
-  what produced it. Look for other instances of the pattern, list them, and ask before you fix them.
+  what produced it. The fix goes in the layer that owns the behavior, not in the caller that noticed it. Look for other instances of the pattern, list them, and ask before you fix them.
 - **Attack the premise**: when two fixes that share one assumption fail the same check, write the assumption down and test it before a third fix.
 - **Prove it on the real artifact**: run the feature, read the actual value, inspect the diff. "It compiles", a self-report, or cached output is not proof. When a check passes too easily, suspect the
   check.
-- **Clean the diff before handoff**: the handoff is the finalize step: the code is finished (code-ready), and you hand the PR or the change to the user or to review. It is not each
-  commit or push. Run the **no-comments** and **no-docs** skills on the whole diff once, right before it, and say in the handoff that you did. A later small fix (a review round, a
-  rebase) does not run them again; a large new diff does.
+- **Clean the diff before handoff**: the handoff is the finalize step: the code is finished (code-ready), and you hand the PR or the change to the user or to review. It is not each commit or push. Run
+  the **no-comments** and **no-docs** skills on the whole diff once, right before it, then the **review** skill on your own work, and say in the handoff that you did. A later small fix (a review
+  round, a rebase) does not run them again; a large new diff does.
 - **Explain the number**: before you trust a measured number, name what limits it and rule out that it measured errors, cached or skipped work, or noise. Report it with run count and spread.
 
 ## Tests
 
 - **Test behavior, not implementation**: a test fails when the behavior breaks and passes when only the internals change. Drive it through the public interface and derive the expected value from the
   requirement, never from the code under test. A tautological test is a checksum: correct and broken code pass it alike.
+- **Cover the change**: new or changed behavior gets a test. A bug fix gets a regression test you saw fail without the fix.
+- **Deterministic**: no sleeps, wall clock, live network, or test-order dependence. A flaky test is a bug to fix, not to retry.
+- **Lowest layer that shows it, few mocks**: test where the behavior lives. Mock only what you do not own (network, clock, a third-party service).
 
 ## Code Comments
 

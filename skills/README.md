@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-36%2C647%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 36,647 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-119%2C625%20tokens-2ea44f?style=flat-square" alt="All Markdown: 119,625 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-37%2C459%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 37,459 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-119%2C954%20tokens-2ea44f?style=flat-square" alt="All Markdown: 119,954 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -17,20 +17,20 @@ than read, so they are left out.
 | [`ai-disclosure`](ai-disclosure/)                           |  `1,141` |  `1,141` |
 | [`ask-me`](ask-me/)                                         |    `437` |    `437` |
 | [`cicd-fy`](cicd-fy/)                                       |  `1,542` | `15,981` |
-| [`coding`](coding/)                                         |  `2,736` |  `2,736` |
+| [`coding`](coding/)                                         |  `2,928` |  `2,928` |
 | [`fast-feedback-mode`](fast-feedback-mode/)                 |    `410` |    `410` |
-| [`git`](git/)                                               |  `1,858` | `13,469` |
+| [`git`](git/)                                               |  `1,831` | `12,439` |
 | [`grill-me`](grill-me/)                                     |     `61` |     `61` |
 | [`grilling`](grilling/)                                     |    `642` |    `642` |
 | [`mise-fy`](mise-fy/)                                       |  `2,525` | `39,790` |
 | [`no-comments`](no-comments/)                               |    `380` |    `380` |
 | [`no-docs`](no-docs/)                                       |    `258` |    `258` |
-| [`review`](review/)                                         |    `325` |    `325` |
+| [`review`](review/)                                         |    `971` |  `1,491` |
 | [`skill-fy`](skill-fy/)                                     |  `3,002` |  `6,490` |
 | [`variants/afk-careful`](variants/afk-careful/)             |     `97` |     `97` |
 | [`variants/afk-soon`](variants/afk-soon/)                   |    `152` |    `152` |
 | [`variants/afk-yolo`](variants/afk-yolo/)                   |    `110` |    `110` |
-| [`variants/watch-pr`](variants/watch-pr/)                   |    `645` |    `645` |
+| [`variants/watch-pr`](variants/watch-pr/)                   |    `646` |    `646` |
 | [`variants/watch-pr-ci`](variants/watch-pr-ci/)             |    `256` |    `256` |
 | [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `251` |    `251` |
 | [`wait-what`](wait-what/)                                   |    `185` |    `185` |
@@ -58,17 +58,16 @@ than read, so they are left out.
 | `cicd-fy`                    | [`references/publish.md`](cicd-fy/references/publish.md)                                           |   `630` |
 | `cicd-fy`                    | [`references/releases.md`](cicd-fy/references/releases.md)                                         | `1,310` |
 | `cicd-fy`                    | [`references/security.md`](cicd-fy/references/security.md)                                         |   `814` |
-| `coding`                     | [`SKILL.md`](coding/SKILL.md)                                                                      | `2,736` |
+| `coding`                     | [`SKILL.md`](coding/SKILL.md)                                                                      | `2,928` |
 | `fast-feedback-mode`         | [`SKILL.md`](fast-feedback-mode/SKILL.md)                                                          |   `410` |
-| `git`                        | [`SKILL.md`](git/SKILL.md)                                                                         | `1,858` |
+| `git`                        | [`SKILL.md`](git/SKILL.md)                                                                         | `1,831` |
 | `git`                        | [`references/attach.md`](git/references/attach.md)                                                 |   `546` |
 | `git`                        | [`references/branches.md`](git/references/branches.md)                                             | `1,791` |
 | `git`                        | [`references/commits.md`](git/references/commits.md)                                               |   `873` |
 | `git`                        | [`references/pr-body.md`](git/references/pr-body.md)                                               | `1,876` |
 | `git`                        | [`references/pull-requests.md`](git/references/pull-requests.md)                                   | `1,531` |
 | `git`                        | [`references/rebase.md`](git/references/rebase.md)                                                 |   `835` |
-| `git`                        | [`references/review-responses.md`](git/references/review-responses.md)                             | `1,417` |
-| `git`                        | [`references/reviewing.md`](git/references/reviewing.md)                                           |   `229` |
+| `git`                        | [`references/review-responses.md`](git/references/review-responses.md)                             |   `643` |
 | `git`                        | [`references/watch-flags.md`](git/references/watch-flags.md)                                       |   `666` |
 | `git`                        | [`references/watch.md`](git/references/watch.md)                                                   | `1,847` |
 | `grill-me`                   | [`SKILL.md`](grill-me/SKILL.md)                                                                    |    `61` |
@@ -91,7 +90,8 @@ than read, so they are left out.
 | `mise-fy`                    | [`references/tools.md`](mise-fy/references/tools.md)                                               | `4,410` |
 | `no-comments`                | [`SKILL.md`](no-comments/SKILL.md)                                                                 |   `380` |
 | `no-docs`                    | [`SKILL.md`](no-docs/SKILL.md)                                                                     |   `258` |
-| `review`                     | [`SKILL.md`](review/SKILL.md)                                                                      |   `325` |
+| `review`                     | [`SKILL.md`](review/SKILL.md)                                                                      |   `971` |
+| `review`                     | [`references/others-pr.md`](review/references/others-pr.md)                                        |   `520` |
 | `skill-fy`                   | [`SKILL.md`](skill-fy/SKILL.md)                                                                    | `3,002` |
 | `skill-fy`                   | [`assets/SKILL-skeleton.md`](skill-fy/assets/SKILL-skeleton.md)                                    |   `369` |
 | `skill-fy`                   | [`assets/reference-skeleton.md`](skill-fy/assets/reference-skeleton.md)                            |   `433` |
@@ -100,7 +100,7 @@ than read, so they are left out.
 | `variants/afk-careful`       | [`SKILL.md`](variants/afk-careful/SKILL.md)                                                        |    `97` |
 | `variants/afk-soon`          | [`SKILL.md`](variants/afk-soon/SKILL.md)                                                           |   `152` |
 | `variants/afk-yolo`          | [`SKILL.md`](variants/afk-yolo/SKILL.md)                                                           |   `110` |
-| `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `645` |
+| `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `646` |
 | `variants/watch-pr-ci`       | [`SKILL.md`](variants/watch-pr-ci/SKILL.md)                                                        |   `256` |
 | `variants/watch-pr-comments` | [`SKILL.md`](variants/watch-pr-comments/SKILL.md)                                                  |   `251` |
 | `wait-what`                  | [`SKILL.md`](wait-what/SKILL.md)                                                                   |   `185` |

@@ -1,89 +1,25 @@
 # Responding to Review Comments
 
-Answering review comments on your own PR. (Reviewing someone else's PR is [`reviewing.md`](./reviewing.md).)
+The mechanics of a review round on your own PR: fetch, fix, reply, resolve. What each reply says (fix, push back, or escalate) is the **review** skill's call; load it first.
 Apply [SKILL.md](../SKILL.md) voice rules to every reply.
 
-Classify who left each comment first, because it sets how much you defer. Then run the same response flow.
+## A round
 
-## Who Left It
+1. Read every comment of the round before acting on any; one query gets them all, see [Batching](#batching).
+2. Fixes from the same round go together, as one coherent commit per [`commits.md`](./commits.md).
+3. Reply to every comment, including ones you push back on. **Replies go into the thread** (`addPullRequestReviewThreadReply`). `gh pr comment` posts to the PR-level conversation, which leaves
+   the thread looking unanswered.
+4. Resolve a thread only after its fix is pushed and the reply is posted. **Leave threads you pushed back on unresolved**; the reviewer closes those.
+5. After the round is fully addressed, re-request review from each person so it returns to their queue: `gh pr edit <num> --add-reviewer <login>`. Skip bots; they re-review on push.
+6. Every reply carries the AI disclosure, per [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
 
-1. **Automated review (bot / AI tool).** Copilot, CodeQL, Sonar, Snyk, and other review bots.
-   2. Signal: author: GitHub `user.type == Bot`, or name says it's a bot/review tool, or CI comment.
-2. **AI-disclosed (an agent behind a human account).** A comment from a person's account whose body
-   carries AI authorship: a 🤖 emoji, or an explicit line like "on behalf of @...", a harness and model name, "created with
-   assistance from", "generated with/by". Agents post under their operator's GitHub identity (the
-   same disclosure convention this skill adds), so `user.type` reads `User` while the content is
-   machine-written. Detect it by reading the body, not the author.
-3. **Human.** A person, no AI disclosure in the body.
-
-When you can't tell 2 from 3, treat it as human; a real person is accountable for it either way.
-
-## How much to defer
-
-- **Bot / AI tool and AI-disclosed comments:** judge on merit, never on authority. Machine reviews
-  tend to be right on mechanics (null checks, error paths, API misuse) and wrong on context (they
-  flag impossible edge cases, miss why the code is shaped this way). Push back freely when they're
-  wrong; you don't owe a bot deference.
-- **Human:** same merit test, but give more room on design and taste calls, and escalate a real
-  tradeoff to the user rather than overruling it. A terse dismissal of a person reads badly.
-
-## Respond (all three)
-
-1. Read every comment first; assess each on its own before acting. One query gets them all, see [Batching](#batching).
-2. Per comment, decide fix / push back / escalate:
-   - **Fix** when clearly correct: typos, missing error handling on a critical path, wrong API usage.
-   - **Push back**, specific and concise, when the suggestion adds complexity for a near-impossible
-     edge case, solves a problem that doesn't exist here, or is factually wrong.
-   - **Escalate** to the user when the tradeoff is genuinely ambiguous, or it's a design decision you
-     lack context for.
-3. Weigh correctness and proportionality on the merits; agreement is a conclusion, not a courtesy.
-4. Fixes from the same review round go together, as one coherent commit per [`commits.md`](./commits.md).
-5. Reply to every comment, including ones you disagree with, briefly and directly. **Replies go into
-   the thread** (`addPullRequestReviewThreadReply`). `gh pr comment` posts to the PR-level
-   conversation, which leaves the thread looking unanswered.
-6. Resolve a thread only after its fix is pushed and the reply is posted; leave threads you pushed
-   back on unresolved, the reviewer closes those.
-7. After a round is fully addressed (fix pushed, replies posted), re-request review so it lands
-   back in the reviewer's queue: `gh pr edit <num> --add-reviewer <login>`.
-   Skip for bots; they re-review on push.
-8. Every reply carries the AI disclosure, per [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
-
-**A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply
-mutation takes no file. So a picture goes on the PR-level comment or in the body, and the thread reply
-links to it. When to attach at all is [Visuals](./pr-body.md#visuals). How `--attach` uploads is [`attach.md`](./attach.md).
+**A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply mutation takes no file. So a picture goes on the PR-level comment or in the body, and the
+thread reply links to it. When to attach at all is [Visuals](./pr-body.md#visuals). How `--attach` uploads is [`attach.md`](./attach.md).
 
 ## Batching
 
-A review round is one query in and one mutation out. `gh pr view --json` has no `reviewThreads`
-field, so the query is GraphQL; it returns the thread ids, the resolved state and every body at once,
-which is also what the Read step below needs to judge the round before replying to any of it.
-
-```graphql
-query { repository(owner: "<owner>", name: "<repo>") {
-  pullRequest(number: <num>) {
-    reviewThreads(first: 50) { nodes {
-      id isResolved
-      comments(first: 20) { nodes { author { login } body path } } } } } } }
-```
-
-Replies and resolves then ride one request, aliased one per thread:
-
-```graphql
-mutation {
-  r1: addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "<id1>", body: "<reply>"}) { comment { id } }
-  x1: resolveReviewThread(input: {threadId: "<id1>"}) { thread { isResolved } }
-  r2: addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: "<id2>", body: "<reply>"}) { comment { id } }
-}
-```
-
-Pass either through a file, `gh api graphql -F query=@round.graphql`, for the same reason PR bodies
-go in files.
-
-**A batch is not atomic.** Each alias resolves on its own: the response carries `data` with a null
-per failed alias and one `errors` entry per failure, each naming its alias in `path`. Read those,
-not the exit code, to know what landed.
-
-The same shape sets stacked-PR titles, aliasing `updatePullRequest` one per PR.
+A round is one GraphQL query in (`reviewThreads` with ids, `isResolved`, and every comment body) and one aliased mutation out, one alias per reply and per resolve. Pass it through a file
+(`gh api graphql -F query=@round.graphql`). **A batch is not atomic**: read the `errors` entries, each naming its alias in `path`, not the exit code, to know what landed.
 
 ## Where the PR stands
 

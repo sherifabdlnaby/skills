@@ -19,8 +19,8 @@ TRIGGER = re.compile(
 )
 
 MESSAGE = (
-    "Reminder: load the git and coding skills if not loaded. Run coding's diff clean "
-    "(no-comments, no-docs) once at handoff, when the PR is code-ready, not on every commit or push."
+    "Reminder: load the git and coding skills if not loaded. Run coding's handoff pass "
+    "(no-comments, no-docs, review) once at handoff, when the PR is code-ready, not on every commit or push."
 )
 
 

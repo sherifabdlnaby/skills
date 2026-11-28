@@ -5,16 +5,16 @@ license: MIT
 argument-hint: "[PR number or URL] [duration|forever] [humans] (defaults to current branch's PR, 30m)"
 metadata:
   author: sherifabdlnaby
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # watch-pr
 
-Load the **git** skill, then read its watch and review-responses references before acting.
+Load the **git** skill, then read its watch and review-responses references before acting. Load the **review** skill to judge review comments.
 `<git-skill-dir>` below is the base directory the harness printed when the git skill loaded.
 
 Goal: get the PR to green with every review answered, without blocking your turn. Fix CI failures,
-address bot reviews, answer human comments per review-responses, and escalate only what needs my
+address bot reviews, answer human comments per the review skill, and escalate only what needs my
 input while you keep making progress on everything else. Block waiting on me only once CI is green
 and every bot review is addressed.
 
@@ -56,6 +56,5 @@ means digest and stop.
 
 ## Human comments
 
-Human reviews and comments are answered per review-responses: fix what is clearly right, push back
-on what is not, and bring the real trade-offs to me instead of deciding them. With `humans` in
-`$ARGUMENTS`, decide those too and post the reply as Agent Decided.
+Human reviews and comments are judged per the review skill and posted per review-responses; a real design trade-off goes to me. With `humans` in
+`$ARGUMENTS`, decide the trade-offs too and post the reply as Agent Decided.

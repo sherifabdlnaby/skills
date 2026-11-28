@@ -331,7 +331,7 @@ def event_next(d: dict) -> str:
     if d["new_fails"]:
         return "fix the red check(s), push, then run watch again."
     if has_botreview(d):
-        return "address the BOTREVIEW per references/review-responses.md, then run watch again."
+        return "judge the BOTREVIEW with the review skill, post per references/review-responses.md, then run watch again."
     return "react to the lines above, then run watch again."
 
 
