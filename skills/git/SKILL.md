@@ -9,7 +9,7 @@ license: MIT
 argument-hint: "[commit|branch|pr|attach|rebase|review|watch]"
 metadata:
   author: sherifabdlnaby
-  version: "0.5.3"
+  version: "0.6.0"
 ---
 
 # Git
@@ -36,16 +36,14 @@ agent decisions, visuals on the landing, markers and the structure hook, repo te
 **Attach a screenshot or video** -> [`references/attach.md`](references/attach.md)
 `--attach` on create/edit/comment, body-file placement, screenshot framing guidance.
 
-**Responding to review comments** (on your own/target PR) -> [`references/review-responses.md`](references/review-responses.md) Classify the reviewer (automated bot/AI tool, an AI-disclosed agent
-behind a human account, or a human), then fix / push back / escalate; in-thread replies, thread resolution, re-requesting review, batching a round into one GraphQL query and one aliased mutation,
-where a PR stands.
+**Responding to review comments** (on your own/target PR) -> [`references/review-responses.md`](references/review-responses.md) The mechanics of a round: one commit, in-thread replies,
+thread resolution, re-requesting review, batching a round into one GraphQL query and one aliased mutation, where a PR stands. What each reply says is the **review** skill; load it too.
 
 **Rebasing, merging, pulling, resolving conflicts** -> [`references/rebase.md`](references/rebase.md)
 Rebase vs merge, how to pull, who resolves which hunk, conflict guidance, force-with-lease, verification.
 Stacked-PR restack live in [`references/branches.md`](references/branches.md); read it too when the branch is in a stack.
 
-**Reviewing someone else's PR** -> [`references/reviewing.md`](references/reviewing.md)
-Procedure: gather context, check out locally, trace the change, deliver a summary and review guide.
+**Reviewing a PR, or your own work** -> the **review** skill. It loads this one for posting.
 
 **Watch a PR's CI and reviews** -> [`references/watch.md`](references/watch.md) The four verdicts, the three modes (green CI / green and quiet / reviews only), the cheap
 sub-agent that runs the loop, the stale nudge. Uses the harness's PR-watch tool when it has one, else `scripts/pr-watch.py`, never a sleep loop; its flags are in `references/watch-flags.md`.

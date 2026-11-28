@@ -31,7 +31,7 @@ Each line is a skill, then its variants, then what it does.
 9. [wait-what](skills/wait-what/) | Say that again, plainer: I did not follow your last message.
 10. [fast-feedback-mode](skills/fast-feedback-mode/) | Act fast and keep me in the zone; tests, lints, and commits wait until I say finalize.
 11. [no-comments](skills/no-comments/) | [no-docs](skills/no-docs/) | Enforce `coding`'s comment and docs rules on a diff. The rules stay in `coding`.
-12. [review](skills/review/) | WIP: Review patterns.
+12. [review](skills/review/) | Review against `coding`, at `loose`, `balanced`, or `strict`: my own work before handoff, someone else's PR, or the comments on mine.
 13. [skill-fy](skills/skill-fy/) | Author skills the way I like them: progressive disclosure, routers, voice, and descriptions that actually trigger.
 14. [ai-disclosure](skills/ai-disclosure/) | Adds an AI disclosure line to every GitHub post made as you: 🤖 Agent Decided, 📋 Human Planned, or 🤝 Human Guided, with the model and its thinking
     effort.

@@ -1,37 +1,70 @@
 ---
 name: review
-description: Gate the work behind a local reviewer panel.
+description: Review code against the coding skill: your own work before handoff, someone else's PR, or the review comments on your PR.
 license: MIT
-argument-hint: "[number of reviewers, default 2]"
-disable-model-invocation: true
+argument-hint: "[loose|balanced|strict] [PR number or URL]"
 metadata:
   author: sherifabdlnaby
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # review
 
-The task isn't done until it passes a reviewer panel. Run the gate before declaring done.
+The rules live in the **coding** skill. Load it first. This skill sets how strictly to apply them and what to do with each finding. A finding names the coding rule it breaks; it does not restate it.
 
-## Panel
+Commands in this skill are the usual call, cached for speed, not the tool's surface. For anything they do not cover, read `--help` or the current docs, then act.
 
-`$ARGUMENTS` = reviewer count, default 2:
+## Pick the use
 
-- `1` → fork reviewer only.
-- `2` → 1 independent + 1 fork.
-- `N` → N−1 independents with distinct lenses (correctness, functionality, simplification, security, tests) + 1 fork.
+`$ARGUMENTS` may hold a level and a target. The target picks the use; read its reference **before** acting.
 
-Reviewer types:
+**Your own work, before handoff** (no PR given, or a PR by the user with no open review threads) -> [`references/own.md`](references/own.md)
+Scope, who fixes and who reports, a redesign-sized finding, the handoff note.
 
-- **Fork** — an agent forked from this session, carrying the full conversation context. Always on the session model.
-- **Independent** — fresh context: give it only the task description and the branch diff vs merge-base.
+**Someone else's PR** -> [`references/others-pr.md`](references/others-pr.md)
+One wide read, checkout, trace, run when cheap, CI, proof of the change, the verdict-first report, Conventional Comments, posting one review.
 
-Cross-model: If you are Claude, and have access to Open AI Model (like in Cursor), then prefer cross-model reviewers as long as they're not a weaker model.
-For example, Opus 4.8 <-> GPT 5.5
+**Review comments on the user's PR** (open threads) -> [`references/responses.md`](references/responses.md)
+Judge each comment at the level: fix, push back with the cost, or escalate; then post through the **git** skill.
 
-## Gate
+A target that fits none: ask. Unattended, review your own work.
 
-1. Run the panel in parallel.
-2. Triage findings: fix the real ones; reject with a stated reason (you have context reviewers lack), or escalate to user.
-3. One re-review round, of the fixes only.
-4. Gate opens. Escalate, contested or rejected findings go in the final summary.
+## Every review
+
+1. **Comments and docs.** Run the **no-comments** and **no-docs** skills on the scope, unless they already ran on it in this session. Docs stay only where they are load-bearing.
+2. **Big picture, then lines.** First the approach, the scope, the structure, and the fit with the system. Then each changed line.
+3. **Look past the diff.** For each deleted line, name what it guaranteed and find where the new code still does. For each changed signature, return shape, or precondition, read its callers.
+4. **Verify before you raise.** Each finding gets a concrete failure: the input, state, or next change that goes wrong. Confirm it in the code. Drop it only with proof: a quoted line, a guard, or why
+   it cannot happen. "Unlikely" is not proof.
+5. **Judge each finding** at the level below.
+
+## Levels
+
+`loose | balanced | strict`. Default: `strict` on our own work, `balanced` on someone else's PR and on comments left on ours.
+
+Every coding rule applies at every level. The level never waives a rule. It sets how much a breach must cost before you raise it. Cost is the work to change it after merge:
+
+- **Cheap later**: a rename, a refactor, anything an agent can sweep in one pass that nobody else depends on.
+- **Costly later**: persisted state and data formats, migrations, anything released that others depend on (an API, a CLI flag, a config key, an event), a structure that later changes must work
+  around.
+
+The levels:
+
+- **`loose`**: raise only what you are sure of and what is costly later. The rest passes in silence.
+- **`balanced`**: add likely findings, and cheap breaches that cost each reader time. One finding per pattern, with its other places named.
+- **`strict`**: raise every breach. Add your own opinions that no coding rule covers.
+
+Each finding is:
+
+- **A breach** (names the coding rule and its cost here) or **an opinion** (no rule covers it; marked `opinion:`, `strict` only, never blocks).
+- **Overall** (on no line: the approach, the scope, a missing piece) or **inline** (on a line). Overall findings come first; order the rest by cost.
+- **Blocking** when it breaks behavior or is costly later, at every level. `strict` also blocks on every other breach.
+
+## Attended and unattended
+
+Attended: ask only where a reference says to. Unattended (a cron, an afk run, a trigger): act where a coding rule decides, never wait for an answer, and put what coding leaves open and costly in the
+final report.
+
+## Compatibility
+
+Needs: `gh` (authenticated) for the PR uses. Hosts: any with a shell and git.
