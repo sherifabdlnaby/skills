@@ -10,7 +10,7 @@ Apply [SKILL.md](../SKILL.md) voice rules to every reply.
 3. Reply to every comment, including ones you push back on. **Replies go into the thread** (`addPullRequestReviewThreadReply`). `gh pr comment` posts to the PR-level conversation, which leaves
    the thread looking unanswered.
 4. Resolve a thread only after its fix is pushed and the reply is posted. **Leave threads you pushed back on unresolved**; the reviewer closes those.
-5. After the round is fully addressed, re-request review from each person so it lands back in their queue: `gh pr edit <num> --add-reviewer <login>`. Skip bots; they re-review on push.
+5. After the round is fully addressed, re-request review from each person so it returns to their queue: `gh pr edit <num> --add-reviewer <login>`. Skip bots; they re-review on push.
 6. Every reply carries the AI disclosure, per [SKILL.md AI Disclosure](../SKILL.md#ai-disclosure).
 
 **A thread reply carries no media.** `--attach` works on `gh pr comment` and `gh pr edit`, and the reply mutation takes no file. So a picture goes on the PR-level comment or in the body, and the

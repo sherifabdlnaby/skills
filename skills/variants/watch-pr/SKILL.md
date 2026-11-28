@@ -56,6 +56,5 @@ means digest and stop.
 
 ## Human comments
 
-Human reviews and comments are judged per the review skill and posted per review-responses: fix what is clearly right, push back
-on what is not, and bring the real trade-offs to me instead of deciding them. With `humans` in
+Human reviews and comments are judged per the review skill and posted per review-responses. With `humans` in
 `$ARGUMENTS`, decide those too and post the reply as Agent Decided.

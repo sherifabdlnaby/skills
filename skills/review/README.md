@@ -4,7 +4,7 @@
 
 [Canonical skill instructions](SKILL.md)
 
-One review skill for 3 jobs, picked from what you point it at:
+One review skill, and the job is picked from what you point it at:
 
 - **Your own work** (`/review`): before handoff, the agent that wrote the code reviews it and fixes what it finds.
 - **Someone else's PR** (`/review #123`): a suggested verdict first, then failing CI and what to check by hand, a tour of the change, and the findings drafted as Conventional Comments, posted as one
@@ -18,7 +18,7 @@ The rules are not here. They live in [`coding`](../coding/README.md), so a rule 
 - **Defaults:** `strict` on your own work, `balanced` on others' PRs and on comments left on yours.
 - An opinion that no rule covers is marked as one, raised only at `strict`, and never blocks.
 
-It also runs [`no-comments`](../no-comments/README.md) and [`no-docs`](../no-docs/README.md) when they have not run yet. It starts no reviewer subagents of its own, so a review costs one pass in the
-current session.
+It also runs [`no-comments`](../no-comments/README.md) and [`no-docs`](../no-docs/README.md) when they have not run yet. Apart from the subagent `no-comments` runs, it starts none, so a review is one
+pass in the current session.
 
 Needs: `coding`, `no-comments`, `no-docs`, and `git` for the PR jobs. Other skills can call it, because it is model-invocable.

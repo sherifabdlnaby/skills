@@ -31,6 +31,8 @@ A target that fits none: ask. Unattended, review your own work.
 
 ## Every review
 
+Own work and someone else's PR run all five steps. Comments on the user's PR run only step 5, on each comment: the round is a small fix, so the handoff pass does not rerun.
+
 1. **Comments and docs.** Run the **no-comments** and **no-docs** skills on the scope, unless they already ran on it in this session. Docs stay only where they are load-bearing.
 2. **Big picture, then lines.** First the approach, the scope, the structure, and the fit with the system. Then each changed line.
 3. **Look past the diff.** For each deleted line, name what it guaranteed and find where the new code still does. For each changed signature, return shape, or precondition, read its callers.

@@ -14,11 +14,12 @@ The goal is a fast, sound decision for the user: what the PR does, whether it wo
 
 ## Gather
 
-One wide read into a file, then query it as questions come up.
+One wide read into a file, then query it as questions come up. Check out in a separate worktree, so the user's branch and tree stay as they are.
 
 ```sh
+state=$(mktemp)
 gh pr view <pr> --json number,title,author,body,baseRefName,headRefName,files,reviews,comments,statusCheckRollup,closingIssuesReferences > "$state"
-gh pr checkout <pr>
+git worktree add --detach ../review-<pr> && cd ../review-<pr> && gh pr checkout <pr>
 ```
 
 1. Read the description, the existing reviews and comments, the linked issues and earlier PRs, and what the user said in this chat.
@@ -44,7 +45,5 @@ In this order:
 [Conventional Comments](https://conventionalcomments.org): `<label> (blocking|non-blocking): <subject>`, then the cost and the fix. Labels: `issue`, `suggestion`, `question`, `nitpick`,
 `praise`, and `opinion` for an opinion. A concrete code change goes in a `suggestion` block. Name the coding rule in words a stranger understands, not by its ID alone.
 
-```sh
-gh api repos/<owner>/<repo>/pulls/<pr>/reviews --input review.json
-# review.json: {"event":"COMMENT","body":"<overall>","comments":[{"path":"a.go","line":42,"side":"RIGHT","body":"<inline>"}]}
-```
+Post with `gh api repos/<owner>/<repo>/pulls/<pr>/reviews --input review.json`, where `review.json` is
+`{"event":"COMMENT","body":"<overall>","comments":[{"path":"a.go","line":42,"side":"RIGHT","body":"<inline>"}]}`.

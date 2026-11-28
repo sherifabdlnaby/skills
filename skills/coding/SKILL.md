@@ -30,7 +30,7 @@ metadata:
 - **Don't name a general structure after its first occupant**: once something is a shared slot or grouping, name it for the axis it opens — not for today's only member. Specificity belongs on the
   leaves.
 - **Tidy/Refactor separate from feature work**: an opportunistic refactor is in its own commit. Each stays reviewable.
-- **Fix the type, don't silence it**: no cast (`as any`, `interface{}`, `# type: ignore`) only to make the checker pass.
+- **Fix the type, don't silence it**: no cast or ignore (`as any`, `# type: ignore`) only to make the checker pass.
 - **Guard at the boundary, trust inside**: validate and parse raw data into domain types where it enters (CLI args, config, network, external APIs); inside, no re-validation and no redundant nil
   checks.
 - **Migrate callers, then delete the old API**: in the same change, when no external user depends on it. No compatibility shim kept "just in case".
