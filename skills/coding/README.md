@@ -23,3 +23,8 @@ such as a workaround's cause, a deliberate limit and its threshold, or the event
 
 The skill is intended to load for any task that changes code or documentation. It can also be requested explicitly when reviewing a proposed implementation, refactor, comment, or document against
 these conventions.
+
+The comment keep list and the principles draw on [pstack](https://github.com/cursor/plugins/tree/main/pstack) by [poteto](https://github.com/poteto) (Lauren Tan), and on the comment and docs rules in
+[t3code](https://github.com/pingdotgg/t3code).
+
+Works with: [`no-comments`](../no-comments/README.md) and [`no-docs`](../no-docs/README.md), which enforce these rules on a diff.

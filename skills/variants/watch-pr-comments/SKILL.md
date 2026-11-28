@@ -11,7 +11,7 @@ metadata:
 
 # watch-pr-comments
 
-Same contract as [watch-pr](../watch-pr/SKILL.md) (target PR, time budget, the flick for drafts, the
+Load the **watch-pr** skill. Same contract (target PR, time budget, the flick for drafts, the
 existing-threads pass, the sub-agent, the `humans` word), narrowed to reviews. CI is not yours here:
 a red check does not wake you, and green is not a stop.
 

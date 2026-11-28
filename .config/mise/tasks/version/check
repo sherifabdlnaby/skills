@@ -30,7 +30,7 @@ set_version() {
 }
 
 # Every plugin the marketplace lists, by root. Its content is what its manifest ships: the skill
-# paths and the hook config's folder. Manifest folders are left out; changing one is the bump.
+# and agent paths, and the hook config's folder. Manifest folders are left out; changing one is the bump.
 roots="$(jq -r '.plugins[].source | ltrimstr("./") | rtrimstr("/") | if . == "" then "." else . end' .claude-plugin/marketplace.json)"
 excludes=""
 for r in $roots; do excludes="$excludes :(exclude)$r/.claude-plugin :(exclude)$r/.cursor-plugin"; done
@@ -50,7 +50,7 @@ for r in $roots; do
     continue
   }
 
-  content="$(jq -r --arg r "$r" '([.skills] | flatten) + [.hooks | select(type == "string") | sub("/[^/]*$"; "")]
+  content="$(jq -r --arg r "$r" '([.skills, .agents | select(. != null)] | flatten) + [.hooks | select(type == "string") | sub("/[^/]*$"; "")]
     | .[] | $r + "/" + ltrimstr("./") | sub("^\\./"; "")' "$m")"
   if [ -n "$fix" ]; then
     # shellcheck disable=SC2086 # word-split pathspecs on purpose

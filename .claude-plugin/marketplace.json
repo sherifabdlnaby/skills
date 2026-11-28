@@ -9,7 +9,7 @@
     {
       "name": "skills",
       "source": "./",
-      "description": "Opinionated git and mise skills, plus boilerplate commands, agents, and hooks."
+      "description": "Opinionated git and mise skills, plus agents and hooks."
     },
     {
       "name": "ai-disclosure",

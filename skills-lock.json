@@ -92,6 +92,13 @@
       "skillPath": "skills/productivity/teach/SKILL.md",
       "computedHash": "31bb3eed09dd2787e290e933def99fbf7d65044a29119c224af47c01404ab228"
     },
+    "unslop": {
+      "source": "cursor/plugins",
+      "commit": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
+      "sourceType": "github",
+      "skillPath": "harness/pstack/claude-code/skills/unslop/SKILL.md",
+      "computedHash": "4bbcb6719a8f0f6f7fb46752e1c360791d7758a837708e300a06fc7d6907938c"
+    },
     "why": {
       "source": "cursor/plugins",
       "commit": "005d8f6e8ec057b738adcd08a08b30db0478402d",

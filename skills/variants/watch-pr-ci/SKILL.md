@@ -11,7 +11,7 @@ metadata:
 
 # watch-pr-ci
 
-Same contract as [watch-pr](../watch-pr/SKILL.md) (target PR, time budget, the sub-agent, the
+Load the **watch-pr** skill. Same contract (target PR, time budget, the sub-agent, the
 verdict reactions), narrowed to CI: load the git skill and its watch reference, skip review-responses,
 the flick and the existing-threads pass; reviews do not wake you and are not addressed. `forever`
 here drops the budget and keeps `--until green`.

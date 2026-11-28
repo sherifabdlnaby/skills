@@ -40,3 +40,5 @@ setup, including `mise.toml`, hk configuration, CI workflows, and documentation 
 - "Run Postgres, Redis, and our API locally with one command, and let each git worktree run its own copy."
 - "Audit this mise configuration for trust, lockfile, and CI problems."
 - "Mise-fy this project and replace its current tool and task setup."
+
+Works with: [`cicd-fy`](../cicd-fy/README.md), when installed, for the CI side of the setup.

@@ -41,3 +41,5 @@ The outcome of either mode is a draft, not a finished skill. It is handed back w
 - "Split this large skill into a router and focused reference pages."
 - "Rewrite this skill description so it activates only for configuration changes."
 - "Add a reusable workflow template as an asset to this skill."
+
+Works with: the vendored `writing-for-agents` skill, when installed.

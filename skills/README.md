@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-39%2C797%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 39,797 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-124%2C584%20tokens-2ea44f?style=flat-square" alt="All Markdown: 124,584 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-41%2C569%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 41,569 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-126%2C356%20tokens-2ea44f?style=flat-square" alt="All Markdown: 126,356 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -13,33 +13,35 @@ than read, so they are left out.
 
 | Skill                                                       | SKILL.md |    Total |
 | ----------------------------------------------------------- | -------: | -------: |
-| [`afk`](afk/)                                               |    `228` |    `228` |
+| [`afk`](afk/)                                               |    `220` |    `220` |
 | [`ai-disclosure`](ai-disclosure/)                           |  `1,141` |  `1,141` |
 | [`ask-me`](ask-me/)                                         |    `437` |    `437` |
 | [`cicd-fy`](cicd-fy/)                                       |  `1,542` | `15,981` |
-| [`coding`](coding/)                                         |  `2,084` |  `2,084` |
+| [`coding`](coding/)                                         |  `2,696` |  `2,696` |
 | [`fast-feedback-mode`](fast-feedback-mode/)                 |    `394` |    `394` |
 | [`git`](git/)                                               |  `1,846` | `13,456` |
 | [`grill-me`](grill-me/)                                     |     `61` |     `61` |
 | [`grilling`](grilling/)                                     |    `663` |    `663` |
 | [`mise-fy`](mise-fy/)                                       |  `2,525` | `39,790` |
+| [`no-comments`](no-comments/)                               |    `398` |    `398` |
+| [`no-docs`](no-docs/)                                       |    `212` |    `212` |
 | [`review`](review/)                                         |    `325` |    `325` |
-| [`skill-fy`](skill-fy/)                                     |  `2,901` |  `6,389` |
-| [`variants/afk-careful`](variants/afk-careful/)             |     `89` |     `89` |
-| [`variants/afk-soon`](variants/afk-soon/)                   |    `166` |    `166` |
-| [`variants/afk-yolo`](variants/afk-yolo/)                   |    `114` |    `114` |
-| [`variants/watch-pr`](variants/watch-pr/)                   |    `660` |    `660` |
-| [`variants/watch-pr-ci`](variants/watch-pr-ci/)             |    `261` |    `261` |
-| [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `256` |    `256` |
-| [`wait-what`](wait-what/)                                   |    `232` |    `232` |
+| [`skill-fy`](skill-fy/)                                     |  `2,965` |  `6,453` |
+| [`variants/afk-careful`](variants/afk-careful/)             |     `85` |     `85` |
+| [`variants/afk-soon`](variants/afk-soon/)                   |    `152` |    `152` |
+| [`variants/afk-yolo`](variants/afk-yolo/)                   |    `110` |    `110` |
+| [`variants/watch-pr`](variants/watch-pr/)                   |    `645` |    `645` |
+| [`variants/watch-pr-ci`](variants/watch-pr-ci/)             |    `256` |    `256` |
+| [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `251` |    `251` |
+| [`wait-what`](wait-what/)                                   |    `185` |    `185` |
 | [`what-happened`](what-happened/)                           |  `1,090` |  `1,090` |
-| [`vendor/`](vendor/README.md) (15 skills)                   | `22,782` | `40,767` |
+| [`vendor/`](vendor/README.md) (16 skills)                   | `23,370` | `41,355` |
 
 ### Files
 
 | Skill                        | File                                                                                               |  Tokens |
 | ---------------------------- | -------------------------------------------------------------------------------------------------- | ------: |
-| `afk`                        | [`SKILL.md`](afk/SKILL.md)                                                                         |   `228` |
+| `afk`                        | [`SKILL.md`](afk/SKILL.md)                                                                         |   `220` |
 | `ai-disclosure`              | [`SKILL.md`](ai-disclosure/SKILL.md)                                                               | `1,141` |
 | `ask-me`                     | [`SKILL.md`](ask-me/SKILL.md)                                                                      |   `437` |
 | `cicd-fy`                    | [`SKILL.md`](cicd-fy/SKILL.md)                                                                     | `1,542` |
@@ -56,7 +58,7 @@ than read, so they are left out.
 | `cicd-fy`                    | [`references/publish.md`](cicd-fy/references/publish.md)                                           |   `630` |
 | `cicd-fy`                    | [`references/releases.md`](cicd-fy/references/releases.md)                                         | `1,310` |
 | `cicd-fy`                    | [`references/security.md`](cicd-fy/references/security.md)                                         |   `814` |
-| `coding`                     | [`SKILL.md`](coding/SKILL.md)                                                                      | `2,084` |
+| `coding`                     | [`SKILL.md`](coding/SKILL.md)                                                                      | `2,696` |
 | `fast-feedback-mode`         | [`SKILL.md`](fast-feedback-mode/SKILL.md)                                                          |   `394` |
 | `git`                        | [`SKILL.md`](git/SKILL.md)                                                                         | `1,846` |
 | `git`                        | [`references/attach.md`](git/references/attach.md)                                                 |   `546` |
@@ -87,17 +89,19 @@ than read, so they are left out.
 | `mise-fy`                    | [`references/runtimes/node.md`](mise-fy/references/runtimes/node.md)                               | `1,462` |
 | `mise-fy`                    | [`references/tasks.md`](mise-fy/references/tasks.md)                                               | `3,734` |
 | `mise-fy`                    | [`references/tools.md`](mise-fy/references/tools.md)                                               | `4,410` |
+| `no-comments`                | [`SKILL.md`](no-comments/SKILL.md)                                                                 |   `398` |
+| `no-docs`                    | [`SKILL.md`](no-docs/SKILL.md)                                                                     |   `212` |
 | `review`                     | [`SKILL.md`](review/SKILL.md)                                                                      |   `325` |
-| `skill-fy`                   | [`SKILL.md`](skill-fy/SKILL.md)                                                                    | `2,901` |
+| `skill-fy`                   | [`SKILL.md`](skill-fy/SKILL.md)                                                                    | `2,965` |
 | `skill-fy`                   | [`assets/SKILL-skeleton.md`](skill-fy/assets/SKILL-skeleton.md)                                    |   `369` |
 | `skill-fy`                   | [`assets/reference-skeleton.md`](skill-fy/assets/reference-skeleton.md)                            |   `433` |
 | `skill-fy`                   | [`references/scaffold.md`](skill-fy/references/scaffold.md)                                        | `1,440` |
 | `skill-fy`                   | [`references/skill-fy.md`](skill-fy/references/skill-fy.md)                                        | `1,246` |
-| `variants/afk-careful`       | [`SKILL.md`](variants/afk-careful/SKILL.md)                                                        |    `89` |
-| `variants/afk-soon`          | [`SKILL.md`](variants/afk-soon/SKILL.md)                                                           |   `166` |
-| `variants/afk-yolo`          | [`SKILL.md`](variants/afk-yolo/SKILL.md)                                                           |   `114` |
-| `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `660` |
-| `variants/watch-pr-ci`       | [`SKILL.md`](variants/watch-pr-ci/SKILL.md)                                                        |   `261` |
-| `variants/watch-pr-comments` | [`SKILL.md`](variants/watch-pr-comments/SKILL.md)                                                  |   `256` |
-| `wait-what`                  | [`SKILL.md`](wait-what/SKILL.md)                                                                   |   `232` |
+| `variants/afk-careful`       | [`SKILL.md`](variants/afk-careful/SKILL.md)                                                        |    `85` |
+| `variants/afk-soon`          | [`SKILL.md`](variants/afk-soon/SKILL.md)                                                           |   `152` |
+| `variants/afk-yolo`          | [`SKILL.md`](variants/afk-yolo/SKILL.md)                                                           |   `110` |
+| `variants/watch-pr`          | [`SKILL.md`](variants/watch-pr/SKILL.md)                                                           |   `645` |
+| `variants/watch-pr-ci`       | [`SKILL.md`](variants/watch-pr-ci/SKILL.md)                                                        |   `256` |
+| `variants/watch-pr-comments` | [`SKILL.md`](variants/watch-pr-comments/SKILL.md)                                                  |   `251` |
+| `wait-what`                  | [`SKILL.md`](wait-what/SKILL.md)                                                                   |   `185` |
 | `what-happened`              | [`SKILL.md`](what-happened/SKILL.md)                                                               | `1,090` |

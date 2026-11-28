@@ -38,3 +38,5 @@ Transformation usually moves from inexpensive hardening to shared checks, then r
 - "Create a label-driven release pipeline with release candidates."
 - "Publish this multi-architecture image with an SBOM, provenance, and keyless signing."
 - "Reshape this repository's CI/CD without breaking the next release."
+
+Works with: [`mise-fy`](../mise-fy/README.md), when installed, for the local toolchain the pipeline runs.

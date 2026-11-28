@@ -2,7 +2,6 @@
 name: afk
 description: Act autonomously while I'm away.
 license: MIT
-disable-model-invocation: true
 metadata:
   author: sherifabdlnaby
   version: "0.1.0"

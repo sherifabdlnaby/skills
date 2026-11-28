@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: sherifabdlnaby
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Coding
@@ -15,13 +15,14 @@ metadata:
 **Note:** These rules are defaults; deviate only when you can state what following the rule would cost here.
 
 - **Simple and idiomatic**: fit the existing system and take the idiomatic way first. Keep sane system defaults; override one only when the gain is worth the extra code.
-- **Subtract before you add**: the smallest diff that solves the problem. Remove what the change makes dead before you build. No guards, validators, or parsers beyond what the spec demands.
+- **Subtract before you add** (extending an existing feature): the smallest diff that solves the problem, where possible. Remove what the change makes dead before you build. No guards,
+  validators, or parsers beyond what the spec demands.
+- **Do not overfit** (adding a new system or functionality): design for the problem, not only the cases in this chat.
 - **Speculative edge cases need buy-in**: before adding code for an unlikely race or security case, tell the user the concrete failure, how likely it is, and what the code costs. Widen scope only on
   their go-ahead.
 - **Minimize reader load**: inline wrappers with one caller and layers that only forward. Returns over mutation, locals over fields over globals; derive state instead of syncing it.
 - **DRY**: a string, a threshold, a supported-values list has one authoritative home, easy to change/update/extend.
-- **Do not overfit**: Avoid overfitting solutions to problems in this chat. Think bigger.
-- **Separation of Concerns & Extendable Components**: Insist on separation of concerns.
+- **Separation of concerns**: split code where its parts change for different reasons. Add an extension point only when the axis is promised (below).
 - **Duplication over the wrong abstraction governs structure**: tolerate two similar blocks until the shared concept is obvious (rule of three); a helper/component that needs a `mode` flag to serve
   both callers is the wrong abstraction.
 - **Extend along the promised axis**: at three cases the axis is promised (rule of three); shape code to make the fourth easy to add, without overfitting to just today's use-cases.
@@ -39,10 +40,12 @@ metadata:
 ## Debugging and Verifying
 
 - **Fix the root cause**: the first place the system did something wrong. Ask whether the triggering state is legitimate: if yes, handle it where it broke; if not, a guard there hides the bug, so fix
-  what produced it. Fix every instance of the pattern.
+  what produced it. Look for other instances of the pattern, list them, and ask before you fix them.
 - **Attack the premise**: when two fixes that share one assumption fail the same check, write the assumption down and test it before a third fix.
 - **Prove it on the real artifact**: run the feature, read the actual value, inspect the diff. "It compiles", a self-report, or cached output is not proof. When a check passes too easily, suspect the
   check.
+- **Clean the diff before handoff**: before you hand work back to the user or push for review, run the **no-comments** and **no-docs** skills on the diff once, and say in the handoff that
+  you did. Between intermediate commits you may skip them; the last step before the handoff may not.
 - **Explain the number**: before you trust a measured number, name what limits it and rule out that it measured errors, cached or skipped work, or noise. Report it with run count and spread.
 
 ## Tests
@@ -52,51 +55,73 @@ metadata:
 
 ## Code Comments
 
-Code is the best documentation. Comment only what the code cannot say: why it is this way, or a detail it does not show. A tautological comment is harmful.
+Default to no comment: the code is the documentation and git is the history. Write a comment only for an item on the keep list, in 1 to 4 lines. When you are not sure an item applies, delete
+the comment.
 
-**Reshape before you comment**: a surprise in our own code is a smell. Rename, extract, or type it until the behavior is obvious. A comment stays for what the code cannot carry: a vendor, platform, or
-protocol quirk, a public API contract, a link to an external constraint, or a coupling nothing else connects (`# change TIMEOUT in worker.py if you change this`) when one source of truth is not
-possible.
+To enforce these rules on a diff, use the **no-comments** skill.
 
-1. **Write for the stranger who understands the purpose of the project**: a comment must hold
-   for a reader with only the file (and its project); with no access to this conversation, no
-   contextual awareness of how the project evolved, no memory of the task that produced it. A
-   comment that echoes this session's instructions fails (e.g. `// Doing X (no Y)` where Y is
-   something only this conversation knows).
-2. **Describe the steady state, not the delta**: `// reads users_v2`, not `// migrated from
-   users_v1`. Git records the transition, and delta comments become lies the moment it
-   completes. This includes changes between commits of the same branch: they vanish on squash.
-   A transition that must live in the code is a TODO with an end condition, never
-   loose prose. Same for deletions and moves: git history is the record; leave no `moved to X`
-   breadcrumb behind.
-3. **WHY only as protection**: explain how we got here only when it stops the stranger from a wrong move, like "fixing" a deliberate choice, removing a needed workaround, or mistaking a cut corner for
-   naivety. The next three principles are its instances.
-4. **Mention a rejected alternative only as a warning**: keep `// not HTTP/2: the proxy drops long-lived streams` because it stops a stranger from "fixing" it; drop `// using native Map (no lodash)`
-   because that avoidance only answers this session's instruction.
-5. **Workarounds cite their cause**: `// workaround: SDK drops keepalive on h2, see github.com/x/y#456`. The link is the stranger's only way to check it's still needed.
-6. **A cut corner names its ceiling**: `// good enough: O(n²) scan; revisit past
-   ~1k rules` states the limit and the upgrade trigger, so the stranger can tell
-   deliberate simplicity from naivety. Only for real corners with a known ceiling;
-   trivial simplifications need no plaque.
-7. **A TODO names what ends it**: a ticket, date, or event, as in `// TODO(PROJ-123): drop fallback after v2 ships`. Same for any "temporary"/"for now" claim; without an end condition it's permanent.
-   Bare `// TODO: clean up` is a wish that sediments.
-8. **Avoid enumeration; name the set, not its members**: `// sanitize PII
-   fields`, not `// sanitize email, phone, SSN, address`. The criterion stays true
-   as the set grows; the list reads as complete and rots. When examples aid
-   clarity, mark them illustrative: `(e.g. email, SSN)`.
-9. **Suppressions are suspect**: a lint or type suppression (e.g. `eslint-disable`, `@ts-ignore`, `# noqa`) for a rule that guards correctness or safety gets fixed, not silenced. Keep one only for a
-   faulty or style-only rule, with its reason.
-10. **Verify "do not remove"**: an `IMPORTANT` or `do not remove` comment is a claim. Check it in the code and its history. True: encode it as a type, test, or lint, then delete the comment. False:
-    delete it.
-11. **Explain a detail where it lives**: when a function gets a new behavior, say so in the function, not at its call sites. The reader who opens the code to look finds it there.
+**Keep list:**
+
+- **Section banner**: a short banner that groups a long file into sections (`// ===== Retry =====`).
+- **File header**: one or two lines at the top of a file on what it is for, when its name and place do not say it. Not a list of what it contains.
+- **External cause**: a vendor, platform, or protocol behavior we cannot reshape, or the paper, spec, or RFC a formula or algorithm comes from, with a link:
+  `// workaround: SDK drops keepalive on h2, see github.com/x/y#456`.
+- **Published API contract**: a doc comment on the public API of a library or package that others import, when its name and types do not show the behavior. An exported function inside an app
+  gets none.
+- **Required doc comment**: one a language convention or a linter requires (e.g. Go's doc comment on an exported name). Keep it to the contract.
+- **Coupling nothing else connects**, when one source of truth is not possible: `# change TIMEOUT in worker.py if you change this`.
+- **Concurrency or ownership rule the types cannot express**: `// guarded by mu`, `// caller holds the lock`.
+- **Warning against a "fix"** that names what breaks: `// not HTTP/2: the proxy drops long-lived streams`. When the cause is our own code, encode it as a test instead.
+- **Regression guard**: a test that exists for a past bug links it: `// regression: github.com/x/y#456`.
+- **TODO with what ends it**: a ticket, date, event, or measured limit: `// TODO(PROJ-123): drop fallback after v2 ships`, `// good enough: O(n²) scan; revisit past ~1k rules`.
+- License headers, tool directives, and generated-code markers (`// Code generated by X; DO NOT EDIT.`).
+
+A surprise in our own code is not on the list. Rename, extract, or type it until the behavior is obvious.
+
+**Write a kept comment for the stranger**: the reader has only the file and the project, not this session or its history. Describe the code as it is now. Name the set, not its members
+(`// sanitize PII fields`, not `// sanitize email, phone, SSN`).
+
+**Verify "do not remove"**: an `IMPORTANT` or `do not remove` comment is a claim. Check it in the code and its history. True: encode it as a type, test, or lint, then delete the comment. False:
+delete it.
+
+**Explain a detail where it lives**: when a function gets a new behavior, say so in the function, not at its call sites.
+
+**Checkable rules.** Each ID is stable, so a check can report it. A comment fails when it has:
+
+- `C1` change narration: `Added`, `Updated`, `Changed`, `Now`, `previously`, `migrated from`, `moved to`, `for now`. Describe the code as it is, or delete.
+- `C2` only the words of the name below it (`// get user` above `getUser()`).
+- `C3` a step label (`// Step 1:`, `// Arrange`).
+- `C4` more than 4 lines, except a license. Keep the constraint, drop the background.
+- `C5` `TODO`, `FIXME`, `HACK`, or `XXX` with no ticket or link.
+- `C6` a bare `#123` for our own PR or issue. Keep the reason; git keeps the number.
+- `C7` commented-out code.
+- `C8` a placeholder for code (`// ... rest of the code`, `// omitted for brevity`).
+- `C9` words for a person: `you`, `Replace this with your`, `Note:`.
+- `C10` a lint or type suppression with no reason. A rule that guards correctness or safety gets fixed, not suppressed.
+- `C11` an empty `@param` or `@returns`, or a JSDoc `{type}` in typed code.
+- `C12` an emoji.
+- `C13` a figurative verb or stock AI word: `lands`, `ships` (outside a release), `surfaces`, `wires up`, `bakes in`, `plumbs`, `threads through`, `unblocks`, `additionally`, `crucial`,
+  `delve`, `enhance`, `foster`, `pivotal`, `showcase`, `underscore`, `robust`, `seamless`. Use the literal word.
+
+`C1` and `C9` match some real uses (`now()`, a `Note:` before an external quirk), so a check reports them as warnings.
 
 ## Docs and UI strings
 
-Docs and UI strings follow the Code Comments principles; the stranger is the reader. Also:
+Docs and UI strings are for the same stranger, and describe how things work now. To enforce these rules on changed docs, use the **no-docs** skill.
 
-- **Each layer shows what its reader needs**: a UI, an API, a doc each hide the rest behind the abstraction. Before adding a line, ask whether its reader needs it or can find it in the code.
+**Document at the reader's level of abstraction** (information hiding): every layer (a UI, a CLI, an API, a module, a README) has a reader who uses it through its contract. Write what that reader
+needs to use it, and hide how it works below. This applies at every layer: the user guide does not explain the API, the API reference does not explain the database, and a module's doc does not
+explain its callers.
+
+- **Document the surprise, not the expected** (principle of least astonishment): leave out behavior the reader takes for granted or finds intuitive. Write what they would not predict: a limit, a side
+  effect, an irreversible step, a default that differs from the norm. A customer doc says "deleted projects stay restorable for 30 days", not "click Delete to delete a project".
+- **Write for what the reader lacks, not what you learned** (curse of knowledge): what you discovered while building it is not what the reader needs. Before adding a line, ask what its reader would
+  get wrong without it. If nothing, or the code or UI already shows it, leave it out.
 - **How it works now**: history belongs in the commit message. Give today's change only the space it takes in the whole system; touch outer-layer text only where what its reader sees changed.
+- **Rewrite, don't append**: when a fact changes, rewrite or remove the text that states it. Do not add a second account next to the old one.
+- **Link the source, don't copy it**: a doc points to the code, config, or command that holds a fact. A copy drifts.
 - **One doc, one mode** (Diátaxis): tutorial, how-to, reference, or explanation. Split a doc that mixes them, and link the parts.
+- **Plain words**: no `C13` words.
 - **Real names**: write the real symbol, file, flag, or command, not a synonym or a description of it.
 - **Match the voice** the doc already has.
 - **Nothing that rots**: name the set, not its members; no hard-coded counts, versions, or file lists. A count or tree the doc needs ships with the command that regenerates it.
