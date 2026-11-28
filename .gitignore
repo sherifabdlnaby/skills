@@ -6,8 +6,6 @@ mise.*.local.toml
 .agents/skills/
 .claude/skills/
 
-# `mise run eval` run records
-evals/results/
 
 # hk findings the check workflow writes; kept out of the auto-fix patch (`git add -A`)
 hk.sarif

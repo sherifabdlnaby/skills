@@ -139,29 +139,6 @@ run = [
 ]
 tools.python = "3.9" # the oldest python the hooks support
 
-[tasks.eval]
-description = "Run the agent evals (headless Claude Code) against a ref or the working tree; see evals/README.md"
-usage = '''
-    flag "--ref <ref>"     help="git ref to test"
-    flag "--model <model>" help="Claude model"
-    flag "--trials <n>"    help="runs per case"
-    flag "--jobs <n>"      help="runs in parallel"
-    flag "--case <id>"     var=#true help="only these case(s)"
-    flag "--kind <kind>"   help="only cases of this kind" { choices "nav" "task" "skill" }
-    flag "--cases <path>"  help="cases file"
-    flag "--label <name>"  help="results file prefix"
-    flag "--timeout <s>"   help="seconds per run and per check"
-    flag "--regrade <path>" help="grade a results file's nav answers again with the current cases; runs no model"
-    complete "case" run="sed -n 's/^id = \"\\(.*\\)\"/\\1/p' evals/cases.toml"
-'''
-run = '''
-python evals/run.py ${usage_ref:+--ref "$usage_ref"} ${usage_model:+--model "$usage_model"} \
-  ${usage_trials:+--trials "$usage_trials"} ${usage_jobs:+--jobs "$usage_jobs"} \
-  ${usage_case:+$(printf -- '--case %s ' $usage_case)} ${usage_kind:+--kind "$usage_kind"} \
-  ${usage_cases:+--cases "$usage_cases"} ${usage_label:+--label "$usage_label"} \
-  ${usage_timeout:+--timeout "$usage_timeout"} ${usage_regrade:+--regrade "$usage_regrade"}
-'''
-
 [tasks.setup] # one-time, idempotent bootstrap; re-run when `enter` warns it's stale
 description = "One-time, idempotent project bootstrap: check prerequisites, install tools, then runtime deps"
 depends_post = ["setup:stamp"] # stamp the version only after a successful setup
