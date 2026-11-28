@@ -15,8 +15,12 @@ metadata:
 pick first, marked `(Recommended)`. More questions than the tool takes: send calls back to back, still one round. The user can always answer in their own words; Cursor takes only the options you give,
 so add one for that. With no such tool, number the questions in your reply, put your pick under each, and end your turn.
 
-**Put everything inside the call.** The user reliably sees only the call. Text you write between tool calls can land in your thinking, which the user sees only as a summary, if at all. So the question
-text carries the context, what the last answer changed, and the name of the thing it asks about; the option descriptions carry the tradeoffs. Some harnesses hide previews. When the context is too long
-for the call, end your turn on it and ask in the next turn.
+**Write no text between tool calls.** Text after a tool result and before another tool call can come back as thinking, reworded, and the user sees a summary or nothing (verified on Claude Opus 5.5,
+2026-11). Two places reliably reach the user: the tool call, and the last text of the turn.
+
+- **Short context goes in the call.** The question text carries what the last answer changed and the name of the thing it asks about; the option descriptions carry the tradeoffs. Some harnesses hide
+  previews.
+- **A long explanation ends the turn.** A concept, a plan, or test results: write it as the turn's last text and ask in the next turn. Do not pack it into the call.
+- **A show-text tool sends it mid-turn.** When the harness has one (e.g. `send_to_user` in T3 Code), send the explanation with it, then ask in the same turn.
 
 **Look facts up yourself.** Ask the user only for decisions: what the code, tools, or docs can answer is your job.
