@@ -9,3 +9,6 @@ mise.*.local.toml
 
 # hk findings the check workflow writes; kept out of the auto-fix patch (`git add -A`)
 hk.sarif
+
+# Python bytecode the tooling in .config/ leaves behind; kept out of the auto-fix patch too
+__pycache__/
