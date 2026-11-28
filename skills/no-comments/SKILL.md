@@ -15,8 +15,8 @@ Scope: the files or diff you were given, else the current diff against the base 
 
 1. Run the `comment-sicko` subagent on the scope, on the Sonnet model (a plugin may prefix its name, e.g. `skills:comment-sicko`). If it is not available, do its pass yourself: every comment off the
    keep list is deleted.
-2. Audit its report and diff. Revert any edit to code (not comments) or to files outside the scope. Restore a deleted comment only when a keep item applies; comment-sicko's list is narrower than ours.
-   On a bad report, revert it and rerun once with the failure named. A second bad report: stop and report it open.
+2. Audit its report and diff. Revert any edit to code (not comments) or to files outside the scope. Restore a deleted comment only when a keep item clearly applies (comment-sicko's list is narrower
+   than ours); when in doubt, it stays deleted. On a bad report, revert it and rerun once with the failure named. A second bad report: stop and report it open.
 3. Delete what fails. For each `MUST KILL` flag in scope, make the smallest root-cause fix: rename, extract, or type the code until it needs no comment. No symptom guards. A flag outside the scope
    goes in the report.
 4. For an `IMPORTANT` or `do not remove` comment whose claim holds, offer the cheapest type, test, or lint that encodes it. Encode it and delete the comment after the user approves; otherwise keep it
