@@ -99,6 +99,12 @@ local commitGates: Mapping<String, Step> = new Mapping<String, Step> {
     check = "mise run skills:check"
   }
 
+  ["vendor-overrides"] {
+    check = "mise run skills:overrides"
+    fix = "mise run skills:overrides --fix"
+    stage = List("skills/vendor/**")
+  }
+
   // Generated reports read the final output of every formatter above.
   ["token-estimates"] {
     exclusive = true

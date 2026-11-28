@@ -2,11 +2,12 @@
 
 Skills other people wrote, copied in by `mise run skills:sync` from the sources pinned in
 [`skills-lock.json`](../../skills-lock.json). Nothing here is edited or written up by us — each
-skill's own `SKILL.md` is its documentation.
+skill's own `SKILL.md` is its documentation. A skill marked *(overrides)* has frontmatter changed by
+[`skills-overrides.json`](../../skills-overrides.json); its text is upstream's.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-23%2C370%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 23,370 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-41%2C403%20tokens-2ea44f?style=flat-square" alt="All Markdown: 41,403 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-18%2C324%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 18,324 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-34%2C499%20tokens-2ea44f?style=flat-square" alt="All Markdown: 34,499 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -15,33 +16,28 @@ than read, so they are left out.
 
 | Skill                                                             | Upstream                                                  | SKILL.md |    Total |
 | ----------------------------------------------------------------- | --------------------------------------------------------- | -------: | -------: |
-| [`blast-radius`](blast-radius/)                                   | [cursor/plugins](https://github.com/cursor/plugins)       |    `890` |    `890` |
 | [`codebase-design`](codebase-design/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,349` |  `2,495` |
-| [`correct`](correct/)                                             | [cursor/plugins](https://github.com/cursor/plugins)       |    `544` |    `544` |
-| [`diagnosing-bugs`](diagnosing-bugs/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |  `2,034` |  `2,034` |
+| [`correct`](correct/) *(overrides)*                               | [cursor/plugins](https://github.com/cursor/plugins)       |    `499` |    `499` |
 | [`domain-modeling`](domain-modeling/)                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `781` |  `1,987` |
 | [`gh-stack`](gh-stack/)                                           | [github/gh-stack](https://github.com/github/gh-stack)     |  `2,282` |  `8,014` |
 | [`handoff`](handoff/)                                             | [mattpocock/skills](https://github.com/mattpocock/skills) |    `198` |    `198` |
 | [`humanizer`](humanizer/)                                         | [blader/humanizer](https://github.com/blader/humanizer)   |  `7,383` | `10,407` |
 | [`improve-codebase-architecture`](improve-codebase-architecture/) | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,354` |  `2,950` |
-| [`in-your-own-words`](in-your-own-words/)                         | [cursor/plugins](https://github.com/cursor/plugins)       |     `72` |     `72` |
+| [`in-your-own-words`](in-your-own-words/) *(overrides)*           | [cursor/plugins](https://github.com/cursor/plugins)       |     `54` |     `54` |
 | [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills) |    `642` |  `3,546` |
-| [`show-me`](show-me/)                                             | [humanlayer/skills](https://github.com/humanlayer/skills) |    `783` |    `783` |
-| [`teach`](teach/)                                                 | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,997` |  `3,855` |
-| [`unslop`](unslop/)                                               | [cursor/plugins](https://github.com/cursor/plugins)       |    `588` |    `588` |
-| [`why`](why/)                                                     | [cursor/plugins](https://github.com/cursor/plugins)       |    `124` |    `124` |
+| [`show-me`](show-me/) *(overrides)*                               | [humanlayer/skills](https://github.com/humanlayer/skills) |    `764` |    `764` |
+| [`unslop`](unslop/) *(overrides)*                                 | [cursor/plugins](https://github.com/cursor/plugins)       |    `580` |    `580` |
+| [`why`](why/) *(overrides)*                                       | [cursor/plugins](https://github.com/cursor/plugins)       |     `89` |     `89` |
 | [`writing-for-agents`](writing-for-agents/)                       | [mattpocock/skills](https://github.com/mattpocock/skills) |  `2,349` |  `2,916` |
 
 ### Files
 
 | Skill                           | File                                                                      |  Tokens |
 | ------------------------------- | ------------------------------------------------------------------------- | ------: |
-| `blast-radius`                  | [`SKILL.md`](blast-radius/SKILL.md)                                       |   `890` |
 | `codebase-design`               | [`DEEPENING.md`](codebase-design/DEEPENING.md)                            |   `537` |
 | `codebase-design`               | [`DESIGN-IT-TWICE.md`](codebase-design/DESIGN-IT-TWICE.md)                |   `609` |
 | `codebase-design`               | [`SKILL.md`](codebase-design/SKILL.md)                                    | `1,349` |
-| `correct`                       | [`SKILL.md`](correct/SKILL.md)                                            |   `544` |
-| `diagnosing-bugs`               | [`SKILL.md`](diagnosing-bugs/SKILL.md)                                    | `2,034` |
+| `correct`                       | [`SKILL.md`](correct/SKILL.md)                                            |   `499` |
 | `domain-modeling`               | [`ADR-FORMAT.md`](domain-modeling/ADR-FORMAT.md)                          |   `618` |
 | `domain-modeling`               | [`GLOSSARY-FORMAT.md`](domain-modeling/GLOSSARY-FORMAT.md)                |   `588` |
 | `domain-modeling`               | [`SKILL.md`](domain-modeling/SKILL.md)                                    |   `781` |
@@ -55,17 +51,12 @@ than read, so they are left out.
 | `humanizer`                     | [`SKILL.md`](humanizer/SKILL.md)                                          | `7,383` |
 | `improve-codebase-architecture` | [`HTML-REPORT.md`](improve-codebase-architecture/HTML-REPORT.md)          | `1,596` |
 | `improve-codebase-architecture` | [`SKILL.md`](improve-codebase-architecture/SKILL.md)                      | `1,354` |
-| `in-your-own-words`             | [`SKILL.md`](in-your-own-words/SKILL.md)                                  |    `72` |
+| `in-your-own-words`             | [`SKILL.md`](in-your-own-words/SKILL.md)                                  |    `54` |
 | `prototype`                     | [`LOGIC.md`](prototype/LOGIC.md)                                          | `1,329` |
 | `prototype`                     | [`SKILL.md`](prototype/SKILL.md)                                          |   `642` |
 | `prototype`                     | [`UI.md`](prototype/UI.md)                                                | `1,575` |
-| `show-me`                       | [`SKILL.md`](show-me/SKILL.md)                                            |   `783` |
-| `teach`                         | [`GLOSSARY-FORMAT.md`](teach/GLOSSARY-FORMAT.md)                          |   `484` |
-| `teach`                         | [`LEARNING-RECORD-FORMAT.md`](teach/LEARNING-RECORD-FORMAT.md)            |   `588` |
-| `teach`                         | [`MISSION-FORMAT.md`](teach/MISSION-FORMAT.md)                            |   `349` |
-| `teach`                         | [`RESOURCES-FORMAT.md`](teach/RESOURCES-FORMAT.md)                        |   `437` |
-| `teach`                         | [`SKILL.md`](teach/SKILL.md)                                              | `1,997` |
-| `unslop`                        | [`SKILL.md`](unslop/SKILL.md)                                             |   `588` |
-| `why`                           | [`SKILL.md`](why/SKILL.md)                                                |   `124` |
+| `show-me`                       | [`SKILL.md`](show-me/SKILL.md)                                            |   `764` |
+| `unslop`                        | [`SKILL.md`](unslop/SKILL.md)                                             |   `580` |
+| `why`                           | [`SKILL.md`](why/SKILL.md)                                                |    `89` |
 | `writing-for-agents`            | [`SKILL-MECHANICS.md`](writing-for-agents/SKILL-MECHANICS.md)             |   `567` |
 | `writing-for-agents`            | [`SKILL.md`](writing-for-agents/SKILL.md)                                 | `2,349` |

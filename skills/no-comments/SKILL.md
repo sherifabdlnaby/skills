@@ -13,8 +13,7 @@ The rules live in the **coding** skill, under Code Comments. Load it first. This
 
 Scope: the files or diff you were given, else the current diff against the base branch, working tree included.
 
-1. Run the `comment-sicko` subagent on the scope, on the Sonnet model (a plugin may prefix its name, e.g. `skills:comment-sicko`). Tell it that `/why` is not available
-   to it: it traces a claim in the code and `git log` itself. If it is not available, do its pass yourself: every comment off the
+1. Run the `comment-sicko` subagent on the scope, on the Sonnet model (a plugin may prefix its name, e.g. `skills:comment-sicko`). If it is not available, do its pass yourself: every comment off the
    keep list is deleted.
 2. Audit its report and diff. Revert any edit to code (not comments) or to files outside the scope. Restore a deleted comment only when a keep item applies; comment-sicko's list is narrower than ours.
    On a bad report, revert it and rerun once with the failure named. A second bad report: stop and report it open.

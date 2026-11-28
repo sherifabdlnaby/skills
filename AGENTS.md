@@ -10,7 +10,7 @@ exposes the tasks, and wires the git hooks; `mise.toml` is the source of truth.
 - **Finish** with `mise run check --fix`, `mise run version:check --fix`, then `mise run check`. The first formats and regenerates the token tables, the second bumps the plugin versions
   the change needs. A failure names its fix. `mise run test` runs the tests.
 - **Hooks** ([hk](https://hk.jdx.dev)): a commit runs the commit gates on staged files, a push runs the push gates and the tests, CI runs all of them. Fix a failing step;
-  `git commit --no-verify` is for a WIP commit. The hooks live in git config (`hook.<name>.command`), so an empty `.git/hooks/` is normal.
+  `git commit --no-verify` is for a WIP commit the user asked for. The hooks live in git config (`hook.<name>.command`), so an empty `.git/hooks/` is normal.
 - **Machine-owned files** change through their command, also when they conflict in a rebase:
 
   | Files                                                                             | Command                                                       |
@@ -49,6 +49,8 @@ A skill is a folder with a `SKILL.md` that the `skills` list of a plugin manifes
 
 - **Remove through the task only.** A bare `npx skills remove` also deletes a skill of ours that has the same name.
 - **A sync replaces `skills/vendor/` wholesale**, so a hand edit does not survive. A skill you want to own moves to `skills/` as ours.
+- **Frontmatter overrides** go in `skills-overrides.json` (e.g. make a manual-only skill loadable, or give it a neutral description); `mise run skills:sync` applies them after
+  every fetch, and a commit gate checks them. A `null` value removes a key. Only frontmatter changes this way: the skill text stays upstream's.
 - **Every sync is an upgrade.** The lock names a source, not a version, so a sync fetches upstream's default branch: read `git diff skills/vendor` before you commit.
 - Linters skip `**/vendor/**`. Vendored skills get no README from us; `skills/vendor/README.md` is a generated index.
 - **Subagents** live in `agents/vendor/`, because the skills CLI fetches skills only. Add a source line to the `agents:sync` task, run `mise run agents:sync`, and list the file under

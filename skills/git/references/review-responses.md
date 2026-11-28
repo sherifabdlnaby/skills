@@ -56,7 +56,7 @@ links to it. When to attach at all is [Visuals](./pr-body.md#visuals). How `--at
 
 A review round is one query in and one mutation out. `gh pr view --json` has no `reviewThreads`
 field, so the query is GraphQL; it returns the thread ids, the resolved state and every body at once,
-which is also what step 1 needs to judge the round before replying to any of it.
+which is also what the Read step below needs to judge the round before replying to any of it.
 
 ```graphql
 query { repository(owner: "<owner>", name: "<repo>") {
