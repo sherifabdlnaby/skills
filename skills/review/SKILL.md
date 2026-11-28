@@ -5,7 +5,7 @@ license: MIT
 argument-hint: "[loose|balanced|strict] [PR number or URL]"
 metadata:
   author: sherifabdlnaby
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # review
@@ -31,14 +31,15 @@ A target that fits none: ask. Unattended, review your own work.
 
 ## Every review
 
-Own work and someone else's PR run all five steps. Comments on the user's PR run only step 5, on each comment: the round is a small fix, so the handoff pass does not rerun.
+Own work and someone else's PR run every step. Comments on the user's PR run only the last one, on each comment: the round is a small fix, so the handoff pass does not rerun.
 
 1. **Comments and docs.** Run the **no-comments** and **no-docs** skills on the scope, unless they already ran on it in this session. Docs stay only where they are load-bearing.
 2. **Big picture, then lines.** First the approach, the scope, the structure, and the fit with the system. Then each changed line.
 3. **Look past the diff.** For each deleted line, name what it guaranteed and find where the new code still does. For each changed signature, return shape, or precondition, read its callers.
-4. **Verify before you raise.** Each finding gets a concrete failure: the input, state, or next change that goes wrong. Confirm it in the code. Drop it only with proof: a quoted line, a guard, or why
+4. **Tests.** Check the diff's tests against coding's Tests rules, including the tests it does not have, and run them.
+5. **Verify before you raise.** Each finding gets a concrete failure: the input, state, or next change that goes wrong. Confirm it in the code. Drop it only with proof: a quoted line, a guard, or why
    it cannot happen. "Unlikely" is not proof.
-5. **Judge each finding** at the level below.
+6. **Judge each finding** at the level below.
 
 ## Levels
 

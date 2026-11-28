@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: sherifabdlnaby
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # Coding
@@ -56,6 +56,9 @@ metadata:
 
 - **Test behavior, not implementation**: a test fails when the behavior breaks and passes when only the internals change. Drive it through the public interface and derive the expected value from the
   requirement, never from the code under test. A tautological test is a checksum: correct and broken code pass it alike.
+- **Cover the change**: new or changed behavior gets a test. A bug fix gets a regression test you saw fail without the fix.
+- **Deterministic**: no sleeps, wall clock, live network, or test-order dependence. A flaky test is a bug to fix, not to retry.
+- **Lowest layer that shows it, few mocks**: test where the behavior lives. Mock only what you do not own (network, clock, a third-party service).
 
 ## Code Comments
 
