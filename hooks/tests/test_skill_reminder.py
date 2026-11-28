@@ -26,6 +26,8 @@ class Triggers(unittest.TestCase):
         for command in (
             "git commit -m 'x'",
             "git -C repo push -u origin HEAD",
+            "git -c user.email=a@b -c user.name=a commit -m x",
+            "git --no-pager -C repo commit --amend",
             "mise run check && git commit -q -m x",
             "gh pr create --draft --title t --body-file b.md",
             "gh pr ready 12",
@@ -40,6 +42,7 @@ class Triggers(unittest.TestCase):
             "git log --oneline",
             "gh pr view 3",
             "echo commit",
+            "git log --grep commit",
             None,
         ):
             with self.subTest(command=command):

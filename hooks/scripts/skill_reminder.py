@@ -15,7 +15,7 @@ import sys
 import hooklib
 
 TRIGGER = re.compile(
-    r"(?:^|[;&|(]\s*|\s)(?:git\s+(?:-C\s+\S+\s+)?(?:commit|push)|gh\s+pr\s+(?:create|ready)|gh\s+stack\s+submit)\b"
+    r"(?:^|[;&|(]\s*|\s)(?:git(?:\s+-[cC]\s+\S+|\s+--?[\w-]+(?:=\S+)?)*\s+(?:commit|push)|gh\s+pr\s+(?:create|ready)|gh\s+stack\s+submit)\b"
 )
 
 MESSAGE = (
