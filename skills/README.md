@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-37%2C372%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 37,372 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-120%2C674%20tokens-2ea44f?style=flat-square" alt="All Markdown: 120,674 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-37%2C416%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 37,416 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-120%2C718%20tokens-2ea44f?style=flat-square" alt="All Markdown: 120,718 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -17,7 +17,7 @@ than read, so they are left out.
 | [`ai-disclosure`](ai-disclosure/)                           |  `1,141` |  `1,141` |
 | [`ask-me`](ask-me/)                                         |    `437` |    `437` |
 | [`cicd-fy`](cicd-fy/)                                       |  `1,542` | `15,981` |
-| [`coding`](coding/)                                         |  `2,786` |  `2,786` |
+| [`coding`](coding/)                                         |  `2,830` |  `2,830` |
 | [`fast-feedback-mode`](fast-feedback-mode/)                 |    `410` |    `410` |
 | [`git`](git/)                                               |  `1,831` | `12,439` |
 | [`grill-me`](grill-me/)                                     |     `61` |     `61` |
@@ -58,7 +58,7 @@ than read, so they are left out.
 | `cicd-fy`                    | [`references/publish.md`](cicd-fy/references/publish.md)                                           |   `630` |
 | `cicd-fy`                    | [`references/releases.md`](cicd-fy/references/releases.md)                                         | `1,310` |
 | `cicd-fy`                    | [`references/security.md`](cicd-fy/references/security.md)                                         |   `814` |
-| `coding`                     | [`SKILL.md`](coding/SKILL.md)                                                                      | `2,786` |
+| `coding`                     | [`SKILL.md`](coding/SKILL.md)                                                                      | `2,830` |
 | `fast-feedback-mode`         | [`SKILL.md`](fast-feedback-mode/SKILL.md)                                                          |   `410` |
 | `git`                        | [`SKILL.md`](git/SKILL.md)                                                                         | `1,831` |
 | `git`                        | [`references/attach.md`](git/references/attach.md)                                                 |   `546` |

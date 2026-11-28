@@ -14,7 +14,8 @@ metadata:
 
 **Note:** These rules are defaults; deviate only when you can state what following the rule would cost here.
 
-- **Simple and idiomatic**: fit the existing system and take the idiomatic way first. Keep sane system defaults; override one only when the gain is worth the extra code.
+- **Simple and idiomatic**: fit the existing system and take the idiomatic way first. Keep sane system defaults; override one only when the gain is worth the extra code. Before writing a helper,
+  search the shared modules and the files next to the change, and use the one that exists.
 - **Subtract before you add** (extending an existing feature): the smallest diff that solves the problem, where possible. Remove what the change makes dead before you build. No guards,
   validators, or parsers beyond what the spec demands.
 - **Do not overfit** (adding a new system or functionality): design for the problem, not only the cases in this chat.
@@ -42,7 +43,7 @@ metadata:
 ## Debugging and Verifying
 
 - **Fix the root cause**: the first place the system did something wrong. Ask whether the triggering state is legitimate: if yes, handle it where it broke; if not, a guard there hides the bug, so fix
-  what produced it. Look for other instances of the pattern, list them, and ask before you fix them.
+  what produced it. The fix goes in the layer that owns the behavior, not in the caller that noticed it. Look for other instances of the pattern, list them, and ask before you fix them.
 - **Attack the premise**: when two fixes that share one assumption fail the same check, write the assumption down and test it before a third fix.
 - **Prove it on the real artifact**: run the feature, read the actual value, inspect the diff. "It compiles", a self-report, or cached output is not proof. When a check passes too easily, suspect the
   check.
