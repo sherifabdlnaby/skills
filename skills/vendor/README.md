@@ -2,11 +2,12 @@
 
 Skills other people wrote, copied in by `mise run skills:sync` from the sources pinned in
 [`skills-lock.json`](../../skills-lock.json). Nothing here is edited or written up by us — each
-skill's own `SKILL.md` is its documentation.
+skill's own `SKILL.md` is its documentation. A skill marked *(overrides)* has frontmatter changed by
+[`skills-overrides.json`](../../skills-overrides.json); its text is upstream's.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-18%2C449%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 18,449 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-34%2C624%20tokens-2ea44f?style=flat-square" alt="All Markdown: 34,624 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-18%2C387%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 18,387 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-34%2C562%20tokens-2ea44f?style=flat-square" alt="All Markdown: 34,562 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -24,9 +25,9 @@ than read, so they are left out.
 | [`improve-codebase-architecture`](improve-codebase-architecture/) | [mattpocock/skills](https://github.com/mattpocock/skills) |  `1,354` |  `2,950` |
 | [`in-your-own-words`](in-your-own-words/)                         | [cursor/plugins](https://github.com/cursor/plugins)       |     `72` |     `72` |
 | [`prototype`](prototype/)                                         | [mattpocock/skills](https://github.com/mattpocock/skills) |    `642` |  `3,546` |
-| [`show-me`](show-me/)                                             | [humanlayer/skills](https://github.com/humanlayer/skills) |    `783` |    `783` |
-| [`unslop`](unslop/)                                               | [cursor/plugins](https://github.com/cursor/plugins)       |    `588` |    `588` |
-| [`why`](why/)                                                     | [cursor/plugins](https://github.com/cursor/plugins)       |    `124` |    `124` |
+| [`show-me`](show-me/) *(overrides)*                               | [humanlayer/skills](https://github.com/humanlayer/skills) |    `764` |    `764` |
+| [`unslop`](unslop/) *(overrides)*                                 | [cursor/plugins](https://github.com/cursor/plugins)       |    `580` |    `580` |
+| [`why`](why/) *(overrides)*                                       | [cursor/plugins](https://github.com/cursor/plugins)       |     `89` |     `89` |
 | [`writing-for-agents`](writing-for-agents/)                       | [mattpocock/skills](https://github.com/mattpocock/skills) |  `2,349` |  `2,916` |
 
 ### Files
@@ -54,8 +55,8 @@ than read, so they are left out.
 | `prototype`                     | [`LOGIC.md`](prototype/LOGIC.md)                                          | `1,329` |
 | `prototype`                     | [`SKILL.md`](prototype/SKILL.md)                                          |   `642` |
 | `prototype`                     | [`UI.md`](prototype/UI.md)                                                | `1,575` |
-| `show-me`                       | [`SKILL.md`](show-me/SKILL.md)                                            |   `783` |
-| `unslop`                        | [`SKILL.md`](unslop/SKILL.md)                                             |   `588` |
-| `why`                           | [`SKILL.md`](why/SKILL.md)                                                |   `124` |
+| `show-me`                       | [`SKILL.md`](show-me/SKILL.md)                                            |   `764` |
+| `unslop`                        | [`SKILL.md`](unslop/SKILL.md)                                             |   `580` |
+| `why`                           | [`SKILL.md`](why/SKILL.md)                                                |    `89` |
 | `writing-for-agents`            | [`SKILL-MECHANICS.md`](writing-for-agents/SKILL-MECHANICS.md)             |   `567` |
 | `writing-for-agents`            | [`SKILL.md`](writing-for-agents/SKILL.md)                                 | `2,349` |

@@ -24,7 +24,8 @@ VENDOR_HEADER = """# Vendored skills
 
 Skills other people wrote, copied in by `mise run skills:sync` from the sources pinned in
 [`skills-lock.json`](../../skills-lock.json). Nothing here is edited or written up by us — each
-skill's own `SKILL.md` is its documentation."""
+skill's own `SKILL.md` is its documentation. A skill marked *(overrides)* has frontmatter changed by
+[`skills-overrides.json`](../../skills-overrides.json); its text is upstream's."""
 
 
 @dataclass(frozen=True)
@@ -182,6 +183,13 @@ def display_name(estimate: SkillEstimate, base: Path) -> str:
     )
 
 
+def overridden(base: Path) -> set[str]:
+    path = base.parents[1] / "skills-overrides.json"
+    return (
+        set(json.loads(path.read_text(encoding="utf-8"))) if path.is_file() else set()
+    )
+
+
 def summary_rows(
     estimates: tuple[SkillEstimate, ...], base: Path, *, sources: dict[str, str] | None
 ) -> list[tuple[str, ...]]:
@@ -191,6 +199,8 @@ def summary_rows(
         cells = [f"[`{display_name(estimate, base)}`]({link}/)"]
         if sources is not None:
             source = sources[estimate.directory.name]
+            if estimate.directory.name in overridden(base):
+                cells[0] += " *(overrides)*"
             cells.append(f"[{source}](https://github.com/{source})")
         cells.extend((count(estimate.skill_tokens), count(estimate.total_tokens)))
         rows.append(tuple(cells))

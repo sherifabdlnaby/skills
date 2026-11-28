@@ -15,5 +15,6 @@ Scope: the docs and UI strings you were given, else those in the current diff ag
 
 1. Read each changed line as its layer's reader. Name that reader: a user, an API caller, a maintainer.
 2. Cut what that reader takes for granted, what belongs to another layer, what repeats the code, and history. Rewrite text that a change made stale, instead of adding to it.
-3. Fix words and names: no `C13` words, real symbols and commands, no counts that rot.
+3. Fix words and names: no `C13` words, real symbols and commands, no counts that rot. Then apply the **unslop** skill to the changed prose. Where it bans parentheses or
+   mid-sentence colons (its #13, #14), keep them if the repo's or the user's style allows them.
 4. Report: lines cut, lines rewritten, and anything left that needs a human decision.

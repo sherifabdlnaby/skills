@@ -1,0 +1,13 @@
+{
+  "show-me": {
+    "disable-model-invocation": null,
+    "description": "Show the current topic as the smallest useful visual."
+  },
+  "unslop": {
+    "disable-model-invocation": null
+  },
+  "why": {
+    "disable-model-invocation": null,
+    "description": "Explain why code is shaped the way it is, from the commits and PR discussions that made it."
+  }
+}

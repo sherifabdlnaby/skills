@@ -125,6 +125,11 @@ run = [
   { task = "skills:sync" },
 ]
 
+[tasks."skills:overrides"]
+description = "Apply skills-overrides.json to vendored skills' frontmatter (check only without --fix)"
+usage = 'flag "--fix" help="write the overrides"'
+run = "uv run --locked python .config/vendor_overrides.py{% if usage.fix %} --fix{% endif %}"
+
 [tasks."skills:sync"]
 # The CLI installs into agent dirs and takes no flag to aim elsewhere, so the output is moved and
 # those dirs thrown away. Left behind they load every vendored skill a second time, as project
@@ -138,6 +143,9 @@ run = [
   cp -R .agents/skills skills/vendor
   rm -rf .agents/skills .claude/skills
   ''',
+  { task = "skills:overrides", args = [
+    "--fix",
+  ] },
   { task = "tokens", args = [
     "--fix",
   ] },

@@ -3,8 +3,8 @@
 What each skill costs an agent's context window. The [project README](../README.md) says what each one does.
 
 <p>
-  <img src="https://img.shields.io/badge/All%20SKILL.md-36%2C725%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 36,725 tokens" />
-  <img src="https://img.shields.io/badge/All%20Markdown-119%2C703%20tokens-2ea44f?style=flat-square" alt="All Markdown: 119,703 tokens" />
+  <img src="https://img.shields.io/badge/All%20SKILL.md-36%2C681%20tokens-2f80ed?style=flat-square" alt="All SKILL.md: 36,681 tokens" />
+  <img src="https://img.shields.io/badge/All%20Markdown-119%2C659%20tokens-2ea44f?style=flat-square" alt="All Markdown: 119,659 tokens" />
 </p>
 
 Token estimates use tiktoken's `o200k_base` encoding. `SKILL.md` is the entry prompt; the total adds every
@@ -23,8 +23,8 @@ than read, so they are left out.
 | [`grill-me`](grill-me/)                                     |     `61` |     `61` |
 | [`grilling`](grilling/)                                     |    `663` |    `663` |
 | [`mise-fy`](mise-fy/)                                       |  `2,525` | `39,790` |
-| [`no-comments`](no-comments/)                               |    `398` |    `398` |
-| [`no-docs`](no-docs/)                                       |    `212` |    `212` |
+| [`no-comments`](no-comments/)                               |    `370` |    `370` |
+| [`no-docs`](no-docs/)                                       |    `258` |    `258` |
 | [`review`](review/)                                         |    `325` |    `325` |
 | [`skill-fy`](skill-fy/)                                     |  `3,002` |  `6,490` |
 | [`variants/afk-careful`](variants/afk-careful/)             |     `97` |     `97` |
@@ -35,7 +35,7 @@ than read, so they are left out.
 | [`variants/watch-pr-comments`](variants/watch-pr-comments/) |    `251` |    `251` |
 | [`wait-what`](wait-what/)                                   |    `185` |    `185` |
 | [`what-happened`](what-happened/)                           |  `1,090` |  `1,090` |
-| [`vendor/`](vendor/README.md) (13 skills)                   | `18,449` | `34,624` |
+| [`vendor/`](vendor/README.md) (13 skills)                   | `18,387` | `34,562` |
 
 ### Files
 
@@ -89,8 +89,8 @@ than read, so they are left out.
 | `mise-fy`                    | [`references/runtimes/node.md`](mise-fy/references/runtimes/node.md)                               | `1,462` |
 | `mise-fy`                    | [`references/tasks.md`](mise-fy/references/tasks.md)                                               | `3,734` |
 | `mise-fy`                    | [`references/tools.md`](mise-fy/references/tools.md)                                               | `4,410` |
-| `no-comments`                | [`SKILL.md`](no-comments/SKILL.md)                                                                 |   `398` |
-| `no-docs`                    | [`SKILL.md`](no-docs/SKILL.md)                                                                     |   `212` |
+| `no-comments`                | [`SKILL.md`](no-comments/SKILL.md)                                                                 |   `370` |
+| `no-docs`                    | [`SKILL.md`](no-docs/SKILL.md)                                                                     |   `258` |
 | `review`                     | [`SKILL.md`](review/SKILL.md)                                                                      |   `325` |
 | `skill-fy`                   | [`SKILL.md`](skill-fy/SKILL.md)                                                                    | `3,002` |
 | `skill-fy`                   | [`assets/SKILL-skeleton.md`](skill-fy/assets/SKILL-skeleton.md)                                    |   `369` |
